@@ -27,6 +27,8 @@ namespace CatalogService.Infrastructure.Configurations
             builder.Property(p => p.Category)
                 .IsRequired()
                 .HasMaxLength(100);
+            builder.Property(p => p.Price)
+                .HasPrecision(18, 2);
         }
     }
 }
