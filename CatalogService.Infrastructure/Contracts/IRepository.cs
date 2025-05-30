@@ -9,7 +9,7 @@ namespace CatalogService.Infrastructure.Contracts
 {
     public interface IRepository<T>
     {
-        Task<Guid> CreateAsync(Guid id);
+        Task<Guid> CreateAsync(T item);
 
         Task<Guid> UpdateAsync(Guid id);
 
