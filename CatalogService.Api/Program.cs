@@ -18,7 +18,15 @@ namespace CatalogService.Api
             builder.Services.AddControllers();
             builder.Services.AddScoped<IRepository<Product>, ProductRepository>();
             builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
             var app = builder.Build();
+
+            if(app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
 
 
             app.MapGet("/", () => "Hello World!");
