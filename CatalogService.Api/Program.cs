@@ -11,11 +11,12 @@ namespace CatalogService.Api
             var builder = WebApplication.CreateBuilder(args);
             string? connection = builder.Configuration.GetConnectionString("DefaultConnection");
             builder.Services.AddDbContext<CatalogDBContext>(options => options.UseSqlServer(connection));
-
+            builder.Services.AddControllers();
             var app = builder.Build();
 
 
             app.MapGet("/", () => "Hello World!");
+            app.MapControllers();
 
             app.Run();
         }
