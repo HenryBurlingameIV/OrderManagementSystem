@@ -10,7 +10,7 @@ using CatalogService.Infrastructure.Contracts;
 
 namespace CatalogService.Application.Services
 {
-    public class ProductService
+    public class ProductService : IProductService
     {
         private IRepository<Product> _repository;
 
