@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CatalogService.Application
+namespace CatalogService.Application.Contracts
 {
     public interface IProductService
     {
