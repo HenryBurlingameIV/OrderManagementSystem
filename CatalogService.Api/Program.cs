@@ -17,7 +17,7 @@ namespace CatalogService.Api
             builder.Services.AddDbContext<CatalogDBContext>(options => options.UseSqlServer(connection));
             builder.Services.AddControllers();
             builder.Services.AddScoped<IRepository<Product>, ProductRepository>();
-            
+            builder.Services.AddScoped<IProductService, ProductService>();
             var app = builder.Build();
 
 
