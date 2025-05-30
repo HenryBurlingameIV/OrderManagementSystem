@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CatalogService.Application.Contracts;
 using CatalogService.Domain;
 using CatalogService.Infrastructure;
 using CatalogService.Infrastructure.Contracts;
