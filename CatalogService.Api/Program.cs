@@ -23,6 +23,7 @@ namespace CatalogService.Api
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IValidator<ProductCreateRequest>, ProductCreateRequestValidator>();
             builder.Services.AddScoped<IValidator<ProductUpdateRequest>, ProductUpdateRequestValidator>();
+            builder.Services.AddScoped<IValidator<ProductUpdateQuantityRequest>, ProductUpdateQuantityValidator>();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             var app = builder.Build();
