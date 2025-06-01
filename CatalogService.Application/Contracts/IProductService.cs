@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CatalogService.Application.DTO;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,11 @@ namespace CatalogService.Application.Contracts
 {
     public interface IProductService
     {
+        Task<Guid> CreateProductAsync(ProductCreateRequest request);
+
+        Task<ProductViewModel> GetProductByIdAsync(Guid productId);
+
+        Task<Guid> UpdateProductAsync(ProductUpdateRequest request);
 
     }
 }
