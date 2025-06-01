@@ -13,7 +13,7 @@ namespace CatalogService.Infrastructure.Contracts
 
         Task<Guid> UpdateAsync(Guid id);
 
-        Task<T> GetByIdAsync(Guid id);
+        Task<T?> GetByIdAsync(Guid id);
 
     }
 }

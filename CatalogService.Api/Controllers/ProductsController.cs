@@ -1,5 +1,6 @@
 ﻿using CatalogService.Application.Contracts;
 using CatalogService.Application.DTO;
+using CatalogService.Domain.Exceptions;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -30,6 +31,20 @@ namespace CatalogService.Api.Controllers
                 return ValidationProblem(ex.Message);
             } 
             
+        }
+
+        [HttpGet("{id:guid}")]
+        public async Task<ActionResult<ProductViewModel>> GetProductByIdAsync([FromRoute]Guid id)
+        {
+            try
+            {
+                var result = await _productService.GetProductByIdAsync(id);
+                return Ok(result);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
     }

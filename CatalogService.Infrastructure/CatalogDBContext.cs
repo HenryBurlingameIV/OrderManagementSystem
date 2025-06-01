@@ -17,7 +17,7 @@ namespace CatalogService.Infrastructure
         {
             modelBuilder.ApplyConfiguration(new ProductConfiguration());
         }
-        DbSet<Product> Products { get; set; }
+        public DbSet<Product> Products { get; set; }
 
     }
 }

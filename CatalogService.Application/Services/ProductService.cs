@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using CatalogService.Application.Contracts;
 using CatalogService.Application.DTO;
 using CatalogService.Domain;
+using CatalogService.Domain.Exceptions;
 using CatalogService.Infrastructure;
 using CatalogService.Infrastructure.Contracts;
 using FluentValidation;
@@ -17,24 +18,29 @@ namespace CatalogService.Application.Services
 {
     public class ProductService : IProductService
     {
-        private IRepository<Product> _repository;
+        private IRepository<Product> _productRepository;
         private IValidator<ProductCreateRequest> _createValidator;
 
-        public ProductService(IRepository<Product> repo, IValidator<ProductCreateRequest> createValidator)
+        public ProductService(IRepository<Product> productRepository, IValidator<ProductCreateRequest> createValidator)
         {
-            _repository = repo;
+            _productRepository = productRepository;
             _createValidator = createValidator;
         }
 
         public async Task<Guid> CreateProductAsync(ProductCreateRequest request)
         {
             var product = CreateProductFromRequest(request);
-            return await _repository.CreateAsync(product!);
+            return await _productRepository.CreateAsync(product!);
         }
 
-        public Task<ProductViewModel> GetProductByIdAsync(Guid productId)
+        public async Task<ProductViewModel> GetProductByIdAsync(Guid productId)
         {
-            throw new NotImplementedException();
+            var product = await _productRepository.GetByIdAsync(productId);
+            if (product == null)
+            {
+                throw new NotFoundException($"Product with ID {productId} not found.");
+            }
+            return CreateProductViewModel(product);
         }
 
         public Task<Guid> UpdateProductAsync(ProductUpdateRequest request)
@@ -58,6 +64,21 @@ namespace CatalogService.Application.Services
                 Category = request.Category,
                 CreatedDateUtc = DateTime.UtcNow,
                 UpdatedDateUtc = DateTime.UtcNow
+            };
+        }
+
+        public ProductViewModel CreateProductViewModel(Product product)
+        {
+            return new ProductViewModel()
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Quantity = product.Quantity,
+                Price = product.Price,
+                Category = product.Category,
+                CreatedDateUtc = product.CreatedDateUtc,
+                UpdatedDateUtc = product.UpdatedDateUtc
             };
         }
 
