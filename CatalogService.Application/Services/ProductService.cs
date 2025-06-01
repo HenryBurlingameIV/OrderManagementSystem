@@ -8,6 +8,7 @@ using CatalogService.Application.DTO;
 using CatalogService.Domain;
 using CatalogService.Infrastructure;
 using CatalogService.Infrastructure.Contracts;
+using FluentValidation;
 
 
 namespace CatalogService.Application.Services
@@ -15,10 +16,12 @@ namespace CatalogService.Application.Services
     public class ProductService : IProductService
     {
         private IRepository<Product> _repository;
+        private IValidator<ProductCreateRequest> _createValidator;
 
-        public ProductService(IRepository<Product> repo)
+        public ProductService(IRepository<Product> repo, IValidator<ProductCreateRequest> createValidator)
         {
             _repository = repo;
+            _createValidator = createValidator;
         }
 
         public async Task<Guid> CreateProductAsync(ProductCreateRequest request)
@@ -45,5 +48,6 @@ namespace CatalogService.Application.Services
         {
             throw new NotImplementedException();
         }
+
     }
 }
