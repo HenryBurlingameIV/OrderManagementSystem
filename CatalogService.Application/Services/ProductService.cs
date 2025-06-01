@@ -75,8 +75,8 @@ namespace CatalogService.Application.Services
                 Quantity = request.Quantity,
                 Price = request.Price,
                 Category = request.Category,
-                CreatedDateUtc = DateTime.UtcNow,
-                UpdatedDateUtc = DateTime.UtcNow
+                CreatedDateUtc = DateTime.Now,
+                UpdatedDateUtc = DateTime.Now
             };
         }
 
@@ -92,7 +92,7 @@ namespace CatalogService.Application.Services
             productToUpdate.Category = request.Category ?? productToUpdate.Category;
             productToUpdate.Price = request.Price ?? productToUpdate.Price;
             productToUpdate.Quantity = request.Quantity ?? productToUpdate.Quantity;
-            productToUpdate.UpdatedDateUtc = DateTime.UtcNow;
+            productToUpdate.UpdatedDateUtc = DateTime.Now;
 
         }
 
