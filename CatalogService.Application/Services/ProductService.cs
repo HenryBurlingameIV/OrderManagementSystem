@@ -60,6 +60,22 @@ namespace CatalogService.Application.Services
             await _productRepository.UpdateAsync(productId, product);
             return productId;
         }
+        public async Task UpdateProductQuantityAsync(Guid productId, ProductUpdateQuantityRequest request)
+        {
+            var product = await _productRepository.GetByIdAsync(productId);
+            if (product == null)
+            {
+                throw new NotFoundException($"Product with ID {productId} not found.");
+            }
+            if (product.Quantity < request.Quantity)
+            {
+                throw new ValidationException($"Product '{product.Name}' does not have enough quantity available. Requested: {request.Quantity}, Available: {product.Quantity}.");
+            }
+            product.Quantity = product.Quantity - request.Quantity;
+            product.UpdatedDateUtc = DateTime.Now;
+            await _productRepository.UpdateAsync(productId, product);
+           
+        }
 
         public Product? CreateProductFromRequest(ProductCreateRequest request)
         {
