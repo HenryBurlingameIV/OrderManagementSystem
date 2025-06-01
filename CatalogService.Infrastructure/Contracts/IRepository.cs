@@ -15,5 +15,7 @@ namespace CatalogService.Infrastructure.Contracts
 
         Task<T?> GetByIdAsync(Guid id);
 
+        Task DeleteAsync(T item);
+
     }
 }
