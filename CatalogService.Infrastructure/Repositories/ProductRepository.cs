@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CatalogService.Domain;
 using CatalogService.Infrastructure.Contracts;
+using Microsoft.EntityFrameworkCore;
 
 namespace CatalogService.Infrastructure.Repositories
 {
@@ -24,9 +25,10 @@ namespace CatalogService.Infrastructure.Repositories
 
         }
 
-        public Task<Product> GetByIdAsync(Guid id)
+        public async Task<Product?> GetByIdAsync(Guid id)
         {
-            throw new NotImplementedException();
+            Product? product = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == id);
+            return product;
         }
 
         public Task<Guid> UpdateAsync(Guid id)
