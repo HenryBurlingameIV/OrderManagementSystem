@@ -1,9 +1,12 @@
 using CatalogService.Application.Contracts;
+using CatalogService.Application.DTO;
 using CatalogService.Application.Services;
+using CatalogService.Application.Validators;
 using CatalogService.Domain;
 using CatalogService.Infrastructure;
 using CatalogService.Infrastructure.Contracts;
 using CatalogService.Infrastructure.Repositories;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 namespace CatalogService.Api
 {
@@ -18,6 +21,7 @@ namespace CatalogService.Api
             builder.Services.AddControllers();
             builder.Services.AddScoped<IRepository<Product>, ProductRepository>();
             builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<IValidator<ProductCreateRequest>, ProductCreateRequestValidator>();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             var app = builder.Build();
