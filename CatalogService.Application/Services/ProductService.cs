@@ -61,5 +61,19 @@ namespace CatalogService.Application.Services
             };
         }
 
+        public ProductViewModel CreateProductViewModel(Product product)
+        {
+            return new ProductViewModel()
+            {
+                Name = product.Name,
+                Description = product.Description,
+                Quantity = product.Quantity,
+                Price = product.Price,
+                Category = product.Category,
+                CreatedDateUtc = product.CreatedDateUtc,
+                UpdatedDateUtc = product.UpdatedDateUtc
+            };
+        }
+
     }
 }
