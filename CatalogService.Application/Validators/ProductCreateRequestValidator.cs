@@ -17,7 +17,7 @@ namespace CatalogService.Application.Validators
             RuleFor(p => p.Price).GreaterThan(0).WithMessage("Price must be greater than zero.");
             RuleFor(p => p.Category).NotEmpty().WithMessage("Category is required.");
             RuleFor(p => p.Category).MaximumLength(100).WithMessage("Category name must not exceed 100 characters.");
-            RuleFor(p => p.Description).MaximumLength(200).WithMessage("Description name must not exceed 200 characters.");
+            RuleFor(p => p.Description).MaximumLength(200).WithMessage("Description must not exceed 200 characters.");
         }
     }
 }

@@ -19,7 +19,7 @@ namespace CatalogService.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Guid>> CreateProductAsync([FromBody]ProductCreateRequest request)
+        public async Task<ActionResult<Guid>> CreateProductAsync([FromBody] ProductCreateRequest request)
         {
             try
             {
@@ -29,12 +29,12 @@ namespace CatalogService.Api.Controllers
             catch (ValidationException ex)
             {
                 return ValidationProblem(ex.Message);
-            } 
-            
+            }
+
         }
 
         [HttpGet("{id:guid}")]
-        public async Task<ActionResult<ProductViewModel>> GetProductByIdAsync([FromRoute]Guid id)
+        public async Task<ActionResult<ProductViewModel>> GetProductByIdAsync([FromRoute] Guid id)
         {
             try
             {
@@ -44,6 +44,24 @@ namespace CatalogService.Api.Controllers
             catch (NotFoundException ex)
             {
                 return NotFound(ex.Message);
+            }
+        }
+
+        [HttpPut("{id:guid}")]
+        public async Task<ActionResult<Guid>> UpdateProductAsync([FromRoute] Guid id, [FromBody] ProductUpdateRequest request)
+        {
+            try
+            {
+                var result = await _productService.UpdateProductAsync(id, request);
+                return Ok(result);
+            }
+            catch(NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch(ValidationException ex)
+            {
+                return ValidationProblem(ex.Message);
             }
         }
 

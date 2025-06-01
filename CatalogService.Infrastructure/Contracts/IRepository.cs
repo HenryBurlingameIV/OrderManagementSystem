@@ -11,7 +11,7 @@ namespace CatalogService.Infrastructure.Contracts
     {
         Task<Guid> CreateAsync(T item);
 
-        Task<Guid> UpdateAsync(Guid id);
+        Task<Guid> UpdateAsync(Guid id, T update);
 
         Task<T?> GetByIdAsync(Guid id);
 

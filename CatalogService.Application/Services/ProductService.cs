@@ -11,6 +11,7 @@ using CatalogService.Domain.Exceptions;
 using CatalogService.Infrastructure;
 using CatalogService.Infrastructure.Contracts;
 using FluentValidation;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using ValidationException = FluentValidation.ValidationException;
 
 
@@ -20,11 +21,15 @@ namespace CatalogService.Application.Services
     {
         private IRepository<Product> _productRepository;
         private IValidator<ProductCreateRequest> _createValidator;
+        private IValidator<ProductUpdateRequest> _updateValidator;
 
-        public ProductService(IRepository<Product> productRepository, IValidator<ProductCreateRequest> createValidator)
+        public ProductService(IRepository<Product> productRepository, 
+            IValidator<ProductCreateRequest> createValidator, 
+            IValidator<ProductUpdateRequest> updateValidator)
         {
             _productRepository = productRepository;
             _createValidator = createValidator;
+            _updateValidator = updateValidator;
         }
 
         public async Task<Guid> CreateProductAsync(ProductCreateRequest request)
@@ -43,9 +48,17 @@ namespace CatalogService.Application.Services
             return CreateProductViewModel(product);
         }
 
-        public Task<Guid> UpdateProductAsync(ProductUpdateRequest request)
+        public async Task<Guid> UpdateProductAsync(Guid productId, ProductUpdateRequest request)
         {
-            throw new NotImplementedException();
+            var product = await _productRepository.GetByIdAsync(productId);
+            if (product == null)
+            {
+                throw new NotFoundException($"Product with ID {productId} not found.");
+            }
+
+            UpdateProductFromRequest(request, product);
+            await _productRepository.UpdateAsync(productId, product);
+            return productId;
         }
 
         public Product? CreateProductFromRequest(ProductCreateRequest request)
@@ -62,9 +75,25 @@ namespace CatalogService.Application.Services
                 Quantity = request.Quantity,
                 Price = request.Price,
                 Category = request.Category,
-                CreatedDateUtc = DateTime.UtcNow,
-                UpdatedDateUtc = DateTime.UtcNow
+                CreatedDateUtc = DateTime.Now,
+                UpdatedDateUtc = DateTime.Now
             };
+        }
+
+        public void UpdateProductFromRequest(ProductUpdateRequest request, Product productToUpdate)
+        {
+            var validationResult = _updateValidator.Validate(request);
+            if(!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors);
+            }
+            productToUpdate.Name = request.Name ?? productToUpdate.Name;
+            productToUpdate.Description = request.Description ?? productToUpdate.Description;
+            productToUpdate.Category = request.Category ?? productToUpdate.Category;
+            productToUpdate.Price = request.Price ?? productToUpdate.Price;
+            productToUpdate.Quantity = request.Quantity ?? productToUpdate.Quantity;
+            productToUpdate.UpdatedDateUtc = DateTime.Now;
+
         }
 
         public ProductViewModel CreateProductViewModel(Product product)
