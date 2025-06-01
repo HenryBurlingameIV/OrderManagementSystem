@@ -71,6 +71,7 @@ namespace CatalogService.Application.Services
         {
             return new ProductViewModel()
             {
+                Id = product.Id,
                 Name = product.Name,
                 Description = product.Description,
                 Quantity = product.Quantity,
