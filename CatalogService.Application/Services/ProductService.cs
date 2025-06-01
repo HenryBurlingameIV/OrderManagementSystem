@@ -55,9 +55,9 @@ namespace CatalogService.Application.Services
             product.Name = request!.Name!;
             product.Description = request!.Description!;
             product.Category = request!.Category!;
-            product.Price = request!.Price;
+            product.Price = request!.Price.Value;
             product.UpdatedDateUtc = DateTime.UtcNow;
-            product.Quantity = request!.Quantity;
+            product.Quantity = request!.Quantity.Value;
             product.Category = request!.Category!;
 
             await _productRepository.UpdateAsync(productId, product);
