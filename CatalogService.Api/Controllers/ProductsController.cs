@@ -1,5 +1,6 @@
 ﻿using CatalogService.Application.Contracts;
 using CatalogService.Application.DTO;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,10 +18,18 @@ namespace CatalogService.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Guid>> CreateProductAsync(ProductCreateRequest request)
+        public async Task<ActionResult<Guid>> CreateProductAsync([FromBody]ProductCreateRequest request)
         {
-            var result =  await _productService.CreateProductAsync(request);
-            return Ok(result);
+            try
+            {
+                var result = await _productService.CreateProductAsync(request);
+                return Ok(result);
+            }
+            catch (ValidationException ex)
+            {
+                return ValidationProblem(ex.Message);
+            } 
+            
         }
 
     }
