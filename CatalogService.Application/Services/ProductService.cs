@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CatalogService.Application.Contracts;
+using CatalogService.Application.DTO;
 using CatalogService.Domain;
 using CatalogService.Infrastructure;
 using CatalogService.Infrastructure.Contracts;
@@ -18,6 +19,21 @@ namespace CatalogService.Application.Services
         public ProductService(IRepository<Product> repo)
         {
             _repository = repo;
+        }
+
+        public async Task<Guid> CreateProductAsync(ProductCreateRequest request)
+        {
+            var product = new Product()
+            {
+                Name = request.Name,
+                Description = request.Description,
+                Quantity = request.Quantity,
+                Price = request.Price,
+                Category = request.Category,
+                CreatedDateUtc = DateTime.UtcNow,
+                UpdatedDateUtc = DateTime.UtcNow
+            };
+            return await _repository.CreateAsync(product);
         }
 
 
