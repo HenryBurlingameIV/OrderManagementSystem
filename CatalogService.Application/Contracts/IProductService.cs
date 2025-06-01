@@ -13,7 +13,7 @@ namespace CatalogService.Application.Contracts
 
         Task<ProductViewModel> GetProductByIdAsync(Guid productId);
 
-        Task<Guid> UpdateProductAsync(ProductUpdateRequest request);
+        Task<Guid> UpdateProductAsync(Guid productId, ProductUpdateRequest request);
 
     }
 }

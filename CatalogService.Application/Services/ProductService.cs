@@ -11,6 +11,7 @@ using CatalogService.Domain.Exceptions;
 using CatalogService.Infrastructure;
 using CatalogService.Infrastructure.Contracts;
 using FluentValidation;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using ValidationException = FluentValidation.ValidationException;
 
 
@@ -43,9 +44,24 @@ namespace CatalogService.Application.Services
             return CreateProductViewModel(product);
         }
 
-        public Task<Guid> UpdateProductAsync(ProductUpdateRequest request)
+        public async Task<Guid> UpdateProductAsync(Guid productId, ProductUpdateRequest request)
         {
-            throw new NotImplementedException();
+            var product = await _productRepository.GetByIdAsync(productId);
+            if (product == null)
+            {
+                throw new NotFoundException($"Product with ID {productId} not found.");
+            }
+
+            product.Name = request!.Name!;
+            product.Description = request!.Description!;
+            product.Category = request!.Category!;
+            product.Price = request!.Price;
+            product.UpdatedDateUtc = DateTime.UtcNow;
+            product.Quantity = request!.Quantity;
+            product.Category = request!.Category!;
+
+            await _productRepository.UpdateAsync(productId, product);
+            return productId;
         }
 
         public Product? CreateProductFromRequest(ProductCreateRequest request)
