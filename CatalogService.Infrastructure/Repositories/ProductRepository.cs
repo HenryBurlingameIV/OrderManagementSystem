@@ -16,9 +16,12 @@ namespace CatalogService.Infrastructure.Repositories
             _dbContext = dbContext;
         }
 
-        public Task<Guid> CreateAsync(Product product)
+        public async Task<Guid> CreateAsync(Product product)
         {
-            throw new NotImplementedException();
+            await _dbContext.AddAsync(product);
+            await _dbContext.SaveChangesAsync();
+            return product.Id;
+
         }
 
         public Task<Product> GetByIdAsync(Guid id)
