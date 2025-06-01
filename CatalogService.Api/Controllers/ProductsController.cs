@@ -1,4 +1,5 @@
 ﻿using CatalogService.Application.Contracts;
+using CatalogService.Application.DTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,6 +14,13 @@ namespace CatalogService.Api.Controllers
         public ProductsController(IProductService productService)
         {
             _productService = productService;
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<Guid>> CreateProductAsync(ProductCreateRequest request)
+        {
+            var result =  await _productService.CreateProductAsync(request);
+            return Ok(result);
         }
 
     }
