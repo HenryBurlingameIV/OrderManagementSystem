@@ -71,7 +71,7 @@ namespace CatalogService.Application.Services
             {
                 throw new ValidationException($"Product '{product.Name}' does not have enough quantity available. Requested: {request.Quantity}, Available: {product.Quantity}.");
             }
-            product.Quantity = product.Quantity - request.Quantity;
+            product.Quantity -= request.Quantity;
             product.UpdatedDateUtc = DateTime.Now;
             await _productRepository.UpdateAsync(productId, product);
            
