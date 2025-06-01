@@ -34,6 +34,12 @@ namespace CatalogService.Infrastructure.Repositories
 
         }
 
+        public async Task DeleteAsync(Product product)
+        {
+            _dbContext.Products.Remove(product);
+            await _dbContext.SaveChangesAsync();
+        }
+
         public async Task<Product?> GetByIdAsync(Guid id)
         {
             Product? product = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == id);

@@ -86,6 +86,15 @@ namespace CatalogService.Application.Services
             await _productRepository.UpdateAsync(productId, product);
            
         }
+        public async Task DeleteProductAsync(Guid productId)
+        {
+            var product = await _productRepository.GetByIdAsync(productId);
+            if (product == null)
+            {
+                throw new NotFoundException("$Product with ID {productId} not found.");
+            }
+            await _productRepository.DeleteAsync(product);
+        }
 
         public Product? CreateProductFromRequest(ProductCreateRequest request)
         {

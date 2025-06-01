@@ -17,5 +17,7 @@ namespace CatalogService.Application.Contracts
 
         Task UpdateProductQuantityAsync(Guid productId, ProductUpdateQuantityRequest request);
 
+        Task DeleteProductAsync(Guid productId);
+
     }
 }
