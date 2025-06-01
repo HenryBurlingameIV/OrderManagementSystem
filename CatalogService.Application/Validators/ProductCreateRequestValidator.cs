@@ -1,4 +1,5 @@
 ﻿using CatalogService.Application.DTO;
+using CatalogService.Infrastructure;
 using FluentValidation;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace CatalogService.Application.Validators
 {
     public class ProductCreateRequestValidator : AbstractValidator<ProductCreateRequest>
     {
-        public ProductCreateRequestValidator() 
+        public ProductCreateRequestValidator(CatalogDBContext catalogDBContext) 
         {
             RuleFor(p => p.Name).NotEmpty().WithMessage("Name is required");
             RuleFor(p => p.Quantity).Must(q => q >= 0).WithMessage("Quantity must be non-negative.");
@@ -18,6 +19,7 @@ namespace CatalogService.Application.Validators
             RuleFor(p => p.Category).NotEmpty().WithMessage("Category is required.");
             RuleFor(p => p.Category).MaximumLength(100).WithMessage("Category name must not exceed 100 characters.");
             RuleFor(p => p.Description).MaximumLength(200).WithMessage("Description must not exceed 200 characters.");
+
         }
     }
 }
