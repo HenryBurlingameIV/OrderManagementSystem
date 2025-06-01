@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CatalogService.Domain;
+using CatalogService.Domain.Exceptions;
 using CatalogService.Infrastructure.Contracts;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,9 +32,11 @@ namespace CatalogService.Infrastructure.Repositories
             return product;
         }
 
-        public Task<Guid> UpdateAsync(Guid id)
+        public async Task<Guid> UpdateAsync(Guid id, Product product)
         {
-            throw new NotImplementedException();
+            _dbContext.Products.Update(product);
+            await _dbContext.SaveChangesAsync();
+            return id;
         }
     }
 }
