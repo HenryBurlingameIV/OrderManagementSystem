@@ -36,6 +36,14 @@ namespace CatalogService.Application.Services
             return await _repository.CreateAsync(product);
         }
 
+        public Task<ProductViewModel> GetProductByIdAsync(Guid productId)
+        {
+            throw new NotImplementedException();
+        }
 
+        public Task<Guid> UpdateProductAsync(ProductUpdateRequest request)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
