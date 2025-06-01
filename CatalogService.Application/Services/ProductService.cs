@@ -21,11 +21,15 @@ namespace CatalogService.Application.Services
     {
         private IRepository<Product> _productRepository;
         private IValidator<ProductCreateRequest> _createValidator;
+        private IValidator<ProductUpdateRequest> _updateValidator;
 
-        public ProductService(IRepository<Product> productRepository, IValidator<ProductCreateRequest> createValidator)
+        public ProductService(IRepository<Product> productRepository, 
+            IValidator<ProductCreateRequest> createValidator, 
+            IValidator<ProductUpdateRequest> updateValidator)
         {
             _productRepository = productRepository;
             _createValidator = createValidator;
+            _updateValidator = updateValidator;
         }
 
         public async Task<Guid> CreateProductAsync(ProductCreateRequest request)
@@ -52,14 +56,7 @@ namespace CatalogService.Application.Services
                 throw new NotFoundException($"Product with ID {productId} not found.");
             }
 
-            product.Name = request!.Name!;
-            product.Description = request!.Description!;
-            product.Category = request!.Category!;
-            product.Price = request!.Price.Value;
-            product.UpdatedDateUtc = DateTime.UtcNow;
-            product.Quantity = request!.Quantity.Value;
-            product.Category = request!.Category!;
-
+            UpdateProductFromRequest(request, product);
             await _productRepository.UpdateAsync(productId, product);
             return productId;
         }
@@ -81,6 +78,22 @@ namespace CatalogService.Application.Services
                 CreatedDateUtc = DateTime.UtcNow,
                 UpdatedDateUtc = DateTime.UtcNow
             };
+        }
+
+        public void UpdateProductFromRequest(ProductUpdateRequest request, Product productToUpdate)
+        {
+            var validationResult = _updateValidator.Validate(request);
+            if(!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors);
+            }
+            productToUpdate.Name = request.Name ?? productToUpdate.Name;
+            productToUpdate.Description = request.Description ?? productToUpdate.Description;
+            productToUpdate.Category = request.Category ?? productToUpdate.Category;
+            productToUpdate.Price = request.Price ?? productToUpdate.Price;
+            productToUpdate.Quantity = request.Quantity ?? productToUpdate.Quantity;
+            productToUpdate.UpdatedDateUtc = DateTime.UtcNow;
+
         }
 
         public ProductViewModel CreateProductViewModel(Product product)
