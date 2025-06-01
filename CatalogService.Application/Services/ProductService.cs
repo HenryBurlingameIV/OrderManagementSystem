@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ using CatalogService.Domain;
 using CatalogService.Infrastructure;
 using CatalogService.Infrastructure.Contracts;
 using FluentValidation;
+using ValidationException = FluentValidation.ValidationException;
 
 
 namespace CatalogService.Application.Services
@@ -26,17 +28,8 @@ namespace CatalogService.Application.Services
 
         public async Task<Guid> CreateProductAsync(ProductCreateRequest request)
         {
-            var product = new Product()
-            {
-                Name = request.Name,
-                Description = request.Description,
-                Quantity = request.Quantity,
-                Price = request.Price,
-                Category = request.Category,
-                CreatedDateUtc = DateTime.UtcNow,
-                UpdatedDateUtc = DateTime.UtcNow
-            };
-            return await _repository.CreateAsync(product);
+            var product = CreateProductFromRequest(request);
+            return await _repository.CreateAsync(product!);
         }
 
         public Task<ProductViewModel> GetProductByIdAsync(Guid productId)
@@ -47,6 +40,25 @@ namespace CatalogService.Application.Services
         public Task<Guid> UpdateProductAsync(ProductUpdateRequest request)
         {
             throw new NotImplementedException();
+        }
+
+        public Product? CreateProductFromRequest(ProductCreateRequest request)
+        {
+            var validationResult = _createValidator.Validate(request);
+            if(!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors);
+            }    
+            return new Product()
+            {
+                Name = request.Name,
+                Description = request.Description,
+                Quantity = request.Quantity,
+                Price = request.Price,
+                Category = request.Category,
+                CreatedDateUtc = DateTime.UtcNow,
+                UpdatedDateUtc = DateTime.UtcNow
+            };
         }
 
     }
