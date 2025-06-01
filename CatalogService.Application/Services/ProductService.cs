@@ -22,14 +22,17 @@ namespace CatalogService.Application.Services
         private IRepository<Product> _productRepository;
         private IValidator<ProductCreateRequest> _createValidator;
         private IValidator<ProductUpdateRequest> _updateValidator;
+        private IValidator<ProductUpdateQuantityRequest> _quantityValidator;
 
         public ProductService(IRepository<Product> productRepository, 
             IValidator<ProductCreateRequest> createValidator, 
-            IValidator<ProductUpdateRequest> updateValidator)
+            IValidator<ProductUpdateRequest> updateValidator,
+            IValidator<ProductUpdateQuantityRequest> quantityValidator)
         {
             _productRepository = productRepository;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
+            _quantityValidator = quantityValidator;
         }
 
         public async Task<Guid> CreateProductAsync(ProductCreateRequest request)
@@ -59,6 +62,29 @@ namespace CatalogService.Application.Services
             UpdateProductFromRequest(request, product);
             await _productRepository.UpdateAsync(productId, product);
             return productId;
+        }
+        public async Task UpdateProductQuantityAsync(Guid productId, ProductUpdateQuantityRequest request)
+        {
+            var validationResult = _quantityValidator.Validate(request);
+            if (!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors);
+            }
+
+            var product = await _productRepository.GetByIdAsync(productId);
+            if (product == null)
+            {
+                throw new NotFoundException($"Product with ID {productId} not found.");
+            }
+
+            if (product.Quantity < request.Quantity)
+            {
+                throw new ValidationException($"Product '{product.Name}' does not have enough quantity available. Requested: {request.Quantity}, Available: {product.Quantity}.");
+            }
+            product.Quantity -= request.Quantity;
+            product.UpdatedDateUtc = DateTime.Now;
+            await _productRepository.UpdateAsync(productId, product);
+           
         }
 
         public Product? CreateProductFromRequest(ProductCreateRequest request)

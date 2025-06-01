@@ -15,5 +15,7 @@ namespace CatalogService.Application.Contracts
 
         Task<Guid> UpdateProductAsync(Guid productId, ProductUpdateRequest request);
 
+        Task UpdateProductQuantityAsync(Guid productId, ProductUpdateQuantityRequest request);
+
     }
 }

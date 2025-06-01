@@ -65,5 +65,23 @@ namespace CatalogService.Api.Controllers
             }
         }
 
+        [HttpPatch("{id:guid}/quantity")]
+        public async Task<ActionResult> UpdateProductQuantityAsync([FromRoute] Guid id, [FromBody] ProductUpdateQuantityRequest request)
+        {
+            try
+            {
+                await _productService.UpdateProductQuantityAsync(id, request);
+                return NoContent();
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ValidationException ex)
+            {
+                return ValidationProblem(ex.Message);
+            }
+
+        }
     }
 }
