@@ -81,7 +81,21 @@ namespace CatalogService.Api.Controllers
             {
                 return ValidationProblem(ex.Message);
             }
-
         }
+
+        [HttpDelete("{id:guid}")]
+        public async Task<ActionResult> DeleteProductAsync([FromRoute] Guid id)
+        {
+            try
+            {
+                await _productService.DeleteProductAsync(id);
+                return NoContent();
+            }
+            catch(NotFoundException ex) 
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
     }
 }
