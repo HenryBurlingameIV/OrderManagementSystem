@@ -58,7 +58,11 @@ namespace CatalogService.Api.Controllers
             catch(NotFoundException ex)
             {
                 return NotFound(ex.Message);
-            }   
+            }
+            catch(ValidationException ex)
+            {
+                return ValidationProblem(ex.Message);
+            }
         }
 
     }
