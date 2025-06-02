@@ -28,12 +28,13 @@ namespace CatalogService.Api
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            builder.Host.UseSerilog();
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(builder.Configuration)
                 .CreateLogger();
 
             var app = builder.Build();
-
+            app.UseSerilogRequestLogging();
             if(app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
