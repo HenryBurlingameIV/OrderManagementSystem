@@ -8,6 +8,7 @@ using CatalogService.Infrastructure.Contracts;
 using CatalogService.Infrastructure.Repositories;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 namespace CatalogService.Api
 {
     public class Program
@@ -26,6 +27,11 @@ namespace CatalogService.Api
             builder.Services.AddScoped<IValidator<ProductUpdateQuantityRequest>, ProductUpdateQuantityValidator>();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(builder.Configuration)
+                .CreateLogger();
+
             var app = builder.Build();
 
             if(app.Environment.IsDevelopment())
