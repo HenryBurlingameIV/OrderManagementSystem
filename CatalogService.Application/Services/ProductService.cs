@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.Core;
 using CatalogService.Application.Contracts;
 using CatalogService.Application.DTO;
 using CatalogService.Domain;
@@ -11,6 +12,7 @@ using CatalogService.Domain.Exceptions;
 using CatalogService.Infrastructure;
 using CatalogService.Infrastructure.Contracts;
 using FluentValidation;
+using Serilog;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using ValidationException = FluentValidation.ValidationException;
 
@@ -37,28 +39,35 @@ namespace CatalogService.Application.Services
 
         public async Task<Guid> CreateProductAsync(ProductCreateRequest request)
         {
+            Log.Information("Starting to create product from {@Request}", request);
             var product = CreateProductFromRequest(request);
+            Log.Information("Product with ID {@ProductId} successfully created", product!.Id);
             return await _productRepository.CreateAsync(product!);
         }
 
         public async Task<ProductViewModel> GetProductByIdAsync(Guid productId)
         {
+            Log.Information("Trying to get product with ID {@productId}", productId);
             var product = await _productRepository.GetByIdAsync(productId);
             if (product == null)
             {
+                Log.Warning("Product with ID {@productId} not found");
                 throw new NotFoundException($"Product with ID {productId} not found.");
             }
+            Log.Information("Product with ID {@productId} successfully found", productId);
             return CreateProductViewModel(product);
         }
 
         public async Task<Guid> UpdateProductAsync(Guid productId, ProductUpdateRequest request)
         {
+            Log.Information("Trying to get product with ID {@productId}", productId);
             var product = await _productRepository.GetByIdAsync(productId);
             if (product == null)
             {
+                Log.Warning("Product with ID {@productId} not found", productId);
                 throw new NotFoundException($"Product with ID {productId} not found.");
             }
-
+            Log.Information("Starting to update product from {@Request}", request);
             UpdateProductFromRequest(request, product);
             await _productRepository.UpdateAsync(productId, product);
             return productId;
@@ -68,17 +77,21 @@ namespace CatalogService.Application.Services
             var validationResult = _quantityValidator.Validate(request);
             if (!validationResult.IsValid)
             {
+                Log.Error("Validation on updating product quantity failed with {@Errors}", validationResult.Errors);
                 throw new ValidationException(validationResult.Errors);
             }
-
+            Log.Information("Trying to get product with ID {@productId}", productId);
             var product = await _productRepository.GetByIdAsync(productId);
             if (product == null)
             {
+                Log.Warning("Product with ID {@productId} not found");
                 throw new NotFoundException($"Product with ID {productId} not found.");
             }
+            Log.Information("Product with ID {@productId} successfully found", productId);
 
             if (product.Quantity < request.Quantity)
             {
+                Log.Error("Product {@product.Name} does not have enough quantity available. Requested: {@request.Quantity}, Available: {product.Quantity}.", product.Name, request.Quantity, product.Quantity);
                 throw new ValidationException($"Product '{product.Name}' does not have enough quantity available. Requested: {request.Quantity}, Available: {product.Quantity}.");
             }
             product.Quantity -= request.Quantity;
@@ -88,11 +101,14 @@ namespace CatalogService.Application.Services
         }
         public async Task DeleteProductAsync(Guid productId)
         {
+            Log.Information("Trying to get product with ID {@productId}", productId);
             var product = await _productRepository.GetByIdAsync(productId);
             if (product == null)
             {
+                Log.Warning("Product with ID {@productId} not found");
                 throw new NotFoundException("$Product with ID {productId} not found.");
             }
+            Log.Information("Product with ID {@productId} successfully found", productId);
             await _productRepository.DeleteAsync(product);
         }
 
@@ -101,6 +117,7 @@ namespace CatalogService.Application.Services
             var validationResult = _createValidator.Validate(request);
             if(!validationResult.IsValid)
             {
+                Log.Error("Validation on creating product failed with {@Errors}", validationResult.Errors);
                 throw new ValidationException(validationResult.Errors);
             }    
             return new Product()
@@ -120,6 +137,7 @@ namespace CatalogService.Application.Services
             var validationResult = _updateValidator.Validate(request);
             if(!validationResult.IsValid)
             {
+                Log.Error("Validation on updating product failed with {@Errors}", validationResult.Errors);
                 throw new ValidationException(validationResult.Errors);
             }
             productToUpdate.Name = request.Name ?? productToUpdate.Name;
