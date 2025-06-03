@@ -9,6 +9,7 @@ using CatalogService.Domain;
 using CatalogService.Domain.Exceptions;
 using CatalogService.Infrastructure.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using ValidationException = FluentValidation.ValidationException;
 
 namespace CatalogService.Infrastructure.Repositories
@@ -23,13 +24,16 @@ namespace CatalogService.Infrastructure.Repositories
 
         public async Task<Guid> CreateAsync(Product product)
         {
+            Log.Information("Checking if product name is unique: {ProductName}", product.Name);
             var isUnique = await _dbContext.Products.FirstOrDefaultAsync(p => p.Name == product.Name) == null;
             if(!isUnique)
             {
+                Log.Error("Product {@name} is not unique", product.Name);
                 throw new ValidationException("Name must be unique");
             }
             await _dbContext.AddAsync(product);
             await _dbContext.SaveChangesAsync();
+            Log.Information("Product with ID {@ProductId} successfully added in database", product.Id);
             return product.Id;
 
         }
@@ -48,11 +52,13 @@ namespace CatalogService.Infrastructure.Repositories
 
         public async Task<Guid> UpdateAsync(Guid id, Product product)
         {
+            Log.Information("Checking if product name is unique: {ProductName}", product.Name);
             var isUnique = await _dbContext.Products
                 .FirstOrDefaultAsync(p => p.Name == product.Name && p.Id != id) == null;
 
             if (!isUnique)
             {
+                Log.Error("Product {@name} is not unique", product.Name);
                 throw new ValidationException("Name must be unique");
             }
 
