@@ -1,6 +1,7 @@
 using CatalogService.Api.Middlewares;
 using CatalogService.Application.Contracts;
 using CatalogService.Application.DTO;
+using CatalogService.Application.Extensions;
 using CatalogService.Application.Services;
 using CatalogService.Application.Validators;
 using CatalogService.Domain;
@@ -22,10 +23,7 @@ namespace CatalogService.Api
             string? connection = builder.Configuration.GetConnectionString("DefaultConnection");
             builder.Services.AddInfrastructure(connection!);
             builder.Services.AddControllers();
-            builder.Services.AddScoped<IProductService, ProductService>();
-            builder.Services.AddScoped<IValidator<ProductCreateRequest>, ProductCreateRequestValidator>();
-            builder.Services.AddScoped<IValidator<ProductUpdateRequest>, ProductUpdateRequestValidator>();
-            builder.Services.AddScoped<IValidator<ProductUpdateQuantityRequest>, ProductUpdateQuantityValidator>();
+            builder.Services.AddApplication();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
