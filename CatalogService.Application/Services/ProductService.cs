@@ -83,8 +83,8 @@ namespace CatalogService.Application.Services
             product.Quantity -= request.Quantity;
             product.UpdatedDateUtc = DateTime.Now;
             await _productRepository.UpdateAsync(productId, product, cancellationToken);
+            Log.Information("{@Product} quantity successfully updated", product);
 
-           
         }
         public async Task DeleteProductAsync(Guid productId, CancellationToken cancellationToken)
         {
