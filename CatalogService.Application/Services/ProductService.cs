@@ -37,18 +37,18 @@ namespace CatalogService.Application.Services
             _quantityValidator = quantityValidator;
         }
 
-        public async Task<Guid> CreateProductAsync(ProductCreateRequest request)
+        public async Task<Guid> CreateProductAsync(ProductCreateRequest request, CancellationToken cancellationToken)
         {
             Log.Information("Starting to create product from {@Request}", request);
             var product = CreateProductFromRequest(request);
             Log.Information("Product with ID {@ProductId} successfully created", product!.Id);
-            return await _productRepository.CreateAsync(product!);
+            return await _productRepository.CreateAsync(product!, cancellationToken);
         }
 
-        public async Task<ProductViewModel> GetProductByIdAsync(Guid productId)
+        public async Task<ProductViewModel> GetProductByIdAsync(Guid productId, CancellationToken cancellationToken)
         {
             Log.Information("Trying to get product with ID {@productId}", productId);
-            var product = await _productRepository.GetByIdAsync(productId);
+            var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
             if (product == null)
             {
                 Log.Warning("Product with ID {@productId} not found");
@@ -58,10 +58,10 @@ namespace CatalogService.Application.Services
             return CreateProductViewModel(product);
         }
 
-        public async Task<Guid> UpdateProductAsync(Guid productId, ProductUpdateRequest request)
+        public async Task<Guid> UpdateProductAsync(Guid productId, ProductUpdateRequest request, CancellationToken cancellationToken)
         {
             Log.Information("Trying to get product with ID {@productId}", productId);
-            var product = await _productRepository.GetByIdAsync(productId);
+            var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
             if (product == null)
             {
                 Log.Warning("Product with ID {@productId} not found", productId);
@@ -69,10 +69,10 @@ namespace CatalogService.Application.Services
             }
             Log.Information("Starting to update product from {@Request}", request);
             UpdateProductFromRequest(request, product);
-            await _productRepository.UpdateAsync(productId, product);
+            await _productRepository.UpdateAsync(productId, product, cancellationToken);
             return productId;
         }
-        public async Task UpdateProductQuantityAsync(Guid productId, ProductUpdateQuantityRequest request)
+        public async Task UpdateProductQuantityAsync(Guid productId, ProductUpdateQuantityRequest request, CancellationToken cancellationToken)
         {
             var validationResult = _quantityValidator.Validate(request);
             if (!validationResult.IsValid)
@@ -81,7 +81,7 @@ namespace CatalogService.Application.Services
                 throw new ValidationException(validationResult.Errors);
             }
             Log.Information("Trying to get product with ID {@productId}", productId);
-            var product = await _productRepository.GetByIdAsync(productId);
+            var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
             if (product == null)
             {
                 Log.Warning("Product with ID {@productId} not found");
@@ -96,20 +96,20 @@ namespace CatalogService.Application.Services
             }
             product.Quantity -= request.Quantity;
             product.UpdatedDateUtc = DateTime.Now;
-            await _productRepository.UpdateAsync(productId, product);
+            await _productRepository.UpdateAsync(productId, product, cancellationToken);
            
         }
-        public async Task DeleteProductAsync(Guid productId)
+        public async Task DeleteProductAsync(Guid productId, CancellationToken cancellationToken)
         {
             Log.Information("Trying to get product with ID {@productId}", productId);
-            var product = await _productRepository.GetByIdAsync(productId);
+            var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
             if (product == null)
             {
                 Log.Warning("Product with ID {@productId} not found");
                 throw new NotFoundException("$Product with ID {productId} not found.");
             }
             Log.Information("Product with ID {@productId} successfully found", productId);
-            await _productRepository.DeleteAsync(product);
+            await _productRepository.DeleteAsync(product, cancellationToken);
         }
 
         public Product? CreateProductFromRequest(ProductCreateRequest request)

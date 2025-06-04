@@ -22,39 +22,35 @@ namespace CatalogService.Infrastructure.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task<Guid> CreateAsync(Product product)
+        public async Task<Guid> CreateAsync(Product product, CancellationToken cancellationToken)
         {
             Log.Information("Checking if product name is unique: {ProductName}", product.Name);
-            var isUnique = await _dbContext.Products.FirstOrDefaultAsync(p => p.Name == product.Name) == null;
-            if(!isUnique)
+            var isUnique = await _dbContext.Products
+                .FirstOrDefaultAsync(p => p.Name == product.Name, cancellationToken) == null;
+            if (!isUnique)
             {
                 Log.Error("Product {@name} is not unique", product.Name);
                 throw new ValidationException("Name must be unique");
             }
-            await _dbContext.AddAsync(product);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.AddAsync(product, cancellationToken);
+            await _dbContext.SaveChangesAsync(cancellationToken);
             Log.Information("Product with ID {@ProductId} successfully added in database", product.Id);
             return product.Id;
-
         }
 
-        public async Task DeleteAsync(Product product)
-        {
-            _dbContext.Products.Remove(product);
-            await _dbContext.SaveChangesAsync();
-        }
 
-        public async Task<Product?> GetByIdAsync(Guid id)
+        public async Task<Product?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
-            Product? product = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == id);
+            Product? product = await _dbContext.Products
+                .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
             return product;
         }
 
-        public async Task<Guid> UpdateAsync(Guid id, Product product)
+        public async Task<Guid> UpdateAsync(Guid id, Product product, CancellationToken cancellationToken)
         {
             Log.Information("Checking if product name is unique: {ProductName}", product.Name);
             var isUnique = await _dbContext.Products
-                .FirstOrDefaultAsync(p => p.Name == product.Name && p.Id != id) == null;
+                .FirstOrDefaultAsync(p => p.Name == product.Name && p.Id != id, cancellationToken) == null;
 
             if (!isUnique)
             {
@@ -63,9 +59,14 @@ namespace CatalogService.Infrastructure.Repositories
             }
 
             _dbContext.Products.Update(product);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
             return id;
         }
 
+        public async Task DeleteAsync(Product product, CancellationToken cancellationToken)
+        {
+            _dbContext.Products.Remove(product);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
     }
 }

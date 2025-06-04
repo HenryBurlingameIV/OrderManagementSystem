@@ -9,15 +9,15 @@ namespace CatalogService.Application.Contracts
 {
     public interface IProductService
     {
-        Task<Guid> CreateProductAsync(ProductCreateRequest request);
+        Task<Guid> CreateProductAsync(ProductCreateRequest request, CancellationToken cancellationToken);
 
-        Task<ProductViewModel> GetProductByIdAsync(Guid productId);
+        Task<ProductViewModel> GetProductByIdAsync(Guid productId, CancellationToken cancellationToken);
 
-        Task<Guid> UpdateProductAsync(Guid productId, ProductUpdateRequest request);
+        Task<Guid> UpdateProductAsync(Guid productId, ProductUpdateRequest request, CancellationToken cancellationToken);
 
-        Task UpdateProductQuantityAsync(Guid productId, ProductUpdateQuantityRequest request);
+        Task UpdateProductQuantityAsync(Guid productId, ProductUpdateQuantityRequest request, CancellationToken cancellationToken);
 
-        Task DeleteProductAsync(Guid productId);
+        Task DeleteProductAsync(Guid productId, CancellationToken cancellationToken);
 
     }
 }
