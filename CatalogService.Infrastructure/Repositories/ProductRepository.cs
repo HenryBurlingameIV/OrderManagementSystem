@@ -29,7 +29,6 @@ namespace CatalogService.Infrastructure.Repositories
                 .FirstOrDefaultAsync(p => p.Name == product.Name, cancellationToken) == null;
             if (!isUnique)
             {
-                Log.Error("Product {@name} is not unique", product.Name);
                 throw new ValidationException("Name must be unique");
             }
             await _dbContext.AddAsync(product, cancellationToken);
@@ -54,7 +53,6 @@ namespace CatalogService.Infrastructure.Repositories
 
             if (!isUnique)
             {
-                Log.Error("Product {@name} is not unique", product.Name);
                 throw new ValidationException("Name must be unique");
             }
 
