@@ -95,7 +95,6 @@ namespace CatalogService.Application.Services
             var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
             if (product == null)
             {
-
                 throw new NotFoundException($"Product with ID {productId} not found.");
             }
             Log.Information("Product with ID {@productId} successfully found", productId);
@@ -103,12 +102,7 @@ namespace CatalogService.Application.Services
         }
 
         public Product? CreateProductFromRequest(ProductCreateRequest request)
-        {
-            var validationResult = _createValidator.Validate(request);
-            if(!validationResult.IsValid)
-            {
-                throw new ValidationException(validationResult.Errors);
-            }    
+        {  
             return new Product()
             {
                 Id = Guid.NewGuid(),
@@ -124,11 +118,6 @@ namespace CatalogService.Application.Services
 
         public void UpdateProductFromRequest(ProductUpdateRequest request, Product productToUpdate)
         {
-            var validationResult = _updateValidator.Validate(request);
-            if(!validationResult.IsValid)
-            {
-                throw new ValidationException(validationResult.Errors);
-            }
             productToUpdate.Name = request.Name ?? productToUpdate.Name;
             productToUpdate.Description = request.Description ?? productToUpdate.Description;
             productToUpdate.Category = request.Category ?? productToUpdate.Category;

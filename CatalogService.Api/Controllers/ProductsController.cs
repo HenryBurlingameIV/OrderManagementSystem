@@ -1,4 +1,5 @@
-﻿using CatalogService.Application.Contracts;
+﻿using Azure.Core;
+using CatalogService.Application.Contracts;
 using CatalogService.Application.DTO;
 using CatalogService.Domain.Exceptions;
 using FluentValidation;
@@ -12,10 +13,21 @@ namespace CatalogService.Api.Controllers
     public class ProductsController : ControllerBase
     {
         private IProductService _productService;
+        private IValidator<ProductCreateRequest> _createValidator;
+        private IValidator<ProductUpdateRequest> _updateValidator;
+        private IValidator<ProductUpdateQuantityRequest> _quantityValidator;
 
-        public ProductsController(IProductService productService)
+        public ProductsController(
+            IProductService productService,
+            IValidator<ProductCreateRequest> createValidator,
+            IValidator<ProductUpdateRequest> updateValidator,
+            IValidator<ProductUpdateQuantityRequest> quantityValidator
+            )
         {
             _productService = productService;
+            _createValidator = createValidator;
+            _updateValidator = updateValidator;
+            _quantityValidator = quantityValidator;
         }
 
         [HttpPost]
@@ -24,6 +36,7 @@ namespace CatalogService.Api.Controllers
             CancellationToken cancellationToken
             )
         {
+            await _createValidator.ValidateAndThrowAsync(request);
             var result = await _productService.CreateProductAsync(request, cancellationToken);
             return Ok(result);
         }
@@ -45,6 +58,7 @@ namespace CatalogService.Api.Controllers
             CancellationToken cancellationToken
             )
         {
+            await _updateValidator.ValidateAndThrowAsync(request);
             var result = await _productService.UpdateProductAsync(id, request, cancellationToken);
             return Ok(result);
         }
@@ -56,6 +70,7 @@ namespace CatalogService.Api.Controllers
             CancellationToken cancellationToken
             )
         {
+            await _quantityValidator.ValidateAndThrowAsync(request);
             await _productService.UpdateProductQuantityAsync(id, request, cancellationToken);
             return NoContent();
         }
