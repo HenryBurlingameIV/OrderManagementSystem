@@ -1,3 +1,4 @@
+using CatalogService.Api.Middlewares;
 using CatalogService.Application.Contracts;
 using CatalogService.Application.DTO;
 using CatalogService.Application.Services;
@@ -34,6 +35,8 @@ namespace CatalogService.Api
                 .CreateLogger();
 
             var app = builder.Build();
+
+            app.UseMiddleware<ExceptionHandlerMiddleware>();
             app.UseSerilogRequestLogging();
             if(app.Environment.IsDevelopment())
             {
