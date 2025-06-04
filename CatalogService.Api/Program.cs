@@ -6,6 +6,7 @@ using CatalogService.Application.Validators;
 using CatalogService.Domain;
 using CatalogService.Infrastructure;
 using CatalogService.Infrastructure.Contracts;
+using CatalogService.Infrastructure.Extensions;
 using CatalogService.Infrastructure.Repositories;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
@@ -19,9 +20,8 @@ namespace CatalogService.Api
 
             var builder = WebApplication.CreateBuilder(args);
             string? connection = builder.Configuration.GetConnectionString("DefaultConnection");
-            builder.Services.AddDbContext<CatalogDBContext>(options => options.UseSqlServer(connection));
+            builder.Services.AddInfrastructure(connection!);
             builder.Services.AddControllers();
-            builder.Services.AddScoped<IRepository<Product>, ProductRepository>();
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IValidator<ProductCreateRequest>, ProductCreateRequestValidator>();
             builder.Services.AddScoped<IValidator<ProductUpdateRequest>, ProductUpdateRequestValidator>();
