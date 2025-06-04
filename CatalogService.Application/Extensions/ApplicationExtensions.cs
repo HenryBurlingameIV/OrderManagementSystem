@@ -2,6 +2,7 @@
 using CatalogService.Application.DTO;
 using CatalogService.Application.Services;
 using CatalogService.Application.Validators;
+using CatalogService.Domain;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -20,6 +21,7 @@ namespace CatalogService.Application.Extensions
             services.AddScoped<IValidator<ProductCreateRequest>, ProductCreateRequestValidator>();
             services.AddScoped<IValidator<ProductUpdateRequest>, ProductUpdateRequestValidator>();
             services.AddScoped<IValidator<ProductUpdateQuantityRequest>, ProductUpdateQuantityValidator>();
+            services.AddScoped<IValidator<Product>, ProductValidator>();
             return services;
         }
     }

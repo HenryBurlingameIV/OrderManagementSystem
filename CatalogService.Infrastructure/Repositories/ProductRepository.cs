@@ -23,14 +23,7 @@ namespace CatalogService.Infrastructure.Repositories
         }
 
         public async Task<Guid> CreateAsync(Product product, CancellationToken cancellationToken)
-        {
-            Log.Information("Checking if product name is unique: {ProductName}", product.Name);
-            var isUnique = await _dbContext.Products
-                .FirstOrDefaultAsync(p => p.Name == product.Name, cancellationToken) == null;
-            if (!isUnique)
-            {
-                throw new ValidationException("Name must be unique");
-            }
+        {    
             await _dbContext.AddAsync(product, cancellationToken);
             await _dbContext.SaveChangesAsync(cancellationToken);
             Log.Information("Product with ID {@ProductId} successfully added in database", product.Id);
@@ -47,15 +40,6 @@ namespace CatalogService.Infrastructure.Repositories
 
         public async Task<Guid> UpdateAsync(Guid id, Product product, CancellationToken cancellationToken)
         {
-            Log.Information("Checking if product name is unique: {ProductName}", product.Name);
-            var isUnique = await _dbContext.Products
-                .FirstOrDefaultAsync(p => p.Name == product.Name && p.Id != id, cancellationToken) == null;
-
-            if (!isUnique)
-            {
-                throw new ValidationException("Name must be unique");
-            }
-
             _dbContext.Products.Update(product);
             await _dbContext.SaveChangesAsync(cancellationToken);
             return id;

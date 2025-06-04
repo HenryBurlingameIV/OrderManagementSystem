@@ -12,6 +12,7 @@ using CatalogService.Domain.Exceptions;
 using CatalogService.Infrastructure;
 using CatalogService.Infrastructure.Contracts;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using ValidationException = FluentValidation.ValidationException;
@@ -22,24 +23,21 @@ namespace CatalogService.Application.Services
     public class ProductService : IProductService
     {
         private IRepository<Product> _productRepository;
-        private IValidator<ProductCreateRequest> _createValidator;
-        private IValidator<ProductUpdateRequest> _updateValidator;
-        private IValidator<ProductUpdateQuantityRequest> _quantityValidator;
+        private IValidator<Product> _productValidator;
 
-        public ProductService(IRepository<Product> productRepository, 
-            IValidator<ProductCreateRequest> createValidator, 
-            IValidator<ProductUpdateRequest> updateValidator,
-            IValidator<ProductUpdateQuantityRequest> quantityValidator)
+
+        public ProductService(IRepository<Product> productRepository,
+            IValidator<Product> productValidator)
         {
             _productRepository = productRepository;
-            _createValidator = createValidator;
-            _updateValidator = updateValidator;
-            _quantityValidator = quantityValidator;
+            _productValidator = productValidator;
+
         }
 
         public async Task<Guid> CreateProductAsync(ProductCreateRequest request, CancellationToken cancellationToken)
         {
             var product = CreateProductFromRequest(request);
+            await _productValidator.ValidateAndThrowAsync(product);
             Log.Information("Product with ID {@ProductId} successfully created", product!.Id);
             return await _productRepository.CreateAsync(product!, cancellationToken);
         }
@@ -64,16 +62,13 @@ namespace CatalogService.Application.Services
             }
 
             UpdateProductFromRequest(request, product);
+            await _productValidator.ValidateAndThrowAsync(product);
             await _productRepository.UpdateAsync(productId, product, cancellationToken);
+            Log.Information("Product with ID {@productId} successfully updated", productId);
             return productId;
         }
         public async Task UpdateProductQuantityAsync(Guid productId, ProductUpdateQuantityRequest request, CancellationToken cancellationToken)
         {
-            var validationResult = _quantityValidator.Validate(request);
-            if (!validationResult.IsValid)
-            {
-                throw new ValidationException(validationResult.Errors);
-            }
             var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
             if (product == null)
             {
@@ -88,6 +83,7 @@ namespace CatalogService.Application.Services
             product.Quantity -= request.Quantity;
             product.UpdatedDateUtc = DateTime.Now;
             await _productRepository.UpdateAsync(productId, product, cancellationToken);
+
            
         }
         public async Task DeleteProductAsync(Guid productId, CancellationToken cancellationToken)
@@ -101,7 +97,7 @@ namespace CatalogService.Application.Services
             await _productRepository.DeleteAsync(product, cancellationToken);
         }
 
-        public Product? CreateProductFromRequest(ProductCreateRequest request)
+        public Product CreateProductFromRequest(ProductCreateRequest request)
         {  
             return new Product()
             {
