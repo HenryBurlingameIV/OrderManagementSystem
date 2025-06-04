@@ -12,8 +12,7 @@ namespace CatalogService.Application.Validators
     {
         public ProductUpdateQuantityValidator()
         {
-            RuleFor(p => p.Quantity).NotEmpty().WithMessage("Quiantity is required");
-            RuleFor(p => p.Quantity).Must(q => q > 0).WithMessage("Quantity must be greater than zero");
+            RuleFor(p => p.Quantity).GreaterThanOrEqualTo(0);
         }
     }
 }

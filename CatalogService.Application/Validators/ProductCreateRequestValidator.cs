@@ -13,12 +13,12 @@ namespace CatalogService.Application.Validators
     {
         public ProductCreateRequestValidator(CatalogDBContext catalogDBContext) 
         {
-            RuleFor(p => p.Name).NotEmpty().WithMessage("Name is required");
-            RuleFor(p => p.Quantity).Must(q => q >= 0).WithMessage("Quantity must be non-negative.");
-            RuleFor(p => p.Price).GreaterThan(0).WithMessage("Price must be greater than zero.");
-            RuleFor(p => p.Category).NotEmpty().WithMessage("Category is required.");
-            RuleFor(p => p.Category).MaximumLength(100).WithMessage("Category name must not exceed 100 characters.");
-            RuleFor(p => p.Description).MaximumLength(200).WithMessage("Description must not exceed 200 characters.");
+            RuleFor(p => p.Name).NotEmpty();
+            RuleFor(p => p.Quantity).GreaterThanOrEqualTo(0);
+            RuleFor(p => p.Price).GreaterThan(0);
+            RuleFor(p => p.Category).NotEmpty();
+            RuleFor(p => p.Category).MaximumLength(100);
+            RuleFor(p => p.Description).MaximumLength(200);
 
         }
     }
