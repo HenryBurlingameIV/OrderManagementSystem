@@ -18,33 +18,12 @@ namespace CatalogService.Api
     {
         public static void Main(string[] args)
         {
-
             var builder = WebApplication.CreateBuilder(args);
-            string? connection = builder.Configuration.GetConnectionString("DefaultConnection");
-            builder.Services.AddInfrastructure(connection!);
-            builder.Services.AddControllers();
-            builder.Services.AddApplication();
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
-
-            builder.Host.UseSerilog();
-            Log.Logger = new LoggerConfiguration()
-                .ReadFrom.Configuration(builder.Configuration)
-                .CreateLogger();
+            builder.ConfigureServices();
+            builder.ConfigureSerilog();
 
             var app = builder.Build();
-
-            app.UseMiddleware<ExceptionHandlerMiddleware>();
-            app.UseSerilogRequestLogging();
-            if(app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
-
-
-            app.MapGet("/", () => "Hello World!");
-            app.MapControllers();
+            app.ConfigurePipeline();
 
             app.Run();
         }
