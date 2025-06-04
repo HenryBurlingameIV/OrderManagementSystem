@@ -21,80 +21,36 @@ namespace CatalogService.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<Guid>> CreateProductAsync([FromBody] ProductCreateRequest request)
         {
-            try
-            {
-                var result = await _productService.CreateProductAsync(request);
-                return Ok(result);
-            }
-            catch (ValidationException ex)
-            {
-                return ValidationProblem(ex.Message);
-            }
-
+            var result = await _productService.CreateProductAsync(request);
+            return Ok(result);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<ProductViewModel>> GetProductByIdAsync([FromRoute] Guid id)
         {
-            try
-            {
-                var result = await _productService.GetProductByIdAsync(id);
-                return Ok(result);
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            var result = await _productService.GetProductByIdAsync(id);
+            return Ok(result);
         }
 
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<Guid>> UpdateProductAsync([FromRoute] Guid id, [FromBody] ProductUpdateRequest request)
         {
-            try
-            {
-                var result = await _productService.UpdateProductAsync(id, request);
-                return Ok(result);
-            }
-            catch(NotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch(ValidationException ex)
-            {
-                return ValidationProblem(ex.Message);
-            }
+            var result = await _productService.UpdateProductAsync(id, request);
+            return Ok(result);
         }
 
         [HttpPatch("{id:guid}/quantity")]
         public async Task<ActionResult> UpdateProductQuantityAsync([FromRoute] Guid id, [FromBody] ProductUpdateQuantityRequest request)
         {
-            try
-            {
-                await _productService.UpdateProductQuantityAsync(id, request);
-                return NoContent();
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (ValidationException ex)
-            {
-                return ValidationProblem(ex.Message);
-            }
+            await _productService.UpdateProductQuantityAsync(id, request);
+            return NoContent();
         }
 
         [HttpDelete("{id:guid}")]
         public async Task<ActionResult> DeleteProductAsync([FromRoute] Guid id)
         {
-            try
-            {
-                await _productService.DeleteProductAsync(id);
-                return NoContent();
-            }
-            catch(NotFoundException ex) 
-            {
-                return NotFound(ex.Message);
-            }
+            await _productService.DeleteProductAsync(id);
+            return NoContent();
         }
 
     }
