@@ -19,8 +19,8 @@ namespace CatalogService.Application.Validators
            _dbContext = dbContext;
             RuleFor(product => product).MustAsync(async (product, token) =>
             {
-                return await _dbContext.Products
-                    .FirstOrDefaultAsync(p => p.Name == product.Name && p.Id != product.Id, token) == null;
+                return !await _dbContext.Products
+                    .AnyAsync(p => p.Name == product.Name && p.Id != product.Id, token);
             }).WithMessage("Product name must be unique");
 
 
