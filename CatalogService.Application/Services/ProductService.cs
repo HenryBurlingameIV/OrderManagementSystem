@@ -93,7 +93,7 @@ namespace CatalogService.Application.Services
                 throw new ValidationException($"Product '{product.Name}' does not have enough quantity available. Requested: {request.Quantity}, Available: {product.Quantity}.");
             }
             product.Quantity -= request.Quantity;
-            product.UpdatedDateUtc = DateTime.Now;
+            product.UpdatedDateUtc = DateTime.UtcNow;
             await _productRepository.UpdateAsync(productId, product, cancellationToken);
             Log.Information("{@Product} quantity successfully updated", product);
 
@@ -119,8 +119,8 @@ namespace CatalogService.Application.Services
                 Quantity = request.Quantity,
                 Price = request.Price,
                 Category = request.Category,
-                CreatedDateUtc = DateTime.Now,
-                UpdatedDateUtc = DateTime.Now
+                CreatedDateUtc = DateTime.UtcNow,
+                UpdatedDateUtc = DateTime.UtcNow
             };
         }
 
@@ -131,7 +131,7 @@ namespace CatalogService.Application.Services
             productToUpdate.Category = request.Category ?? productToUpdate.Category;
             productToUpdate.Price = request.Price ?? productToUpdate.Price;
             productToUpdate.Quantity = request.Quantity ?? productToUpdate.Quantity;
-            productToUpdate.UpdatedDateUtc = DateTime.Now;
+            productToUpdate.UpdatedDateUtc = DateTime.UtcNow;
 
         }
 

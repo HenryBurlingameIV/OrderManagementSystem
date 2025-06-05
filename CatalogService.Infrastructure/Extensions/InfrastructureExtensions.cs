@@ -18,7 +18,7 @@ namespace CatalogService.Infrastructure.Extensions
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, string dbConnection)
         {
-            services.AddDbContext<CatalogDBContext>(options => options.UseSqlServer(dbConnection));
+            services.AddDbContext<CatalogDBContext>(options => options.UseNpgsql(dbConnection));
             services.AddScoped<IRepository<Product>, ProductRepository>();
 
             return services;

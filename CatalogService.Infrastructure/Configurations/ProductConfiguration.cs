@@ -16,6 +16,7 @@ namespace CatalogService.Infrastructure.Configurations
         public void Configure(EntityTypeBuilder<Product> builder)
         {
             builder.HasKey(p => p.Id);
+            builder.Property(e => e.Id).HasDefaultValueSql("uuid_generate_v4()");
             builder.Property(p => p.Name)
                 .IsRequired()
                 .HasMaxLength(100);
