@@ -24,18 +24,28 @@ namespace CatalogService.Application.Services
     {
         private IRepository<Product> _productRepository;
         private IValidator<Product> _productValidator;
+        private IValidator<ProductCreateRequest> _createValidator;
+        private IValidator<ProductUpdateRequest> _updateValidator;
+        private IValidator<ProductUpdateQuantityRequest> _quantityValidator;
 
 
         public ProductService(IRepository<Product> productRepository,
+                    IValidator<ProductCreateRequest> createValidator,
+            IValidator<ProductUpdateRequest> updateValidator,
+            IValidator<ProductUpdateQuantityRequest> quantityValidator,
             IValidator<Product> productValidator)
         {
             _productRepository = productRepository;
             _productValidator = productValidator;
+            _createValidator = createValidator;
+            _updateValidator = updateValidator;
+            _quantityValidator = quantityValidator;
 
         }
 
         public async Task<Guid> CreateProductAsync(ProductCreateRequest request, CancellationToken cancellationToken)
         {
+            await _createValidator.ValidateAndThrowAsync(request);
             var product = CreateProductFromRequest(request);
             await _productValidator.ValidateAndThrowAsync(product);
             Log.Information("Product with ID {@ProductId} successfully created", product!.Id);
@@ -55,6 +65,7 @@ namespace CatalogService.Application.Services
 
         public async Task<Guid> UpdateProductAsync(Guid productId, ProductUpdateRequest request, CancellationToken cancellationToken)
         {
+            await _updateValidator.ValidateAndThrowAsync(request);
             var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
             if (product == null)
             {
@@ -69,6 +80,7 @@ namespace CatalogService.Application.Services
         }
         public async Task UpdateProductQuantityAsync(Guid productId, ProductUpdateQuantityRequest request, CancellationToken cancellationToken)
         {
+            await _quantityValidator.ValidateAndThrowAsync(request);
             var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
             if (product == null)
             {
