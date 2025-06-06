@@ -12,32 +12,6 @@ namespace CatalogService.Tests.UnitTests
 {
     public class ProductService_Should
     {
-        private readonly Mock<IValidator<ProductCreateRequest>> _validProductCreateRequestValidator;
-        private readonly Mock<IValidator<ProductUpdateRequest>> _validProductUpdateRequestValidator;
-        private readonly Mock<IValidator<ProductUpdateQuantityRequest>> _validQuantityUpdateRequestValidator;
-        private readonly Mock<IValidator<Product>> _validProductValidator;
-
-
-        public ProductService_Should()
-        {
-            _validProductCreateRequestValidator = new Mock<IValidator<ProductCreateRequest>>();
-            _validProductCreateRequestValidator.Setup(validator => validator.ValidateAsync(It.IsAny<ProductCreateRequest>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new ValidationResult());
-
-            _validProductUpdateRequestValidator = new Mock<IValidator<ProductUpdateRequest>>();
-            _validProductUpdateRequestValidator.Setup(validator => validator.ValidateAsync(It.IsAny<ProductUpdateRequest>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new ValidationResult());
-
-            _validQuantityUpdateRequestValidator = new Mock<IValidator<ProductUpdateQuantityRequest>>();
-            _validQuantityUpdateRequestValidator.Setup(validator => validator.ValidateAsync(It.IsAny<ProductUpdateQuantityRequest>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new ValidationResult());
-
-            _validProductValidator = new Mock<IValidator<Product>>();
-            _validProductValidator.Setup(validator => validator.ValidateAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new ValidationResult());           
-
-        }
-
         [Fact]
         public async Task CreateProductAsync_ValidRequest_CreatesProduct()
         {            
@@ -65,20 +39,27 @@ namespace CatalogService.Tests.UnitTests
             mockRepository.Setup(repo => repo.CreateAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(product.Id);
 
+            var mockProductCreateRequestValidator = new Mock<IValidator<ProductCreateRequest>>();
+            mockProductCreateRequestValidator.Setup(validator => validator.ValidateAsync(It.IsAny<ProductCreateRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ValidationResult());
+
+            var mockProductValidator = new Mock<IValidator<Product>>();
+            mockProductValidator.Setup(validator => validator.ValidateAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ValidationResult());
 
             var productService = new ProductService(mockRepository.Object,
-                _validProductCreateRequestValidator.Object,
-                _validProductUpdateRequestValidator.Object,
-                _validQuantityUpdateRequestValidator.Object,
-                _validProductValidator.Object);
+                mockProductCreateRequestValidator.Object,
+                Mock.Of<IValidator<ProductUpdateRequest>>(),
+                Mock.Of<IValidator<ProductUpdateQuantityRequest>>(),
+                mockProductValidator.Object);
             //Act
             var actual = await productService.CreateProductAsync(createProductRequest, CancellationToken.None);
 
             //Assert
             Assert.Equal(product.Id, actual);
             mockRepository.Verify(repo => repo.CreateAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()), Times.Once());
-            _validProductCreateRequestValidator.Verify(validator => validator.ValidateAsync(It.IsAny<ProductCreateRequest>(), It.IsAny<CancellationToken>()), Times.Once());
-            _validProductValidator.Verify(validator => validator.ValidateAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()), Times.Once());
+            mockProductCreateRequestValidator.Verify(validator => validator.ValidateAsync(It.IsAny<ProductCreateRequest>(), It.IsAny<CancellationToken>()), Times.Once());
+            mockProductValidator.Verify(validator => validator.ValidateAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()), Times.Once());
 
         }
 
@@ -102,9 +83,9 @@ namespace CatalogService.Tests.UnitTests
 
             var productService = new ProductService(mockRepository.Object,
                 mockProductCreateRequestValidator.Object,
-                _validProductUpdateRequestValidator.Object,
-                _validQuantityUpdateRequestValidator.Object,
-                _validProductValidator.Object);
+                Mock.Of<IValidator<ProductUpdateRequest>>(),
+                Mock.Of<IValidator<ProductUpdateQuantityRequest>>(),
+                Mock.Of<IValidator<Product>>());
             //Act & Assert
             await Assert.ThrowsAsync<ValidationException>(async () => await productService.CreateProductAsync(createProductRequest, CancellationToken.None));
 
