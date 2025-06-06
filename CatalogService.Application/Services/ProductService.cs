@@ -45,14 +45,14 @@ namespace CatalogService.Application.Services
 
         public async Task<Guid> CreateProductAsync(ProductCreateRequest request, CancellationToken cancellationToken)
         {
-            //var validationResult = await _createValidator.ValidateAsync(request, cancellationToken);
-            //if (!validationResult.IsValid)
-            //{
-            //    throw new ValidationException(validationResult.Errors);
-            //}
-            await _createValidator.ValidateAndThrowAsync(request, cancellationToken);
+            var validationResult = await _createValidator.ValidateAsync(request, cancellationToken);
+            if (!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors);
+            }
+
             var product = CreateProductFromRequest(request);
-            var validationResult = await _productValidator.ValidateAsync(product, cancellationToken);
+            validationResult = await _productValidator.ValidateAsync(product, cancellationToken);
             if (!validationResult.IsValid)
             {
                 throw new ValidationException(validationResult.Errors);

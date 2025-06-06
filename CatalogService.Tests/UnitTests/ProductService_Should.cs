@@ -3,6 +3,7 @@ using CatalogService.Application.Services;
 using CatalogService.Domain;
 using CatalogService.Infrastructure.Contracts;
 using FluentValidation;
+using FluentValidation.Results;
 using Moq;
 using System.ComponentModel.DataAnnotations;
 using ValidationException = FluentValidation.ValidationException;
@@ -78,6 +79,34 @@ namespace CatalogService.Tests.UnitTests
             mockRepository.Verify(repo => repo.CreateAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()), Times.Once());
             _validProductCreateRequestValidator.Verify(validator => validator.ValidateAsync(It.IsAny<ProductCreateRequest>(), It.IsAny<CancellationToken>()), Times.Once());
             _validProductValidator.Verify(validator => validator.ValidateAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()), Times.Once());
+
+        }
+
+        [Fact]
+        public async Task CreateProductAsync_InvalidRequest_ThrowsValidationException()
+        {
+            //Arrange
+            var mockProductCreateRequestValidator = new Mock<IValidator<ProductCreateRequest>>();
+            mockProductCreateRequestValidator.Setup(validator => validator.ValidateAsync(It.IsAny<ProductCreateRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ValidationResult(new [] { new ValidationFailure() }));
+            var createProductRequest = new ProductCreateRequest()
+            {
+                Name = "",
+                Description = "test",
+                Category = "test",
+                Price = 100,
+                Quantity = 1
+            };
+            var mockRepository = new Mock<IRepository<Product>>();
+
+
+            var productService = new ProductService(mockRepository.Object,
+                mockProductCreateRequestValidator.Object,
+                _validProductUpdateRequestValidator.Object,
+                _validQuantityUpdateRequestValidator.Object,
+                _validProductValidator.Object);
+            //Act & Assert
+            await Assert.ThrowsAsync<ValidationException>(async () => await productService.CreateProductAsync(createProductRequest, CancellationToken.None));
 
         }
 
