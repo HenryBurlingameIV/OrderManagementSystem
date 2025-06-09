@@ -11,7 +11,7 @@ namespace CatalogService.Application.Validators
 {
     public class ProductCreateRequestValidator : AbstractValidator<ProductCreateRequest>
     {
-        public ProductCreateRequestValidator(CatalogDBContext catalogDBContext) 
+        public ProductCreateRequestValidator() 
         {
             RuleFor(p => p.Name).NotEmpty();
             RuleFor(p => p.Quantity).GreaterThanOrEqualTo(0);
