@@ -93,7 +93,7 @@ namespace CatalogService.Application.Services
                 throw new ValidationException(validationResult.Errors);
             }
 
-            await _productRepository.UpdateAsync(productId, product, cancellationToken);
+            await _productRepository.UpdateAsync(product, cancellationToken);
             Log.Information("Product with ID {@productId} successfully updated", productId);
             return productId;
         }
@@ -118,7 +118,7 @@ namespace CatalogService.Application.Services
             }
             product.Quantity -= request.Quantity;
             product.UpdatedDateUtc = DateTime.UtcNow;
-            await _productRepository.UpdateAsync(productId, product, cancellationToken);
+            await _productRepository.UpdateAsync(product, cancellationToken);
             Log.Information("{@Product} quantity successfully updated", product);
 
         }

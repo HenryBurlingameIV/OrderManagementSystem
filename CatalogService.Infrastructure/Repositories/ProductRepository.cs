@@ -38,11 +38,11 @@ namespace CatalogService.Infrastructure.Repositories
             return product;
         }
 
-        public async Task<Guid> UpdateAsync(Guid id, Product product, CancellationToken cancellationToken)
+        public async Task<Guid> UpdateAsync(Product product, CancellationToken cancellationToken)
         {
-            _dbContext.Products.Update(product);
+            _dbContext.Entry(product).State = EntityState.Modified;
             await _dbContext.SaveChangesAsync(cancellationToken);
-            return id;
+            return product.Id;
         }
 
         public async Task DeleteAsync(Product product, CancellationToken cancellationToken)

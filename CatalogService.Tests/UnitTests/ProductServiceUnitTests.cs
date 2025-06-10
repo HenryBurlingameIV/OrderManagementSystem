@@ -217,8 +217,8 @@ namespace CatalogService.Tests.UnitTests
             _mockRepository.Setup(repo => repo.GetByIdAsync(id, It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Guid id, CancellationToken token) => _products.Find(p => p.Id == id));
 
-            _mockRepository.Setup(repo => repo.UpdateAsync(id, It.IsAny<Product>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((Guid id, Product p, CancellationToken token) => p.Id);
+            _mockRepository.Setup(repo => repo.UpdateAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Product p, CancellationToken token) => p.Id);
  
             //Act
             var actual = await _productService.UpdateProductAsync(id, updateRequest, CancellationToken.None);
@@ -233,7 +233,7 @@ namespace CatalogService.Tests.UnitTests
             Assert.Equal(updateRequest.Price, updatedProduct.Price);
             Assert.Equal(updateRequest.Quantity, updatedProduct.Quantity);
             _mockRepository.Verify(repo => repo.GetByIdAsync(id, CancellationToken.None), Times.Once());
-            _mockRepository.Verify(repo => repo.UpdateAsync(id, updatedProduct, CancellationToken.None), Times.Once());
+            _mockRepository.Verify(repo => repo.UpdateAsync(updatedProduct, CancellationToken.None), Times.Once());
             _mockProductValidator.Verify(validator => validator.ValidateAsync(It.Is<Product>(p => p.Name == updateRequest.Name && p.Price == updateRequest.Price), It.IsAny<CancellationToken>()), Times.Once());
         }
 
@@ -256,8 +256,8 @@ namespace CatalogService.Tests.UnitTests
 
             _mockRepository.Setup(repo => repo.GetByIdAsync(id, It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Guid id, CancellationToken token) => _products.Find(p => p.Id == id));
-            _mockRepository.Setup(repo => repo.UpdateAsync(id, It.IsAny<Product>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((Guid id, Product p, CancellationToken token) => p.Id);
+            _mockRepository.Setup(repo => repo.UpdateAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Product p, CancellationToken token) => p.Id);
 
 
 
@@ -275,7 +275,7 @@ namespace CatalogService.Tests.UnitTests
             Assert.Equal(100, updatedProduct.Price);
             Assert.Equal(1, updatedProduct.Quantity);
             _mockRepository.Verify(repo => repo.GetByIdAsync(id, CancellationToken.None), Times.Once());
-            _mockRepository.Verify(repo => repo.UpdateAsync(id, updatedProduct, CancellationToken.None), Times.Once());          
+            _mockRepository.Verify(repo => repo.UpdateAsync(updatedProduct, CancellationToken.None), Times.Once());          
             _mockProductValidator.Verify(validator => validator.ValidateAsync(updatedProduct, CancellationToken.None));
         }
 
@@ -299,7 +299,7 @@ namespace CatalogService.Tests.UnitTests
             var exception = await Assert.ThrowsAsync<ValidationException>(async () => await _productService.UpdateProductAsync(id, updateRequest, CancellationToken.None));
             Assert.Contains("'Quantity' must be greater than or equal to '0'", exception.Message);
             _mockRepository.Verify(repo => repo.GetByIdAsync(id, CancellationToken.None), Times.Never());
-            _mockRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Guid>(), It.IsAny<Product>(), It.IsAny<CancellationToken>()), Times.Never());
+            _mockRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()), Times.Never());
             _mockProductValidator.Verify(validator => validator.ValidateAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()), Times.Never());
         }
 
@@ -344,8 +344,8 @@ namespace CatalogService.Tests.UnitTests
             _mockRepository.Setup(repo => repo.GetByIdAsync(id, It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Guid id, CancellationToken token) => _products.Find(p => p.Id == id));
 
-            _mockRepository.Setup(repo => repo.UpdateAsync(id, It.IsAny<Product>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((Guid id, Product p, CancellationToken token) => p.Id);
+            _mockRepository.Setup(repo => repo.UpdateAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Product p, CancellationToken token) => p.Id);
 
 
             //Act
@@ -354,7 +354,7 @@ namespace CatalogService.Tests.UnitTests
             //Assert
             Assert.Equal(expected, productToUpdate.Quantity);
             _mockRepository.Verify(repo => repo.GetByIdAsync(id, CancellationToken.None), Times.Once());
-            _mockRepository.Verify(repo => repo.UpdateAsync(id, productToUpdate, CancellationToken.None), Times.Once());
+            _mockRepository.Verify(repo => repo.UpdateAsync(productToUpdate, CancellationToken.None), Times.Once());
         }
 
         [Fact]
@@ -376,7 +376,7 @@ namespace CatalogService.Tests.UnitTests
             var exception = await Assert.ThrowsAsync<ValidationException>(async() => await _productService.UpdateProductQuantityAsync(id, updateRequest, CancellationToken.None));
             Assert.Contains($"Product '{productToUpdate.Name}' does not have enough quantity available. Requested: {updateRequest.Quantity}, Available: {productToUpdate.Quantity}.", exception.Message);
             _mockRepository.Verify(repo => repo.GetByIdAsync(id, CancellationToken.None), Times.Once());
-            _mockRepository.Verify(repo => repo.UpdateAsync(id, It.IsAny<Product>(), It.IsAny<CancellationToken>()), Times.Never());         
+            _mockRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()), Times.Never());         
         }
 
 
