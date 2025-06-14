@@ -100,7 +100,7 @@ namespace CatalogService.Tests.UnitTests
         
 
         [Fact]
-        public async Task CreateProductAsync_ValidRequest_CreatesProduct()
+        public async Task Should_CreateProduct_WhenRequestIsValid()
         {
             //Arange
             var createRequest = new ProductCreateRequest()
@@ -143,7 +143,7 @@ namespace CatalogService.Tests.UnitTests
         }
 
         [Fact]
-        public async Task CreateProductAsync_InvalidRequest_ThrowsValidationException()
+        public async Task Should_ThrowValidationException_WhenCreateProductWhithEmptyName()
         {
             //Arrange
             var createRequest = new ProductCreateRequest()
@@ -163,7 +163,7 @@ namespace CatalogService.Tests.UnitTests
         }
 
         [Fact]
-        public async Task GetProductById_ValidRequest_ReturnsViewModel()
+        public async Task Should_ReturnProductViewModel_WhenProductExists()
         {
             //Arrange
             var product = _products[0];
@@ -201,12 +201,10 @@ namespace CatalogService.Tests.UnitTests
         }
 
         [Fact]
-        public async Task GetProductById_InvalidRequest_ThrowsNotFoundException()
+        public async Task Should_ThrowNotFoundException_WhenProductDoesNotExist()
         {
             //Arrange
             var id = Guid.NewGuid();
-            _mockRepository.Setup(repo => repo.GetByIdAsync(id, It.IsAny<CancellationToken>()))
-                .ReturnsAsync((Guid id, CancellationToken token) => _products.Find(p => p.Id == id));
 
             //Act & Assert
             var exception = await Assert.ThrowsAsync<NotFoundException>(async () => await _productService.GetProductByIdAsync(id, CancellationToken.None));
@@ -215,7 +213,7 @@ namespace CatalogService.Tests.UnitTests
         }
 
         [Fact]
-        public async Task UpdateProduct_ValidRequestWithAllProperties_UpdatesProduct()
+        public async Task Should_UpdateAllProperties_WhenRequestContainsAllProperties()
         {
             //Arrange
             var updateRequest = new ProductUpdateRequest()
@@ -246,24 +244,22 @@ namespace CatalogService.Tests.UnitTests
  
             //Act
             var actual = await _productService.UpdateProductAsync(id, updateRequest, CancellationToken.None);
-            var updatedProduct = _products.First(p => p.Id == id);
 
             //Assert
             Assert.Equal(id, actual);
-            Assert.Equal(updatedProduct.Id, actual);
-            Assert.Equal(updateRequest.Name, updatedProduct.Name);
-            Assert.Equal(updateRequest.Description, updatedProduct.Description);
-            Assert.Equal(updateRequest.Category, updatedProduct.Category);
-            Assert.Equal(updateRequest.Price, updatedProduct.Price);
-            Assert.Equal(updateRequest.Quantity, updatedProduct.Quantity);
-            Assert.True(updatedProduct.UpdatedDateUtc > initialUpdatedDate);
+            Assert.Equal(updateRequest.Name, productToUpdate.Name);
+            Assert.Equal(updateRequest.Description, productToUpdate.Description);
+            Assert.Equal(updateRequest.Category, productToUpdate.Category);
+            Assert.Equal(updateRequest.Price, productToUpdate.Price);
+            Assert.Equal(updateRequest.Quantity, productToUpdate.Quantity);
+            Assert.True(productToUpdate.UpdatedDateUtc > initialUpdatedDate);
             _mockProductValidator.VerifyAll();
             _mockProductValidator.VerifyAll();
         }
 
 
         [Fact]
-        public async Task UpdateProduct_ValidRequestWithOneProperty_UpdatesProduct()
+        public async Task Should_UpdateOnlyNonNullProperties_WhenUpdateWithPartialRequest()
         {
             //Arrange
             var updateRequest = new ProductUpdateRequest()
@@ -290,7 +286,6 @@ namespace CatalogService.Tests.UnitTests
 
             SetupMockProductNameUniquenessValidation(productToUpdate.Name);
 
-
             //Act
             var actual = await _productService.UpdateProductAsync(id, updateRequest, CancellationToken.None);
             var updatedProduct = _products.First(p => p.Id == id);
@@ -309,7 +304,7 @@ namespace CatalogService.Tests.UnitTests
         }
 
         [Fact]
-        public async Task UpdateProduct_InvalidRequest_ThrowsValidationException()
+        public async Task Should_ThrowValidationException_WhenQuantityIsNegative() //
         {
             //Arrange
             var updateRequest = new ProductUpdateRequest()
@@ -330,7 +325,7 @@ namespace CatalogService.Tests.UnitTests
         }
 
         [Fact] 
-        public async Task UpdateProduct_NotFoundId_ThrowsNotFoundException()
+        public async Task Should_ThrowNotFoundException_WhenProductToUpdateDoesNotExist()
         {
             //Arrange
             var id = Guid.NewGuid();
@@ -343,8 +338,6 @@ namespace CatalogService.Tests.UnitTests
                 Quantity = 10
             };
 
-            _mockRepository.Setup(repo => repo.GetByIdAsync(id, It.IsAny<CancellationToken>()))
-                .ReturnsAsync((Guid id, CancellationToken token) => _products.Find(p => p.Id == id));
             SetupMockProductNameUniquenessValidation(updateRequest.Name);
 
 
@@ -356,7 +349,7 @@ namespace CatalogService.Tests.UnitTests
         }
 
         [Fact]
-        public async Task UpdateProductQuantity_ValidRequest_UpdateQuantity()
+        public async Task Should_UpdateQuantity_WhenRequestContainsValidData()
         {
             var updateRequest = new ProductUpdateQuantityRequest()
             {
@@ -388,7 +381,7 @@ namespace CatalogService.Tests.UnitTests
         }
 
         [Fact]
-        public async Task UpdateProductQuantity_InsufficientQuantity_ThrowsValidationException()
+        public async Task Should_ThrowValidationException_WhenRequestedQuantityExceedsAvailable()
         {
             var updateRequest = new ProductUpdateQuantityRequest()
             {
@@ -411,7 +404,7 @@ namespace CatalogService.Tests.UnitTests
 
 
         [Fact]
-        public async Task DeleteProduct_ValidId_DeleteProduct()
+        public async Task Should_RemoveProduct_WhenProductExists()
         {
             //Arrange
             var productToDelete = _products[0];
@@ -432,11 +425,10 @@ namespace CatalogService.Tests.UnitTests
             //Assert
             Assert.DoesNotContain(productToDelete, _products);
             _mockRepository.VerifyAll();
-
         }
 
         [Fact]
-        public async Task DeleteProduct_NotFoundId_ThrowsNotFoundEcxeption()
+        public async Task Should_ThrowNotFoundException_WhenProductToDeleteNotFoundt()
         {
             //Arrange
             var id = Guid.NewGuid();
