@@ -12,30 +12,13 @@ using System.Threading.Tasks;
 
 namespace CatalogService.Tests.IntegrationTests
 {
-    public class ProductRepositoryIntegrationTests : IAsyncLifetime
+    public class ProductRepositoryIntegrationTests : IClassFixture<ProductRepositoryFixture>
     {
-        private CatalogDBContext? _context;
-        private IRepository<Product>? _productRepository;
+        private readonly ProductRepositoryFixture _fixture;
 
-        public async Task InitializeAsync()
+        public ProductRepositoryIntegrationTests(ProductRepositoryFixture fixture)
         {
-            _context = await GetDBContextAsync();
-            _productRepository = new ProductRepository(_context);
-        }
-
-        public Task DisposeAsync()
-        {
-            return _context!.DisposeAsync().AsTask();
-        }
-        private async Task<CatalogDBContext> GetDBContextAsync()
-        {
-            var options = new DbContextOptionsBuilder()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
-            var context = new CatalogDBContext(options);
-            await context.Database.EnsureCreatedAsync();
-
-            return context;
+            _fixture = fixture;
         }
 
         private Product CreateTestProduct(int variantNumber)
@@ -59,8 +42,8 @@ namespace CatalogService.Tests.IntegrationTests
             for (int i = 1; i <= count; i++)
                 products.Add(CreateTestProduct(i));
 
-            await _context!.AddRangeAsync(products);
-            await _context.SaveChangesAsync();
+            await _fixture.Context.AddRangeAsync(products);
+            await _fixture.Context.SaveChangesAsync();
             return products;
         }
 
@@ -83,11 +66,11 @@ namespace CatalogService.Tests.IntegrationTests
             var product = CreateTestProduct(1);
 
             //Act
-            var actualId = await _productRepository!.CreateAsync(product, CancellationToken.None);
+            var actualId = await _fixture.ProductRepository.CreateAsync(product, CancellationToken.None);
 
             //Assert
             Assert.Equal(product.Id, actualId);
-            var savedProduct = await _context!.Products.FindAsync(product.Id);
+            var savedProduct = await _fixture.Context.Products.FindAsync(product.Id);
             Assert.NotNull(savedProduct);
             AssertProductsEqual(product, savedProduct);
 
@@ -101,7 +84,7 @@ namespace CatalogService.Tests.IntegrationTests
             var expectedProduct = addedProducts.First();
 
             //Act
-            var actualProduct = await _productRepository!.GetByIdAsync(expectedProduct.Id, CancellationToken.None);
+            var actualProduct = await _fixture.ProductRepository!.GetByIdAsync(expectedProduct.Id, CancellationToken.None);
 
             //Assert
             Assert.NotNull(actualProduct);
@@ -115,7 +98,7 @@ namespace CatalogService.Tests.IntegrationTests
             //Arrange
             var nonExistingId = Guid.NewGuid();
             //Act
-            var actualProduct = await _productRepository!.GetByIdAsync(nonExistingId, CancellationToken.None);
+            var actualProduct = await _fixture.ProductRepository!.GetByIdAsync(nonExistingId, CancellationToken.None);
 
             //Assert
             Assert.Null(actualProduct);
@@ -126,17 +109,17 @@ namespace CatalogService.Tests.IntegrationTests
         {
             //Arrange
             var product = CreateTestProduct(1);
-            await _context!.Products.AddAsync(product);
-            await _context.SaveChangesAsync();
+            await _fixture.Context.Products.AddAsync(product);
+            await _fixture.Context.SaveChangesAsync();
             product.Name = "Updated Name";
             product.UpdatedDateUtc = DateTime.UtcNow;
 
 
             //Act
-            await _productRepository!.UpdateAsync(product, CancellationToken.None);
+            await _fixture.ProductRepository!.UpdateAsync(product, CancellationToken.None);
 
             //Assert
-            var dbProduct = await _context.Products.FindAsync(product.Id);
+            var dbProduct = await _fixture.Context.Products.FindAsync(product.Id);
             Assert.NotNull(dbProduct);
             Assert.Equal("Updated Name", dbProduct!.Name);
             Assert.NotEqual(dbProduct.CreatedDateUtc, dbProduct.UpdatedDateUtc);            
@@ -149,20 +132,20 @@ namespace CatalogService.Tests.IntegrationTests
             //Arrange
             var initialProducts = await AddTestProducts(3);
             var productToDelete = initialProducts.First();
-            var initialCount = await _context!.Products.CountAsync();
+            var initialCount = await _fixture.Context.Products.CountAsync();
 
             //Act
-            await _productRepository!.DeleteAsync(productToDelete, CancellationToken.None);
+            await _fixture.ProductRepository!.DeleteAsync(productToDelete, CancellationToken.None);
 
             //Assert
-            var deletedProduct = await _context.Products
+            var deletedProduct = await _fixture.Context.Products
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.Id == productToDelete.Id);
             Assert.Null(deletedProduct);
-            Assert.Equal(initialCount - 1, await _context.Products.CountAsync());
+            Assert.Equal(initialCount - 1, await _fixture.Context.Products.CountAsync());
 
             var remainingIds = initialProducts.Skip(1).Select(p => p.Id).ToList();
-            var remainingProducts = await _context.Products
+            var remainingProducts = await _fixture.Context.Products
                 .Where(p => remainingIds.Contains(p.Id))
                 .CountAsync();
 
