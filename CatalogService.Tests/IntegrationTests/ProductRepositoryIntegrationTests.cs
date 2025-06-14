@@ -77,7 +77,7 @@ namespace CatalogService.Tests.IntegrationTests
         }
 
         [Fact]
-        public async Task CreateAsync_ReturnsIdAndSavesProduct()
+        public async Task Should_ReturnIdAndPersistProduct_WhenCreateNewProduct()
         {
             //Arrange
             var product = CreateTestProduct(1);
@@ -94,7 +94,7 @@ namespace CatalogService.Tests.IntegrationTests
         }
 
         [Fact]
-        public async Task GetByIdAsync_WhenProductExists_ReturnsCorrectProduct()
+        public async Task Should_ReturnProduct_WhenProductExists()
         {
             //Arrange
             var addedProducts = await AddTestProducts(3);
@@ -110,18 +110,19 @@ namespace CatalogService.Tests.IntegrationTests
         }
 
         [Fact]
-        public async Task GetByIdAsync_WhenProductDoesNotExist_ReturnsNull()
+        public async Task Should_ReturnNull_WhenProductNotFound()
         {
             //Arrange
             var nonExistingId = Guid.NewGuid();
             //Act
             var actualProduct = await _productRepository!.GetByIdAsync(nonExistingId, CancellationToken.None);
-            //
+
+            //Assert
             Assert.Null(actualProduct);
         }
 
         [Fact]
-        public async Task UpdateAsync_UpdatesProduct()
+        public async Task Should_SaveAllChanges_WhenProductIsUpdated()
         {
             //Arrange
             var product = CreateTestProduct(1);
@@ -143,12 +144,12 @@ namespace CatalogService.Tests.IntegrationTests
         }
 
         [Fact]
-        public async Task DeleteAsync_DeleteProduct()
+        public async Task Should_RemoveProduct_WhenProductExists()
         {
             //Arrange
             var initialProducts = await AddTestProducts(3);
             var productToDelete = initialProducts.First();
-            var initialCount = await _context.Products.CountAsync();
+            var initialCount = await _context!.Products.CountAsync();
 
             //Act
             await _productRepository!.DeleteAsync(productToDelete, CancellationToken.None);
