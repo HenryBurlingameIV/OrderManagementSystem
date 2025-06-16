@@ -11,7 +11,7 @@ namespace CatalogService.Application.Validators
 {
     public class ProductUpdateRequestValidator : AbstractValidator<ProductUpdateRequest>
     {
-        public ProductUpdateRequestValidator(CatalogDBContext catalogDBContext) 
+        public ProductUpdateRequestValidator() 
         {
             RuleFor(p => p.Name).NotEmpty().When(p => p.Name != null);
             RuleFor(p => p.Description).MaximumLength(200).When(p =>p.Description != null);

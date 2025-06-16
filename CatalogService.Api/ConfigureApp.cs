@@ -1,6 +1,7 @@
 ﻿using CatalogService.Api.Middlewares;
 using CatalogService.Application.Extensions;
 using CatalogService.Infrastructure.Extensions;
+using Microsoft.AspNetCore.Mvc;
 using Serilog;
 
 namespace CatalogService.Api

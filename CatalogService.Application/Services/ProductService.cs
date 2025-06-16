@@ -40,14 +40,23 @@ namespace CatalogService.Application.Services
             _createValidator = createValidator;
             _updateValidator = updateValidator;
             _quantityValidator = quantityValidator;
-
         }
 
         public async Task<Guid> CreateProductAsync(ProductCreateRequest request, CancellationToken cancellationToken)
         {
-            await _createValidator.ValidateAndThrowAsync(request);
+            var validationResult = await _createValidator.ValidateAsync(request, cancellationToken);
+            if (!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors);
+            }
+
             var product = CreateProductFromRequest(request);
-            await _productValidator.ValidateAndThrowAsync(product);
+            validationResult = await _productValidator.ValidateAsync(product, cancellationToken);
+            if (!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors);
+            }
+
             Log.Information("Product with ID {@ProductId} successfully created", product!.Id);
             return await _productRepository.CreateAsync(product!, cancellationToken);
         }
@@ -65,7 +74,12 @@ namespace CatalogService.Application.Services
 
         public async Task<Guid> UpdateProductAsync(Guid productId, ProductUpdateRequest request, CancellationToken cancellationToken)
         {
-            await _updateValidator.ValidateAndThrowAsync(request);
+            var validationResult = await _updateValidator.ValidateAsync(request, cancellationToken);
+            if (!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors);
+            }
+
             var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
             if (product == null)
             {
@@ -73,14 +87,24 @@ namespace CatalogService.Application.Services
             }
 
             UpdateProductFromRequest(request, product);
-            await _productValidator.ValidateAndThrowAsync(product);
-            await _productRepository.UpdateAsync(productId, product, cancellationToken);
+            validationResult = await _productValidator.ValidateAsync(product, cancellationToken);
+            if (!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors);
+            }
+
+            await _productRepository.UpdateAsync(product, cancellationToken);
             Log.Information("Product with ID {@productId} successfully updated", productId);
             return productId;
         }
         public async Task UpdateProductQuantityAsync(Guid productId, ProductUpdateQuantityRequest request, CancellationToken cancellationToken)
         {
-            await _quantityValidator.ValidateAndThrowAsync(request);
+            var validationResult = await _quantityValidator.ValidateAsync(request);
+            if (!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors);
+            }
+
             var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
             if (product == null)
             {
@@ -94,7 +118,7 @@ namespace CatalogService.Application.Services
             }
             product.Quantity -= request.Quantity;
             product.UpdatedDateUtc = DateTime.UtcNow;
-            await _productRepository.UpdateAsync(productId, product, cancellationToken);
+            await _productRepository.UpdateAsync(product, cancellationToken);
             Log.Information("{@Product} quantity successfully updated", product);
 
         }

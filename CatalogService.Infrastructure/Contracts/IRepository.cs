@@ -12,7 +12,7 @@ namespace CatalogService.Infrastructure.Contracts
     {
         Task<Guid> CreateAsync(T item, CancellationToken cancellationToken);
 
-        Task<Guid> UpdateAsync(Guid id, T update, CancellationToken cancellationToken);
+        Task<Guid> UpdateAsync(T update, CancellationToken cancellationToken);
 
         Task<T?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
 
