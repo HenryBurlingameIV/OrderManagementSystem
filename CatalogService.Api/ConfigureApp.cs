@@ -1,7 +1,9 @@
 ﻿using CatalogService.Api.Middlewares;
 using CatalogService.Application.Extensions;
+using CatalogService.Infrastructure;
 using CatalogService.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 namespace CatalogService.Api
@@ -22,14 +24,23 @@ namespace CatalogService.Api
         {
             app.UseMiddleware<ExceptionHandlerMiddleware>();
             app.UseSerilogRequestLogging();
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
-            if (app.Environment.IsDevelopment())
+            if (!app.Environment.IsDevelopment())
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
+                using (var scope = app.Services.CreateScope())
+                {
+                    var db = scope.ServiceProvider.GetRequiredService<CatalogDBContext>();
+                    var pendingMigrations = db.Database.GetPendingMigrations().ToList();
+                    if (pendingMigrations.Any())
+                    {
+                        db.Database.Migrate();
+                    }
+                }
             }
 
-            app.MapGet("/", () => "Hello World!");
+            app.MapGet("/", () => "CatalogService is running!");
             app.MapControllers();
         }
 
