@@ -1,0 +1,34 @@
+﻿version: '3.8'
+
+services:
+    catalog_service_api:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        ports:
+            - "8080:8080"
+        environment:
+            - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=catalogdb;Username=postgres;Password=qazQWESZ178
+        container_name: catalog_service_web_api
+
+        depends_on:
+            - db
+    db: 
+        image: postgres:latest
+        ports:
+            - "5432:5432"
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: qazQWESZ178
+            POSTGRES_DB: catalogdb
+        command: ["postgres", "-c", "shared_preload_libraries=uuid-ossp"]
+        volumes: 
+            - db_data:/var/lib/postgresql/data
+        container_name: db_pg_container
+volumes:
+    db_data:
+    
+
+    
+    
+
