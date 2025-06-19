@@ -1,0 +1,43 @@
+﻿version: '3.8'
+
+services:
+  catalog_service_api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=catalogdb;Username=postgres;Password=qazQWESZ178
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    container_name: catalog_service_api_container
+
+  db:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: qazQWESZ178
+      POSTGRES_DB: catalogdb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d catalogdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    container_name: db_pg_container
+    restart: unless-stopped
+
+volumes:
+  db_data:
+    
+
+    
+    
+

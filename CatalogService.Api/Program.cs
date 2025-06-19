@@ -24,6 +24,10 @@ namespace CatalogService.Api
 
             var app = builder.Build();
             app.ConfigurePipeline();
+            if (!app.Environment.IsDevelopment())
+            {
+                app.RunDatabaseMigrations();
+            }
 
             app.Run();
         }
