@@ -26,22 +26,21 @@ namespace CatalogService.Api
             app.UseSerilogRequestLogging();
             app.UseSwagger();
             app.UseSwaggerUI();
-
-            if (!app.Environment.IsDevelopment())
-            {
-                using (var scope = app.Services.CreateScope())
-                {
-                    var db = scope.ServiceProvider.GetRequiredService<CatalogDBContext>();
-                    var pendingMigrations = db.Database.GetPendingMigrations().ToList();
-                    if (pendingMigrations.Any())
-                    {
-                        db.Database.Migrate();
-                    }
-                }
-            }
-
             app.MapGet("/", () => "CatalogService is running!");
             app.MapControllers();
+        }
+
+        public static void RunDatabaseMigrations(this WebApplication app)
+        {
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<CatalogDBContext>();
+                var pendingMigrations = db.Database.GetPendingMigrations().ToList();
+                if (pendingMigrations.Any())
+                {
+                    db.Database.Migrate();
+                }
+            }
         }
 
         public static void ConfigureSerilog(this WebApplicationBuilder builder)
@@ -51,5 +50,7 @@ namespace CatalogService.Api
                 configuration.ReadFrom.Configuration(context.Configuration);
             });
         }
+
+
     }
 }
