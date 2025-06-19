@@ -27,6 +27,7 @@ namespace CatalogService.Api
             app.UseSwagger();
             app.UseSwaggerUI();
             app.MapGet("/", () => "CatalogService is running!");
+            app.UseRouting();
             app.MapControllers();
         }
 

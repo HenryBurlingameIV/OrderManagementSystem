@@ -26,10 +26,10 @@ namespace CatalogService.Api.Controllers
             )
         {
             var result = await _productService.CreateProductAsync(request, cancellationToken);
-            return Ok(result);
+            return CreatedAtRoute("GetProduct", new { id = result}, result);
         }
 
-        [HttpGet("{id:guid}")]
+        [HttpGet("{id:guid}", Name = "GetProduct")]
         public async Task<ActionResult<ProductViewModel>> GetProductByIdAsync(
             [FromRoute] Guid id,
             CancellationToken cancellationToken
