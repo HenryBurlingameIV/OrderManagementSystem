@@ -1,6 +1,7 @@
 ﻿using CatalogService.Domain;
 using CatalogService.Infrastructure.Contracts;
 using CatalogService.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +23,19 @@ namespace CatalogService.Infrastructure.Extensions
             services.AddScoped<IRepository<Product>, ProductRepository>();
 
             return services;
+        }
+
+        public static void RunDatabaseMigrations(this WebApplication app)
+        {
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<CatalogDBContext>();
+                var pendingMigrations = db.Database.GetPendingMigrations().ToList();
+                if (pendingMigrations.Any())
+                {
+                    db.Database.Migrate();
+                }
+            }
         }
     }
 }
