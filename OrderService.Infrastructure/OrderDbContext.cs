@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OrderService.Domain.Entities;
+using OrderService.Infrastructure.EntityConfigurations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,11 +15,8 @@ namespace OrderService.Infrastructure
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyConfiguration(new OrderConfiguration());
         }
-
-        DbSet<OrderItem> OrderItems { get; set; }
-
         DbSet<Order> Orders { get; set; }
     }
 }
