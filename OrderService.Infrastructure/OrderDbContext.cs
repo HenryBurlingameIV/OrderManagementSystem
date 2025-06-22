@@ -17,6 +17,6 @@ namespace OrderService.Infrastructure
         {
             modelBuilder.ApplyConfiguration(new OrderConfiguration());
         }
-        DbSet<Order> Orders { get; set; }
+        public DbSet<Order> Orders { get; set; }
     }
 }
