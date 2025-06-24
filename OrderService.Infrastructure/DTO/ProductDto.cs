@@ -6,5 +6,5 @@ using System.Threading.Tasks;
 
 namespace OrderService.Infrastructure.DTO
 {
-    public record ProductDto(Guid Id, decimal Price, int AvailableQuantity);
+    public record ProductDto(Guid Id, decimal Price, int Quantity);
 }

@@ -37,16 +37,9 @@ namespace CatalogService.Api.Middlewares
         public async Task HandleException(HttpContext context, HttpStatusCode httpStatusCode, Exception e)
         {
             Log.Error("Error {@exception} occured", e);
-            context.Response.ContentType = "application/json";
+            context.Response.ContentType = "text/plain";
             context.Response.StatusCode = (int)httpStatusCode;
-            await context.Response.WriteAsJsonAsync
-                (
-                    new 
-                    { 
-                        Message = e.Message, 
-                        StatusCode = (int)httpStatusCode 
-                    }
-                );
+            await context.Response.WriteAsync(e.Message);
         }
     }
 }

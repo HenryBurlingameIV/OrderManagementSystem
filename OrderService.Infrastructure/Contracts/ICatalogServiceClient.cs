@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OrderService.Infrastructure.DTO;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,9 @@ namespace OrderService.Infrastructure.Contracts
 {
     public interface ICatalogServiceClient
     {
-         Task 
+        Task<ProductDto?> GetProductByIdAsync(Guid id, CancellationToken cancellationToken);
+        Task ReserveProductAsync(Guid id, int quantity, CancellationToken cancellationToken);
+
+
     }
 }
