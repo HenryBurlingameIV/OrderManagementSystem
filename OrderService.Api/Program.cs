@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using OrderService.Application.Commands.CreateOrderCommand;
 using OrderService.Infrastructure;
 using OrderService.Infrastructure.Contracts;
 using OrderService.Infrastructure.HttpClients;
@@ -10,6 +11,10 @@ namespace OrderService.Api
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddMediatR(conf =>
+            {
+                conf.RegisterServicesFromAssembly(typeof(CreateOrderCommand).Assembly);
+            });
             var connection = builder.Configuration.GetConnectionString("DefaultConnection");
             builder.Services.AddDbContext<OrderDbContext>(options => options.UseNpgsql(connection));
             var catalogConnection = builder.Configuration["CatalogService:DefaultConnection"];
@@ -22,7 +27,7 @@ namespace OrderService.Api
             var app = builder.Build();
 
 
-            app.MapGet("/", () => "Hello World!");
+            app.MapGet("/", () => "OrderService is running!");
 
             //using(var scope = app.Services.CreateScope())
             //{
