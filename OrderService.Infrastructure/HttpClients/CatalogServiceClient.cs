@@ -42,7 +42,7 @@ namespace OrderService.Infrastructure.HttpClients
 
             var response = await client.PatchAsJsonAsync(
                 $"api/products/{id}/quantity", 
-                new { Qiuantity = quantity }, 
+                new { Quantity = quantity }, 
                 cancellationToken);
 
             if (!response.IsSuccessStatusCode)

@@ -8,10 +8,11 @@ using OrderService.Infrastructure;
 using OrderService.Infrastructure.Contracts;
 using OrderService.Domain.Entities;
 using OrderService.Application.DTO;
+using OrderService.Infrastructure.Repositories;
 
 namespace OrderService.Application.Commands.CreateOrderCommand
 {
-    public class CreateOrderCommandHandler(OrderDbContext dbContext, ICatalogServiceClient catalogServiceClient) : IRequestHandler<CreateOrderCommand, Guid>
+    public class CreateOrderCommandHandler(IRepository<Order> orderRepository, ICatalogServiceClient catalogServiceClient) : IRequestHandler<CreateOrderCommand, Guid>
     {
         public async Task<Guid> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
         {
@@ -22,9 +23,8 @@ namespace OrderService.Application.Commands.CreateOrderCommand
             var orderItems = (await Task.WhenAll(orderItemsTasks)).ToList();
 
             var order = CreateOrder(orderItems, DateTime.UtcNow);
+            await orderRepository.CreateAsync(order, cancellationToken);
 
-            await dbContext.AddAsync(order);
-            await dbContext.SaveChangesAsync();
             return order.Id;             
         }
 

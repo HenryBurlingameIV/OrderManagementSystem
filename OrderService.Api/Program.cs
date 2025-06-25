@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using OrderService.Application.Commands.CreateOrderCommand;
+using OrderService.Domain.Entities;
 using OrderService.Infrastructure;
 using OrderService.Infrastructure.Contracts;
 using OrderService.Infrastructure.HttpClients;
+using OrderService.Infrastructure.Repositories;
 
 namespace OrderService.Api
 {
@@ -22,9 +24,17 @@ namespace OrderService.Api
             {
                 c.BaseAddress = new Uri(catalogConnection!);
             });
-
             builder.Services.AddTransient<ICatalogServiceClient, CatalogServiceClient>();
+            builder.Services.AddScoped<IRepository<Order>, OrderRepository>();
+            builder.Services.AddControllers();
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
             var app = builder.Build();
+
+            app.UseSwagger();
+            app.UseSwaggerUI();
+            app.UseRouting();
+            app.MapControllers();
 
 
             app.MapGet("/", () => "OrderService is running!");
