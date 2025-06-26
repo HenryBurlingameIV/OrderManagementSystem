@@ -112,11 +112,11 @@ namespace CatalogService.Application.Services
             }
             Log.Information("Product with ID {@productId} successfully found", productId);
 
-            if (product.Quantity < request.Quantity)
+            if (product.Quantity + request.DeltaQuantity < 0)
             {
-                throw new ValidationException($"Product '{product.Name}' does not have enough quantity available. Requested: {request.Quantity}, Available: {product.Quantity}.");
+                throw new ValidationException($"Product '{product.Name}' does not have enough quantity available. Requested: {request.DeltaQuantity}, Available: {product.Quantity}.");
             }
-            product.Quantity -= request.Quantity;
+            product.Quantity += request.DeltaQuantity;
             product.UpdatedDateUtc = DateTime.UtcNow;
             await _productRepository.UpdateAsync(product, cancellationToken);
             Log.Information("{@Product} quantity successfully updated", product);

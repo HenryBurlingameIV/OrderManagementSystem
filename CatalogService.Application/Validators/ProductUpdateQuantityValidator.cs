@@ -12,7 +12,7 @@ namespace CatalogService.Application.Validators
     {
         public ProductUpdateQuantityValidator()
         {
-            RuleFor(p => p.Quantity).GreaterThanOrEqualTo(0);
+            RuleFor(p => p.DeltaQuantity).NotEqual(0);
         }
     }
 }
