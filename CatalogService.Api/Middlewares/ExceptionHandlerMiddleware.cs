@@ -20,26 +20,24 @@ namespace CatalogService.Api.Middlewares
             {
                 await _next(context);
             }
-            catch(ValidationException e)
+            catch (Exception ex)
             {
-                await HandleException(context, HttpStatusCode.BadRequest, e);
-            }
-            catch(NotFoundException e)
-            {
-                await HandleException(context, HttpStatusCode.NotFound, e);
-            }
-            catch(Exception e)
-            {
-                await HandleException(context, HttpStatusCode.InternalServerError, e);
+                await HandleException(context, ex);
             }
         }
 
-        public async Task HandleException(HttpContext context, HttpStatusCode httpStatusCode, Exception e)
+        public async Task HandleException(HttpContext context, Exception ex)
         {
-            Log.Error("Error {@exception} occured", e);
-            context.Response.ContentType = "text/plain";
-            context.Response.StatusCode = (int)httpStatusCode;
-            await context.Response.WriteAsync(e.Message);
+            var (statusCode, message) = ex switch
+            {
+                ValidationException vEx => (HttpStatusCode.BadRequest, vEx.Message),
+                NotFoundException notFoundEx => (HttpStatusCode.NotFound, notFoundEx.Message),
+                _ => (HttpStatusCode.InternalServerError, ex.Message),
+            };
+            Log.Error("Error {@exception} occured", ex);
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = (int)statusCode;
+            await context.Response.WriteAsJsonAsync(new { Message = message });
         }
     }
 }

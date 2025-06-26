@@ -4,6 +4,7 @@ using System.Net;
 using System.Runtime.ExceptionServices;
 using FluentValidation;
 using ValidationException = FluentValidation.ValidationException;
+using Microsoft.AspNetCore.Http;
 
 namespace OrderService.Api.Middlewares
 {
@@ -15,36 +16,32 @@ namespace OrderService.Api.Middlewares
             _next = next;
         }
 
+
         public async Task Invoke(HttpContext context)
         {
             try
             {
                 await _next(context);
             }
-            catch(ValidationException e)
+            catch (Exception ex)
             {
-                await HandleException(context, HttpStatusCode.BadRequest, e.Message);
-            }
-            catch(HttpRequestException e)
-            {
-                var statusCode = e.StatusCode.HasValue ? e.StatusCode.Value : HttpStatusCode.BadRequest;
-                await HandleException(context, statusCode, e.Message);
-            }
-            catch(NotFoundException e) 
-            {
-                await HandleException(context, HttpStatusCode.NotFound, e.Message);
-            }
-            catch(Exception e)
-            {
-                await HandleException(context, HttpStatusCode.InternalServerError, "Internal server error occured");
+                await HandleException(context, ex);
             }
         }
 
-        public async Task HandleException(HttpContext context, HttpStatusCode statusCode, string message)
+        public async Task HandleException(HttpContext context, Exception ex)
         {
+            var (statusCode, message) = ex switch
+            {
+                ValidationException vEx => (HttpStatusCode.BadRequest, vEx.Message),
+                HttpRequestException httpEx => (httpEx.StatusCode ?? HttpStatusCode.BadRequest, httpEx.Message),
+                NotFoundException notFoundEx => (HttpStatusCode.NotFound, notFoundEx.Message),
+                _ => (HttpStatusCode.InternalServerError, ex.Message),
+            };
+
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)statusCode;
-            await context.Response.WriteAsJsonAsync(new {Message = message});
+            await context.Response.WriteAsJsonAsync(new { Message = message });
         }
     }
 }

@@ -114,7 +114,7 @@ namespace CatalogService.Application.Services
 
             if (product.Quantity + request.DeltaQuantity < 0)
             {
-                throw new ValidationException($"Product '{product.Name}' does not have enough quantity available. Requested: {request.DeltaQuantity}, Available: {product.Quantity}.");
+                throw new ValidationException($"Product '{product.Name}' does not have enough quantity available. Requested: {Math.Abs(request.DeltaQuantity)}, Available: {product.Quantity}.");
             }
             product.Quantity += request.DeltaQuantity;
             product.UpdatedDateUtc = DateTime.UtcNow;
