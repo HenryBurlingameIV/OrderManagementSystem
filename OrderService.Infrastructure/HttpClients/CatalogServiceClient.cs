@@ -30,24 +30,24 @@ namespace OrderService.Infrastructure.HttpClients
 
             if (!response.IsSuccessStatusCode)
             {
-                var errorMessage = await response.Content.ReadAsStringAsync();
+                var errorMessage = await response.Content.ReadAsStringAsync(cancellationToken);
                 throw new HttpRequestException(errorMessage, null, response.StatusCode);
             }
             return await response.Content.ReadFromJsonAsync<ProductDto>(cancellationToken);
         }
 
-        public async Task ReserveProductAsync(Guid id, int quantity, CancellationToken cancellationToken)
+        public async Task UpdateProductInventoryAsync(Guid id, int deltaQuantity, CancellationToken cancellationToken)
         {
             var client = _httpClientFactory.CreateClient("catalog");
 
             var response = await client.PatchAsJsonAsync(
                 $"api/products/{id}/quantity", 
-                new { Quantity = quantity }, 
+                new { DeltaQuantity = deltaQuantity }, 
                 cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {
-                var errorMessage = await response.Content.ReadAsStringAsync();
+                var errorMessage = await response.Content.ReadAsStringAsync(cancellationToken);
                 throw new HttpRequestException(errorMessage, null, response.StatusCode);
             }
         }

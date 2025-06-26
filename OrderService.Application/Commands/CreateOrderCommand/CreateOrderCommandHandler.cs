@@ -31,12 +31,12 @@ namespace OrderService.Application.Commands.CreateOrderCommand
         private async Task<OrderItem> CreateAndReserveItemFromRequest(OrderItemRequest request, CancellationToken cancellationToken)
         {
             var product = await catalogServiceClient.GetProductByIdAsync(request.Id, cancellationToken);
-            await catalogServiceClient.ReserveProductAsync(request.Id, request.Quantity, cancellationToken);
+            await catalogServiceClient.UpdateProductInventoryAsync(request.Id, -request.Quantity, cancellationToken);
             return new OrderItem()
             {
                 ProductId = request.Id,
                 Quantity = request.Quantity,
-                Price = product.Price,
+                Price = product!.Price,
             };
         }
 
