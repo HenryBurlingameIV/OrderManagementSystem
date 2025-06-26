@@ -1,5 +1,7 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using OrderService.Application.Commands.CreateOrderCommand;
+using OrderService.Application.Validators;
 using OrderService.Domain.Entities;
 using OrderService.Infrastructure;
 using OrderService.Infrastructure.Contracts;
@@ -26,6 +28,7 @@ namespace OrderService.Api
             });
             builder.Services.AddTransient<ICatalogServiceClient, CatalogServiceClient>();
             builder.Services.AddScoped<IRepository<Order>, OrderRepository>();
+            builder.Services.AddScoped<IValidator<CreateOrderCommand>, CreateOrderCommandValidator>();
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

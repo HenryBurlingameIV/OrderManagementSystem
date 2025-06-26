@@ -9,13 +9,23 @@ using OrderService.Infrastructure.Contracts;
 using OrderService.Domain.Entities;
 using OrderService.Application.DTO;
 using OrderService.Infrastructure.Repositories;
+using FluentValidation;
 
 namespace OrderService.Application.Commands.CreateOrderCommand
 {
-    public class CreateOrderCommandHandler(IRepository<Order> orderRepository, ICatalogServiceClient catalogServiceClient) : IRequestHandler<CreateOrderCommand, Guid>
+    public class CreateOrderCommandHandler(
+        IRepository<Order> orderRepository, 
+        ICatalogServiceClient catalogServiceClient,
+        IValidator<CreateOrderCommand> validator
+        ) : IRequestHandler<CreateOrderCommand, Guid>
     {
         public async Task<Guid> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
         {
+            var validationResult = await validator.ValidateAsync(request, cancellationToken);
+            if (!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors);
+            }
             var orderItemsTasks = request.OrderItems
                 .Select(item => CreateAndReserveItemFromRequest(item, cancellationToken))
                 .ToList();
