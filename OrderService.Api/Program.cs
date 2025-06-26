@@ -8,6 +8,7 @@ using OrderService.Infrastructure;
 using OrderService.Infrastructure.Contracts;
 using OrderService.Infrastructure.HttpClients;
 using OrderService.Infrastructure.Repositories;
+using Serilog;
 
 namespace OrderService.Api
 {
@@ -16,6 +17,11 @@ namespace OrderService.Api
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Host.UseSerilog((context, configuration) =>
+            {
+                configuration.ReadFrom.Configuration(context.Configuration);
+            });
+
             builder.Services.AddMediatR(conf =>
             {
                 conf.RegisterServicesFromAssembly(typeof(CreateOrderCommand).Assembly);
@@ -43,16 +49,6 @@ namespace OrderService.Api
 
 
             app.MapGet("/", () => "OrderService is running!");
-
-            //using(var scope = app.Services.CreateScope())
-            //{
-            //    Task.Delay(1000).Wait();
-            //    var client = app.Services.GetService<ICatalogServiceClient>();
-            //    var id = Guid.Parse("1ec6a745-1978-45a5-b052-476d15f6bdff");
-            //    var r = client.GetProductByIdAsync(id, new CancellationToken()).Result;
-
-            //    Console.Out.WriteLineAsync($"Price: {r.Price}!!!!!");
-            //}
 
             app.Run();
         }

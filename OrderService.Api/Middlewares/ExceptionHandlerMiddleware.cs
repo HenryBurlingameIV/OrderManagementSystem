@@ -5,6 +5,7 @@ using System.Runtime.ExceptionServices;
 using FluentValidation;
 using ValidationException = FluentValidation.ValidationException;
 using Microsoft.AspNetCore.Http;
+using Serilog;
 
 namespace OrderService.Api.Middlewares
 {
@@ -39,6 +40,7 @@ namespace OrderService.Api.Middlewares
                 _ => (HttpStatusCode.InternalServerError, ex.Message),
             };
 
+            Log.Error("Error {@exception} occured", ex);
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)statusCode;
             await context.Response.WriteAsJsonAsync(new { Message = message });

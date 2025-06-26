@@ -10,6 +10,7 @@ using OrderService.Domain.Entities;
 using OrderService.Application.DTO;
 using OrderService.Infrastructure.Repositories;
 using FluentValidation;
+using Serilog;
 
 namespace OrderService.Application.Commands.CreateOrderCommand
 {
@@ -34,14 +35,16 @@ namespace OrderService.Application.Commands.CreateOrderCommand
 
             var order = CreateOrder(orderItems, DateTime.UtcNow);
             await orderRepository.CreateAsync(order, cancellationToken);
-
+            Log.Information("Order with Id {@orderId} was created and saved in database", order.Id);
             return order.Id;             
         }
 
         private async Task<OrderItem> CreateAndReserveItemFromRequest(OrderItemRequest request, CancellationToken cancellationToken)
         {
             var product = await catalogServiceClient.GetProductByIdAsync(request.Id, cancellationToken);
+            Log.Information("Product with ID {@productId} successfully found", request.Id);
             await catalogServiceClient.UpdateProductInventoryAsync(request.Id, -request.Quantity, cancellationToken);
+            Log.Information("{Quantity} items of product with Id {@productId} was reserved", request.Quantity, request.Id);
             return new OrderItem()
             {
                 ProductId = request.Id,
