@@ -1,9 +1,9 @@
-﻿using CatalogService.Api.Middlewares;
-using CatalogService.Application.Extensions;
+﻿using CatalogService.Application.Extensions;
 using CatalogService.Infrastructure;
 using CatalogService.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using OrderManagementSystem.Shared.Middlewares;
 using Serilog;
 
 namespace CatalogService.Api

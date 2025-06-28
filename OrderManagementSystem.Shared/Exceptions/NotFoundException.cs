@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderService.Domain.Exceptions
+namespace OrderManagementSystem.Shared.Exceptions
 {
     public class NotFoundException : Exception
     {

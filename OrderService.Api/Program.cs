@@ -1,6 +1,5 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using OrderService.Api.Middlewares;
 using OrderService.Application.Commands.CreateOrderCommand;
 using OrderService.Application.Validators;
 using OrderService.Domain.Entities;

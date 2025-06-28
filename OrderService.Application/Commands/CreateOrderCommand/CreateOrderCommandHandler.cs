@@ -11,6 +11,7 @@ using OrderService.Application.DTO;
 using OrderService.Infrastructure.Repositories;
 using FluentValidation;
 using Serilog;
+using OrderManagementSystem.Shared.Contracts;
 
 namespace OrderService.Application.Commands.CreateOrderCommand
 {

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using OrderManagementSystem.Shared.Contracts;
 using OrderService.Domain.Entities;
 using OrderService.Infrastructure.Contracts;
 using OrderService.Infrastructure.HttpClients;

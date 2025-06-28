@@ -1,7 +1,6 @@
 ﻿using Azure.Core;
 using CatalogService.Application.Contracts;
 using CatalogService.Application.DTO;
-using CatalogService.Domain.Exceptions;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

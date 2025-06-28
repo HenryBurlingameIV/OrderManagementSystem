@@ -1,13 +1,13 @@
-﻿using OrderService.Domain.Exceptions;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Runtime.ExceptionServices;
 using FluentValidation;
 using ValidationException = FluentValidation.ValidationException;
 using Microsoft.AspNetCore.Http;
 using Serilog;
+using OrderManagementSystem.Shared.Exceptions;
 
-namespace OrderService.Api.Middlewares
+namespace OrderManagementSystem.Shared.Middlewares
 {
     public class ExceptionHandlerMiddleware
     {

@@ -1,11 +1,11 @@
 ﻿using CatalogService.Domain;
-using CatalogService.Infrastructure.Contracts;
 using CatalogService.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OrderManagementSystem.Shared.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;

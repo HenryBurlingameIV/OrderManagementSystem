@@ -1,4 +1,4 @@
-﻿using OrderService.Api.Middlewares;
+﻿using OrderManagementSystem.Shared.Middlewares;
 using OrderService.Application.Extensions;
 using OrderService.Infrastructure.Extensions;
 using Serilog;
