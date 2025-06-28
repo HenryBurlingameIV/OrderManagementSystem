@@ -97,7 +97,7 @@ namespace CatalogService.Application.Services
             Log.Information("Product with ID {@productId} successfully updated", productId);
             return productId;
         }
-        public async Task UpdateProductQuantityAsync(Guid productId, ProductUpdateQuantityRequest request, CancellationToken cancellationToken)
+        public async Task<ProductViewModel> UpdateProductQuantityAsync(Guid productId, ProductUpdateQuantityRequest request, CancellationToken cancellationToken)
         {
             var validationResult = await _quantityValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
@@ -120,6 +120,7 @@ namespace CatalogService.Application.Services
             product.UpdatedDateUtc = DateTime.UtcNow;
             await _productRepository.UpdateAsync(product, cancellationToken);
             Log.Information("{@Product} quantity successfully updated", product);
+            return CreateProductViewModel(product);
 
         }
         public async Task DeleteProductAsync(Guid productId, CancellationToken cancellationToken)

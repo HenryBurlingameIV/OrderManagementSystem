@@ -10,8 +10,6 @@ namespace OrderService.Infrastructure.Contracts
     public interface ICatalogServiceApi
     {
         Task<ProductDto?> GetProductByIdAsync(Guid id, CancellationToken cancellationToken);
-        Task UpdateProductInventoryAsync(Guid id, int deltaQuantity, CancellationToken cancellationToken);
-
-
+        Task<ProductDto?> UpdateProductInventoryAsync(Guid id, int deltaQuantity, CancellationToken cancellationToken);
     }
 }

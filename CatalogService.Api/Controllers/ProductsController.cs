@@ -51,15 +51,15 @@ namespace CatalogService.Api.Controllers
         }
 
         [HttpPatch("{id:guid}/quantity")]
-        public async Task<ActionResult> UpdateProductQuantityAsync(
+        public async Task<ActionResult<ProductViewModel>> UpdateProductQuantityAsync(
             [FromRoute] Guid id, 
             [FromBody] ProductUpdateQuantityRequest request,
             CancellationToken cancellationToken
             )
         {
             
-            await _productService.UpdateProductQuantityAsync(id, request, cancellationToken);
-            return NoContent();
+            var result = await _productService.UpdateProductQuantityAsync(id, request, cancellationToken);
+            return Ok(result);
         }
 
         [HttpDelete("{id:guid}")]

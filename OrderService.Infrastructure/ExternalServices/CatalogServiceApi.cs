@@ -32,7 +32,7 @@ namespace OrderService.Infrastructure.HttpClients
             return await response.Content.ReadFromJsonAsync<ProductDto>(cancellationToken);
         }
 
-        public async Task UpdateProductInventoryAsync(Guid id, int deltaQuantity, CancellationToken cancellationToken)
+        public async Task<ProductDto?> UpdateProductInventoryAsync(Guid id, int deltaQuantity, CancellationToken cancellationToken)
         {
             var response = await _httpClient.PatchAsJsonAsync(
                 $"api/products/{id}/quantity", 
@@ -43,6 +43,7 @@ namespace OrderService.Infrastructure.HttpClients
             {
                 await CreateAndThrowHttpRequestExceptionAsync(response, cancellationToken);
             }
+            return await response.Content.ReadFromJsonAsync<ProductDto>(cancellationToken);
         }
 
         private async Task CreateAndThrowHttpRequestExceptionAsync(HttpResponseMessage response, CancellationToken cancellationToken)

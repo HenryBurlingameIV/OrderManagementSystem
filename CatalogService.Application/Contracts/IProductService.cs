@@ -15,7 +15,7 @@ namespace CatalogService.Application.Contracts
 
         Task<Guid> UpdateProductAsync(Guid productId, ProductUpdateRequest request, CancellationToken cancellationToken);
 
-        Task UpdateProductQuantityAsync(Guid productId, ProductUpdateQuantityRequest request, CancellationToken cancellationToken);
+        Task<ProductViewModel> UpdateProductQuantityAsync(Guid productId, ProductUpdateQuantityRequest request, CancellationToken cancellationToken);
 
         Task DeleteProductAsync(Guid productId, CancellationToken cancellationToken);
 
