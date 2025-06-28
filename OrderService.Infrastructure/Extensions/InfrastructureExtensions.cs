@@ -23,12 +23,11 @@ namespace OrderService.Infrastructure.Extensions
                 options.UseNpgsql(dbConnection);
             });
 
-            services.AddHttpClient("catalog", conf =>
+            services.AddHttpClient<ICatalogServiceApi, CatalogServiceApi>(conf =>
             {
                 conf.BaseAddress = new Uri(catalogConnection);
             });
 
-            services.AddTransient<ICatalogServiceClient, CatalogServiceClient>();
             services.AddScoped<IRepository<Order>, OrderRepository>();
         }
 

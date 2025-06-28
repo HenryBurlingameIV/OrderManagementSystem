@@ -12,19 +12,18 @@ using System.Threading.Tasks;
 
 namespace OrderService.Infrastructure.HttpClients
 {
-    public class CatalogServiceClient : ICatalogServiceClient
+    public class CatalogServiceApi : ICatalogServiceApi
     {
-        private IHttpClientFactory _httpClientFactory;
-        public CatalogServiceClient(IHttpClientFactory factory) 
+        private HttpClient _httpClient;
+        public CatalogServiceApi(HttpClient httpClient) 
         {
-            _httpClientFactory = factory;
+            _httpClient = httpClient;
         }
 
         public async Task<ProductDto?> GetProductByIdAsync(Guid id, CancellationToken cancellationToken)
         {
-            var client = _httpClientFactory.CreateClient("catalog");
-            var url = $"/api/products/{id}";
-            var response = await client.GetAsync(url, cancellationToken);
+            var url = $"api/products/{id}";
+            var response = await _httpClient.GetAsync(url, cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -35,11 +34,9 @@ namespace OrderService.Infrastructure.HttpClients
 
         public async Task UpdateProductInventoryAsync(Guid id, int deltaQuantity, CancellationToken cancellationToken)
         {
-            var client = _httpClientFactory.CreateClient("catalog");
-
-            var response = await client.PatchAsJsonAsync(
+            var response = await _httpClient.PatchAsJsonAsync(
                 $"api/products/{id}/quantity", 
-                new { DeltaQuantity = deltaQuantity }, 
+                new UpdateQuantityRequest(deltaQuantity), 
                 cancellationToken);
 
             if (!response.IsSuccessStatusCode)

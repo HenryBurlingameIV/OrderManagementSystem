@@ -17,7 +17,7 @@ namespace OrderService.Application.Commands.CreateOrderCommand
 {
     public class CreateOrderCommandHandler(
         IRepository<Order> orderRepository, 
-        ICatalogServiceClient catalogServiceClient,
+        ICatalogServiceApi catalogServiceClient,
         IValidator<CreateOrderCommand> validator
         ) : IRequestHandler<CreateOrderCommand, Guid>
     {
