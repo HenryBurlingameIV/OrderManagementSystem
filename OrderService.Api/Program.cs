@@ -1,5 +1,14 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using OrderService.Application.Commands.CreateOrderCommand;
+using OrderService.Application.Validators;
+using OrderService.Domain.Entities;
 using OrderService.Infrastructure;
+using OrderService.Application.Contracts;
+using OrderService.Infrastructure.Extensions;
+using OrderService.Infrastructure.HttpClients;
+using OrderService.Infrastructure.Repositories;
+using Serilog;
 
 namespace OrderService.Api
 {
@@ -8,13 +17,15 @@ namespace OrderService.Api
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            var connection = builder.Configuration.GetConnectionString("DefaultConnection");
-            builder.Services.AddDbContext<OrderDbContext>(options => options.UseNpgsql(connection));
+            builder.ConfigureSerilog();
+            builder.ConfigureServices();
             var app = builder.Build();
+            app.ConfigurePipeline();
 
-
-            app.MapGet("/", () => "Hello World!");
-
+            if (!app.Environment.IsDevelopment())
+            {
+                app.RunDatabaseMigrations();
+            }
             app.Run();
         }
     }

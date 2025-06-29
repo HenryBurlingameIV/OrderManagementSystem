@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CatalogService.Domain;
-using CatalogService.Domain.Exceptions;
-using CatalogService.Infrastructure.Contracts;
+
 using Microsoft.EntityFrameworkCore;
+using OrderManagementSystem.Shared.Contracts;
 using Serilog;
 using ValidationException = FluentValidation.ValidationException;
 

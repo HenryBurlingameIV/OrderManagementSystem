@@ -353,13 +353,13 @@ namespace CatalogService.Tests.UnitTests
         {
             var updateRequest = new ProductUpdateQuantityRequest()
             {
-                Quantity = 1
+                DeltaQuantity = 1
             };
 
             var productToUpdate = _products.First();
             var initialQuantity = productToUpdate.Quantity;
             var id = productToUpdate.Id;
-            var expectedQuantity = initialQuantity - updateRequest.Quantity;
+            var expectedQuantity = initialQuantity - updateRequest.DeltaQuantity;
 
             _mockRepository.Setup(repo => repo.GetByIdAsync(id, It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Guid id, CancellationToken token) => _products.Find(p => p.Id == id));
@@ -385,7 +385,7 @@ namespace CatalogService.Tests.UnitTests
         {
             var updateRequest = new ProductUpdateQuantityRequest()
             {
-                Quantity = 100
+                DeltaQuantity = 100
             };
 
             var productToUpdate = _products.First();
@@ -397,7 +397,7 @@ namespace CatalogService.Tests.UnitTests
 
             //Act & Assert
             var exception = await Assert.ThrowsAsync<ValidationException>(async() => await _productService.UpdateProductQuantityAsync(id, updateRequest, CancellationToken.None));
-            Assert.Contains($"Product '{productToUpdate.Name}' does not have enough quantity available. Requested: {updateRequest.Quantity}, Available: {productToUpdate.Quantity}.", exception.Message);
+            Assert.Contains($"Product '{productToUpdate.Name}' does not have enough quantity available. Requested: {updateRequest.DeltaQuantity}, Available: {productToUpdate.Quantity}.", exception.Message);
             _mockRepository.VerifyAll();
   
         }

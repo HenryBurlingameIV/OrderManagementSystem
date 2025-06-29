@@ -1,21 +1,19 @@
-﻿using CatalogService.Application.Extensions;
-using CatalogService.Infrastructure;
-using CatalogService.Infrastructure.Extensions;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using OrderManagementSystem.Shared.Middlewares;
+﻿using OrderManagementSystem.Shared.Middlewares;
+using OrderService.Application.Extensions;
+using OrderService.Infrastructure.Extensions;
 using Serilog;
 
-namespace CatalogService.Api
+namespace OrderService.Api
 {
     public static class ConfigureApp
     {
         public static void ConfigureServices(this WebApplicationBuilder builder)
         {
-            string? connection = builder.Configuration.GetConnectionString("DefaultConnection");
-            builder.Services.AddInfrastructure(connection!);
-            builder.Services.AddControllers();
+            var dbConnection = builder.Configuration.GetConnectionString("DefaultConnection");
+            var catalogConnection = builder.Configuration["CatalogService:DefaultConnection"];
+            builder.Services.AddInfrastructure(dbConnection!, catalogConnection!);
             builder.Services.AddApplication();
+            builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
         }
@@ -23,12 +21,11 @@ namespace CatalogService.Api
         public static void ConfigurePipeline(this WebApplication app)
         {
             app.UseMiddleware<ExceptionHandlerMiddleware>();
-            app.UseSerilogRequestLogging();
             app.UseSwagger();
             app.UseSwaggerUI();
-            app.MapGet("/", () => "CatalogService is running!");
             app.UseRouting();
             app.MapControllers();
+            app.MapGet("/", () => "OrderService is running!");
         }
 
         public static void ConfigureSerilog(this WebApplicationBuilder builder)
@@ -38,7 +35,5 @@ namespace CatalogService.Api
                 configuration.ReadFrom.Configuration(context.Configuration);
             });
         }
-
-
     }
 }

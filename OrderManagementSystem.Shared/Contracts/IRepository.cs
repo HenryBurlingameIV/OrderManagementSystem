@@ -1,12 +1,11 @@
-﻿using CatalogService.Domain;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CatalogService.Infrastructure.Contracts
+namespace OrderManagementSystem.Shared.Contracts
 {
     public interface IRepository<T>
     {

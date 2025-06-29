@@ -1,4 +1,3 @@
-using CatalogService.Api.Middlewares;
 using CatalogService.Application.Contracts;
 using CatalogService.Application.DTO;
 using CatalogService.Application.Extensions;
@@ -6,7 +5,6 @@ using CatalogService.Application.Services;
 using CatalogService.Application.Validators;
 using CatalogService.Domain;
 using CatalogService.Infrastructure;
-using CatalogService.Infrastructure.Contracts;
 using CatalogService.Infrastructure.Extensions;
 using CatalogService.Infrastructure.Repositories;
 using FluentValidation;

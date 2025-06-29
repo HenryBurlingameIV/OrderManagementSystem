@@ -1,7 +1,6 @@
 ﻿using Azure.Core;
 using CatalogService.Application.Contracts;
 using CatalogService.Application.DTO;
-using CatalogService.Domain.Exceptions;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -52,15 +51,15 @@ namespace CatalogService.Api.Controllers
         }
 
         [HttpPatch("{id:guid}/quantity")]
-        public async Task<ActionResult> UpdateProductQuantityAsync(
+        public async Task<ActionResult<ProductViewModel>> UpdateProductQuantityAsync(
             [FromRoute] Guid id, 
             [FromBody] ProductUpdateQuantityRequest request,
             CancellationToken cancellationToken
             )
         {
             
-            await _productService.UpdateProductQuantityAsync(id, request, cancellationToken);
-            return NoContent();
+            var result = await _productService.UpdateProductQuantityAsync(id, request, cancellationToken);
+            return Ok(result);
         }
 
         [HttpDelete("{id:guid}")]

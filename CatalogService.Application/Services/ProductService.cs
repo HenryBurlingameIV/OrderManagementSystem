@@ -4,17 +4,13 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Azure.Core;
 using CatalogService.Application.Contracts;
 using CatalogService.Application.DTO;
 using CatalogService.Domain;
-using CatalogService.Domain.Exceptions;
-using CatalogService.Infrastructure;
-using CatalogService.Infrastructure.Contracts;
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
+using OrderManagementSystem.Shared.Contracts;
+using OrderManagementSystem.Shared.Exceptions;
 using Serilog;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using ValidationException = FluentValidation.ValidationException;
 
 
@@ -97,7 +93,7 @@ namespace CatalogService.Application.Services
             Log.Information("Product with ID {@productId} successfully updated", productId);
             return productId;
         }
-        public async Task UpdateProductQuantityAsync(Guid productId, ProductUpdateQuantityRequest request, CancellationToken cancellationToken)
+        public async Task<ProductViewModel> UpdateProductQuantityAsync(Guid productId, ProductUpdateQuantityRequest request, CancellationToken cancellationToken)
         {
             var validationResult = await _quantityValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
@@ -112,14 +108,15 @@ namespace CatalogService.Application.Services
             }
             Log.Information("Product with ID {@productId} successfully found", productId);
 
-            if (product.Quantity < request.Quantity)
+            if (product.Quantity + request.DeltaQuantity < 0)
             {
-                throw new ValidationException($"Product '{product.Name}' does not have enough quantity available. Requested: {request.Quantity}, Available: {product.Quantity}.");
+                throw new ValidationException($"Product '{product.Name}' does not have enough quantity available. Requested: {Math.Abs(request.DeltaQuantity)}, Available: {product.Quantity}.");
             }
-            product.Quantity -= request.Quantity;
+            product.Quantity += request.DeltaQuantity;
             product.UpdatedDateUtc = DateTime.UtcNow;
             await _productRepository.UpdateAsync(product, cancellationToken);
             Log.Information("{@Product} quantity successfully updated", product);
+            return CreateProductViewModel(product);
 
         }
         public async Task DeleteProductAsync(Guid productId, CancellationToken cancellationToken)
