@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderService.Infrastructure.DTO
+namespace OrderService.Application.DTO
 {
     public record UpdateQuantityRequest(int DeltaQuantity);
 }

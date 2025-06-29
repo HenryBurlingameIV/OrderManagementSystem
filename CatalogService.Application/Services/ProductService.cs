@@ -4,17 +4,13 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Azure.Core;
 using CatalogService.Application.Contracts;
 using CatalogService.Application.DTO;
 using CatalogService.Domain;
-using CatalogService.Infrastructure;
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
 using OrderManagementSystem.Shared.Contracts;
 using OrderManagementSystem.Shared.Exceptions;
 using Serilog;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using ValidationException = FluentValidation.ValidationException;
 
 

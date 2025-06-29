@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
-using OrderService.Infrastructure.Contracts;
-using OrderService.Infrastructure.DTO;
+using OrderService.Application.Contracts;
+using OrderService.Application.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -51,5 +51,7 @@ namespace OrderService.Infrastructure.HttpClients
             var errorMessage = JObject.Parse(errorJson)["message"]?.ToString() ?? errorJson;
             throw new HttpRequestException(errorMessage, null, response.StatusCode);
         }
+
+
     }
 }

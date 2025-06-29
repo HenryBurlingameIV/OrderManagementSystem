@@ -1,11 +1,11 @@
-﻿using OrderService.Infrastructure.DTO;
+﻿using OrderService.Application.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderService.Infrastructure.Contracts
+namespace OrderService.Application.Contracts
 {
     public interface ICatalogServiceApi
     {

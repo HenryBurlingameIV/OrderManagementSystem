@@ -1,6 +1,5 @@
 ﻿using OrderManagementSystem.Shared.Contracts;
 using OrderService.Domain.Entities;
-using OrderService.Infrastructure.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;

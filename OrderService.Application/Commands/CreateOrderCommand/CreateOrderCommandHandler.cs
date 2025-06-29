@@ -4,11 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using OrderService.Infrastructure;
-using OrderService.Infrastructure.Contracts;
+
+using OrderService.Application.Contracts;
 using OrderService.Domain.Entities;
 using OrderService.Application.DTO;
-using OrderService.Infrastructure.Repositories;
 using FluentValidation;
 using Serilog;
 using OrderManagementSystem.Shared.Contracts;

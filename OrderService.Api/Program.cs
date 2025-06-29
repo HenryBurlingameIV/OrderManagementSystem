@@ -4,7 +4,7 @@ using OrderService.Application.Commands.CreateOrderCommand;
 using OrderService.Application.Validators;
 using OrderService.Domain.Entities;
 using OrderService.Infrastructure;
-using OrderService.Infrastructure.Contracts;
+using OrderService.Application.Contracts;
 using OrderService.Infrastructure.Extensions;
 using OrderService.Infrastructure.HttpClients;
 using OrderService.Infrastructure.Repositories;
