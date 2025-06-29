@@ -20,19 +20,18 @@ namespace OrderService.Infrastructure.HttpClients
             _httpClient = httpClient;
         }
 
-        public async Task<ProductDto?> GetProductByIdAsync(Guid id, CancellationToken cancellationToken)
-        {
-            var url = $"api/products/{id}";
-            var response = await _httpClient.GetAsync(url, cancellationToken);
 
-            if (!response.IsSuccessStatusCode)
-            {
-                await CreateAndThrowHttpRequestExceptionAsync(response, cancellationToken);
-            }
-            return await response.Content.ReadFromJsonAsync<ProductDto>(cancellationToken);
+        public async Task<ProductDto?> ReserveProductAsync(Guid id, int quantity, CancellationToken cancellationToken)
+        {
+            return await UpdateProductInventoryAsync(id, -quantity, cancellationToken);
         }
 
-        public async Task<ProductDto?> UpdateProductInventoryAsync(Guid id, int deltaQuantity, CancellationToken cancellationToken)
+        public async Task ReleaseProductAsync(Guid id, int quantity, CancellationToken cancellationToken)
+        {
+            await UpdateProductInventoryAsync(id, quantity, cancellationToken);
+        }
+
+        private async Task<ProductDto?> UpdateProductInventoryAsync(Guid id, int deltaQuantity, CancellationToken cancellationToken)
         {
             var response = await _httpClient.PatchAsJsonAsync(
                 $"api/products/{id}/quantity", 

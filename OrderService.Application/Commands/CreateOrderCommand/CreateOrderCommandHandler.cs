@@ -42,7 +42,7 @@ namespace OrderService.Application.Commands.CreateOrderCommand
 
         private async Task<OrderItem> CreateAndReserveItemFromRequest(OrderItemRequest request, CancellationToken cancellationToken)
         {
-            var product = await catalogServiceClient.UpdateProductInventoryAsync(request.Id, -request.Quantity, cancellationToken);
+            var product = await catalogServiceClient.ReserveProductAsync(request.Id, request.Quantity, cancellationToken);
             Log.Information("{Quantity} items of product with Id {@productId} was reserved", request.Quantity, request.Id);
             return new OrderItem()
             {
