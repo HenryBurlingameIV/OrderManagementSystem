@@ -4,6 +4,7 @@ using OrderService.Application.Commands.CreateOrderCommand;
 using OrderService.Application.Commands.UpdateOrderStatusCommand;
 using OrderService.Application.DTO;
 using OrderService.Application.Queries.OrderQuery;
+using OrderService.Domain.Entities;
 
 namespace OrderService.Api.Controllers
 {
@@ -38,7 +39,7 @@ namespace OrderService.Api.Controllers
             NewOrderStatusRequest
             request)
         {
-            await mediator.Send(new UpdateOrderStatusCommand(id, request.OrderStatus));
+            await mediator.Send(new UpdateOrderStatusCommand(id, request.OrderStatus, default(OrderStatus)));
             return NoContent();
         }
 

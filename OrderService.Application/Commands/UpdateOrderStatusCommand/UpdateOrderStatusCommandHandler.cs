@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using FluentValidation;
+using MediatR;
 using OrderManagementSystem.Shared.Contracts;
 using OrderManagementSystem.Shared.Exceptions;
 using OrderService.Domain.Entities;
@@ -12,7 +13,8 @@ using System.Threading.Tasks;
 namespace OrderService.Application.Commands.UpdateOrderStatusCommand
 {
     public class UpdateOrderStatusCommandHandler(
-        IRepository<Order> orderRepository
+        IRepository<Order> orderRepository,
+        IValidator<UpdateOrderStatusCommand> validator
         ) : IRequestHandler<UpdateOrderStatusCommand>
     {
         public async Task Handle(UpdateOrderStatusCommand request, CancellationToken cancellationToken)
@@ -24,8 +26,14 @@ namespace OrderService.Application.Commands.UpdateOrderStatusCommand
             }
 
             Log.Information("Order with ID {@Id} successfully found", request.Id);
+            request = request with { CurrentOrderStatus = order.Status };
+            var validationResult = await validator.ValidateAsync(request, cancellationToken);
+            if(!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors);
+            }
 
-            var newStatus = Enum.Parse<OrderStatus>(request.NewOrderStatus);
+            var newStatus = Enum.Parse<OrderStatus>(request.NewOrderStatus, true);
 
             order.Status = newStatus;
             await orderRepository.UpdateAsync(order, cancellationToken);

@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using OrderService.Application.Commands.CreateOrderCommand;
+using OrderService.Application.Commands.UpdateOrderStatusCommand;
 using OrderService.Application.Validators;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,7 @@ namespace OrderService.Application.Extensions
             });
 
             services.AddScoped<IValidator<CreateOrderCommand>, CreateOrderCommandValidator>();
+            services.AddScoped<IValidator<UpdateOrderStatusCommand>, UpdateOrderStatusCommandValidator>();
         }
     }
 }
