@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using OrderService.Application.Commands.CreateOrderCommand;
+using OrderService.Application.Commands.UpdateOrderStatusCommand;
 using OrderService.Application.DTO;
 using OrderService.Application.Queries.OrderQuery;
 
@@ -16,7 +17,7 @@ namespace OrderService.Api.Controllers
             CancellationToken cancellationToken)
         {
             var result = await mediator.Send(command, cancellationToken);
-            return CreatedAtRoute("GetOrder", new {id = result}, result);
+            return CreatedAtRoute("GetOrder", new { id = result }, result);
         }
 
         [HttpGet("{id:Guid}", Name = "GetOrder")]
@@ -27,6 +28,18 @@ namespace OrderService.Api.Controllers
         {
             var result = await mediator.Send(new GetOrderByIdQuery(id), cancellationToken);
             return Ok(result);
+        }
+
+        [HttpPatch("{id:guid}/status")]
+        public async Task<ActionResult> UpdateOrderStatusAsync(
+            [FromRoute]
+            Guid id,
+            [FromBody]
+            NewOrderStatusRequest
+            request)
+        {
+            await mediator.Send(new UpdateOrderStatusCommand(id, request.OrderStatus));
+            return NoContent();
         }
 
     }

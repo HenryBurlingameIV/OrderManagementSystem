@@ -27,14 +27,15 @@ namespace OrderService.Infrastructure.Repositories
         public async Task<Order?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             var order = await _orderDbContext.Orders
-                .AsNoTracking()
                 .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
             return order;
         }
 
         public async Task<Guid> UpdateAsync(Order item, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            _orderDbContext.Entry(item).State = EntityState.Modified;
+            await _orderDbContext.SaveChangesAsync();
+            return item.Id;
         }
 
         public Task DeleteAsync(Order item, CancellationToken cancellationToken)
