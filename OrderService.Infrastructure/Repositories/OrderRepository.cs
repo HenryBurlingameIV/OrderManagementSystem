@@ -1,4 +1,5 @@
-﻿using OrderManagementSystem.Shared.Contracts;
+﻿using Microsoft.EntityFrameworkCore;
+using OrderManagementSystem.Shared.Contracts;
 using OrderService.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -23,17 +24,20 @@ namespace OrderService.Infrastructure.Repositories
             return item.Id;
         }
 
-        public Task DeleteAsync(Order item, CancellationToken cancellationToken)
+        public async Task<Order?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
-        }
-
-        public async Task<Order> GetByIdAsync(Guid id, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
+            var order = await _orderDbContext.Orders
+                .AsNoTracking()
+                .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
+            return order;
         }
 
         public async Task<Guid> UpdateAsync(Order item, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteAsync(Order item, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

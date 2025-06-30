@@ -1,6 +1,8 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using OrderService.Application.Commands.CreateOrderCommand;
+using OrderService.Application.DTO;
+using OrderService.Application.Queries.OrderQuery;
 
 namespace OrderService.Api.Controllers
 {
@@ -10,11 +12,21 @@ namespace OrderService.Api.Controllers
     {
         [HttpPost]
         public async Task<ActionResult<Guid>> CreateOrderAsync(
-    [FromBody] CreateOrderCommand command,
-    CancellationToken cancellationToken)
+            [FromBody] CreateOrderCommand command,
+            CancellationToken cancellationToken)
         {
-            var id = await mediator.Send(command, cancellationToken);
-            return Ok(id);
+            var result = await mediator.Send(command, cancellationToken);
+            return CreatedAtRoute("GetOrder", new {id = result}, result);
+        }
+
+        [HttpGet("{id:Guid}", Name = "GetOrder")]
+        public async Task<ActionResult<OrderViewModel>> GetOrderByIdAsync(
+            [FromRoute]
+            Guid id,
+            CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(new GetOrderByIdQuery(id), cancellationToken);
+            return Ok(result);
         }
 
     }
