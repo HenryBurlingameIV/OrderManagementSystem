@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CatalogService.Domain;
-
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using OrderManagementSystem.Shared.Contracts;
 using Serilog;
@@ -17,16 +17,24 @@ namespace CatalogService.Infrastructure.Repositories
     public class ProductRepository : IRepository<Product>
     {
         private CatalogDBContext _dbContext;
-        public ProductRepository(CatalogDBContext dbContext)
+        private IValidator<Product> _productValidator;
+
+        public ProductRepository(CatalogDBContext dbContext, IValidator<Product> productValidator)
         {
             _dbContext = dbContext;
+            _productValidator = productValidator;
         }
 
         public async Task<Guid> CreateAsync(Product product, CancellationToken cancellationToken)
-        {    
+        {
+            var validationResult = await _productValidator.ValidateAsync(product, cancellationToken);
+            if (!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors);
+            }
             await _dbContext.AddAsync(product, cancellationToken);
             await _dbContext.SaveChangesAsync(cancellationToken);
-            Log.Information("Product with ID {@ProductId} successfully added in database", product.Id);
+            Log.Information("Product with ID {@ProductId} successfully created and added in database", product.Id);
             return product.Id;
         }
 
@@ -40,6 +48,11 @@ namespace CatalogService.Infrastructure.Repositories
 
         public async Task<Guid> UpdateAsync(Product product, CancellationToken cancellationToken)
         {
+            var validationResult = await _productValidator.ValidateAsync(product, cancellationToken);
+            if (!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors);
+            }
             _dbContext.Entry(product).State = EntityState.Modified;
             await _dbContext.SaveChangesAsync(cancellationToken);
             return product.Id;

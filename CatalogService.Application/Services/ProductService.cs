@@ -19,7 +19,6 @@ namespace CatalogService.Application.Services
     public class ProductService : IProductService
     {
         private IRepository<Product> _productRepository;
-        private IValidator<Product> _productValidator;
         private IValidator<ProductCreateRequest> _createValidator;
         private IValidator<ProductUpdateRequest> _updateValidator;
         private IValidator<ProductUpdateQuantityRequest> _quantityValidator;
@@ -28,11 +27,9 @@ namespace CatalogService.Application.Services
         public ProductService(IRepository<Product> productRepository,
                     IValidator<ProductCreateRequest> createValidator,
             IValidator<ProductUpdateRequest> updateValidator,
-            IValidator<ProductUpdateQuantityRequest> quantityValidator,
-            IValidator<Product> productValidator)
+            IValidator<ProductUpdateQuantityRequest> quantityValidator)
         {
             _productRepository = productRepository;
-            _productValidator = productValidator;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
             _quantityValidator = quantityValidator;
@@ -47,13 +44,8 @@ namespace CatalogService.Application.Services
             }
 
             var product = CreateProductFromRequest(request);
-            validationResult = await _productValidator.ValidateAsync(product, cancellationToken);
-            if (!validationResult.IsValid)
-            {
-                throw new ValidationException(validationResult.Errors);
-            }
 
-            Log.Information("Product with ID {@ProductId} successfully created", product!.Id);
+           
             return await _productRepository.CreateAsync(product!, cancellationToken);
         }
 
@@ -83,12 +75,6 @@ namespace CatalogService.Application.Services
             }
 
             UpdateProductFromRequest(request, product);
-            validationResult = await _productValidator.ValidateAsync(product, cancellationToken);
-            if (!validationResult.IsValid)
-            {
-                throw new ValidationException(validationResult.Errors);
-            }
-
             await _productRepository.UpdateAsync(product, cancellationToken);
             Log.Information("Product with ID {@productId} successfully updated", productId);
             return productId;

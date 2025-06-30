@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CatalogService.Application.Validators
+namespace CatalogService.Infrastructure.Validators
 {
     public class ProductValidator : AbstractValidator<Product>
     {
