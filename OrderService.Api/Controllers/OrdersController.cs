@@ -14,9 +14,10 @@ namespace OrderService.Api.Controllers
     {
         [HttpPost]
         public async Task<ActionResult<Guid>> CreateOrderAsync(
-            [FromBody] CreateOrderCommand command,
+            [FromBody] CreateOrderRequest request,
             CancellationToken cancellationToken)
         {
+            var command = new CreateOrderCommand() { OrderItems = request.Items };
             var result = await mediator.Send(command, cancellationToken);
             return CreatedAtRoute("GetOrder", new { id = result }, result);
         }
@@ -27,7 +28,9 @@ namespace OrderService.Api.Controllers
             Guid id,
             CancellationToken cancellationToken)
         {
-            var result = await mediator.Send(new GetOrderByIdQuery(id), cancellationToken);
+            var result = await mediator.Send(
+                new GetOrderByIdQuery(id), 
+                cancellationToken);
             return Ok(result);
         }
 
@@ -37,9 +40,12 @@ namespace OrderService.Api.Controllers
             Guid id,
             [FromBody]
             NewOrderStatusRequest
-            request)
+            request,
+            CancellationToken cancellationToken)
         {
-            await mediator.Send(new UpdateOrderStatusCommand(id, request.OrderStatus));
+            await mediator.Send(
+                new UpdateOrderStatusCommand(id, request.OrderStatus), 
+                cancellationToken);
             return NoContent();
         }
 
