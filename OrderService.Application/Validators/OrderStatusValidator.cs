@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using OrderService.Application.Commands.UpdateOrderStatusCommand;
+using OrderService.Application.DTO;
 using OrderService.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace OrderService.Application.Validators
 {
-    public class UpdateOrderStatusCommandValidator : AbstractValidator<UpdateOrderStatusCommand>
+    public class OrderStatusValidator : AbstractValidator<OrderStatusValidationModel>
     {
         private static readonly Dictionary<OrderStatus, HashSet<OrderStatus>> StatusTransitionRules = new()
         {
@@ -22,13 +23,13 @@ namespace OrderService.Application.Validators
         };
 
 
-        public UpdateOrderStatusCommandValidator()
+        public OrderStatusValidator()
         {
-            RuleFor(c => c.NewOrderStatus).NotEmpty();
-            RuleFor(c => c)
-                .Must(c => BeValidStatus(c.NewOrderStatus, c.CurrentOrderStatus))
-                .WithMessage(c => 
-                    $"Cannot change order status from '{c.CurrentOrderStatus}' to '{c.NewOrderStatus}'. ");
+            RuleFor(s => s.NewStatus).NotEmpty();
+            RuleFor(s => s)
+                .Must(s => BeValidStatus(s.NewStatus, s.CurrentStatus))
+                .WithMessage(s => 
+                    $"Cannot change order status from '{s.CurrentStatus}' to '{s.NewStatus}'.");
         }
 
         private bool BeValidStatus(string newStatus, OrderStatus currentStatus)

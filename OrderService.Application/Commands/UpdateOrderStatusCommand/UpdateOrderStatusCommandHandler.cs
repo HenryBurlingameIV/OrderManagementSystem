@@ -2,6 +2,7 @@
 using MediatR;
 using OrderManagementSystem.Shared.Contracts;
 using OrderManagementSystem.Shared.Exceptions;
+using OrderService.Application.DTO;
 using OrderService.Domain.Entities;
 using Serilog;
 using System;
@@ -14,7 +15,7 @@ namespace OrderService.Application.Commands.UpdateOrderStatusCommand
 {
     public class UpdateOrderStatusCommandHandler(
         IRepository<Order> orderRepository,
-        IValidator<UpdateOrderStatusCommand> validator
+        IValidator<OrderStatusValidationModel> validator
         ) : IRequestHandler<UpdateOrderStatusCommand>
     {
         public async Task Handle(UpdateOrderStatusCommand request, CancellationToken cancellationToken)
@@ -26,8 +27,9 @@ namespace OrderService.Application.Commands.UpdateOrderStatusCommand
             }
 
             Log.Information("Order with ID {@Id} successfully found", request.Id);
-            request = request with { CurrentOrderStatus = order.Status };
-            var validationResult = await validator.ValidateAsync(request, cancellationToken);
+
+            var validationResult = await validator.ValidateAsync(
+                new OrderStatusValidationModel(order.Status, request.NewOrderStatus), cancellationToken);
             if(!validationResult.IsValid)
             {
                 throw new ValidationException(validationResult.Errors);

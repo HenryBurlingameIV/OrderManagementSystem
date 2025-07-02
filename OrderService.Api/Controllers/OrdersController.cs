@@ -39,7 +39,7 @@ namespace OrderService.Api.Controllers
             NewOrderStatusRequest
             request)
         {
-            await mediator.Send(new UpdateOrderStatusCommand(id, request.OrderStatus, default(OrderStatus)));
+            await mediator.Send(new UpdateOrderStatusCommand(id, request.OrderStatus));
             return NoContent();
         }
 
