@@ -18,28 +18,26 @@ namespace OrderService.Application.Commands.UpdateOrderStatusCommand
         IValidator<OrderStatusValidationModel> validator
         ) : IRequestHandler<UpdateOrderStatusCommand>
     {
-        public async Task Handle(UpdateOrderStatusCommand request, CancellationToken cancellationToken)
+        public async Task Handle(UpdateOrderStatusCommand command, CancellationToken cancellationToken)
         {
-            var order = await orderRepository.GetByIdAsync(request.Id, cancellationToken);
+            var order = await orderRepository.GetByIdAsync(command.Id, cancellationToken);
             if (order is null)
             {
-                throw new NotFoundException($"Order with ID {request.Id} not found.");
+                throw new NotFoundException($"Order with ID {command.Id} not found.");
             }
 
-            Log.Information("Order with ID {@Id} successfully found", request.Id);
+            Log.Information("Order with ID {@Id} successfully found", command.Id);
 
             var validationResult = await validator.ValidateAsync(
-                new OrderStatusValidationModel(order.Status, request.NewOrderStatus), cancellationToken);
+                new OrderStatusValidationModel(order.Status, command.NewOrderStatus), cancellationToken);
             if(!validationResult.IsValid)
             {
                 throw new ValidationException(validationResult.Errors);
             }
 
-            var newStatus = Enum.Parse<OrderStatus>(request.NewOrderStatus, true);
-
-            order.Status = newStatus;
+            order.Status = command.NewOrderStatus;
             await orderRepository.UpdateAsync(order, cancellationToken);
-            Log.Information("Status of order with ID {@Id} successfully updated", request.Id);
+            Log.Information("Status of order with ID {@Id} successfully updated", command.Id);
 
         }
     }

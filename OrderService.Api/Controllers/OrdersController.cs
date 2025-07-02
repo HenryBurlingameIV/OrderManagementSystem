@@ -43,8 +43,11 @@ namespace OrderService.Api.Controllers
             request,
             CancellationToken cancellationToken)
         {
+            if(!Enum.TryParse<OrderStatus>(request.OrderStatus, true, out var newStatus))
+                return BadRequest(new {Message = "Invalid status value" });
+
             await mediator.Send(
-                new UpdateOrderStatusCommand(id, request.OrderStatus), 
+                new UpdateOrderStatusCommand(id, newStatus), 
                 cancellationToken);
             return NoContent();
         }

@@ -7,5 +7,5 @@ using System.Threading.Tasks;
 
 namespace OrderService.Application.DTO
 {
-    public record OrderStatusValidationModel(OrderStatus CurrentStatus, string NewStatus);
+    public record OrderStatusValidationModel(OrderStatus CurrentStatus, OrderStatus NewStatus);
 }

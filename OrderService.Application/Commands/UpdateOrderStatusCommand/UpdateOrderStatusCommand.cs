@@ -8,6 +8,6 @@ using System.Threading.Tasks;
 
 namespace OrderService.Application.Commands.UpdateOrderStatusCommand
 {
-    public record UpdateOrderStatusCommand(Guid Id, string NewOrderStatus) : IRequest;
+    public record UpdateOrderStatusCommand(Guid Id, OrderStatus NewOrderStatus) : IRequest;
 
 }

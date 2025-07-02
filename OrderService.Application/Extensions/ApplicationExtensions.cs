@@ -22,7 +22,7 @@ namespace OrderService.Application.Extensions
             });
 
             services.AddScoped<IValidator<CreateOrderCommand>, CreateOrderCommandValidator>();
-            services.AddScoped<IValidator<OrderStatusValidationModel>, OrderStatusValidator>();
+            services.AddScoped<IValidator<OrderStatusValidationModel>, OrderStatusTransitionValidator>();
         }
     }
 }
