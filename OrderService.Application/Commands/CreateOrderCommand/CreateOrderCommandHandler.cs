@@ -20,14 +20,14 @@ namespace OrderService.Application.Commands.CreateOrderCommand
         IValidator<CreateOrderCommand> validator
         ) : IRequestHandler<CreateOrderCommand, Guid>
     {
-        public async Task<Guid> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
+        public async Task<Guid> Handle(CreateOrderCommand command, CancellationToken cancellationToken)
         {
-            var validationResult = await validator.ValidateAsync(request, cancellationToken);
+            var validationResult = await validator.ValidateAsync(command, cancellationToken);
             if (!validationResult.IsValid)
             {
                 throw new ValidationException(validationResult.Errors);
             }
-            var orderItemsTasks = request.OrderItems
+            var orderItemsTasks = command.OrderItems
                 .Select(item => CreateAndReserveItemFromRequest(item, cancellationToken))
                 .ToList();
 
