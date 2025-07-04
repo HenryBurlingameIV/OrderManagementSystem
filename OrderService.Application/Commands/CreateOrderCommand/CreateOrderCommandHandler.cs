@@ -17,7 +17,8 @@ namespace OrderService.Application.Commands.CreateOrderCommand
     public class CreateOrderCommandHandler(
         IRepository<Order> orderRepository, 
         ICatalogServiceApi catalogServiceClient,
-        IValidator<CreateOrderCommand> validator
+        IValidator<CreateOrderCommand> validator,
+        IKafkaProducer<Order> kafkaProducer
         ) : IRequestHandler<CreateOrderCommand, Guid>
     {
         public async Task<Guid> Handle(CreateOrderCommand command, CancellationToken cancellationToken)
@@ -36,6 +37,8 @@ namespace OrderService.Application.Commands.CreateOrderCommand
             var order = CreateOrder(orderItems, DateTime.UtcNow);
             await orderRepository.CreateAsync(order, cancellationToken);
             Log.Information("Order with Id {@orderId} was created and saved in database", order.Id);
+            await kafkaProducer.ProduceAsync(order, cancellationToken);
+            Log.Information("Order sent to Kafka. OrderId: {OrderId}", order.Id);
             return order.Id;             
         }
 
