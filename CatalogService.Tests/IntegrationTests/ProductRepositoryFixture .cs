@@ -1,5 +1,5 @@
 ﻿using CatalogService.Domain;
-using CatalogService.Infrastructure.Contracts;
+using OrderManagementSystem.Shared.Contracts;
 using CatalogService.Infrastructure;
 using System;
 using System.Collections.Generic;
@@ -8,26 +8,38 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using CatalogService.Infrastructure.Repositories;
+using CatalogService.Infrastructure.Validators;
 
 namespace CatalogService.Tests.IntegrationTests
 {
-    public class ProductRepositoryFixture : IDisposable 
+    public class ProductRepositoryFixture : IDisposable
     {
-        public CatalogDBContext Context { get; }
-        public IRepository<Product> ProductRepository { get; }
-        public ProductRepositoryFixture() 
+        public CatalogDBContext Context { get; set; }
+        public IRepository<Product> ProductRepository { get; set; }
+
+        public ProductRepositoryFixture()
         {
-            var options = new DbContextOptionsBuilder()
+            ResetDatabase().Wait();
+        }
+
+        public async Task ResetDatabase()
+        {
+            if (Context != null)
+            {
+                await Context.DisposeAsync();
+            }
+
+            var options = new DbContextOptionsBuilder<CatalogDBContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
                 .Options;
+
             Context = new CatalogDBContext(options);
-            ProductRepository = new ProductRepository(Context);                          
+            ProductRepository = new ProductRepository(Context, new ProductValidator(Context));
         }
 
         public void Dispose()
         {
-            Context.Database.EnsureDeleted();
-            Context.Dispose();
+            Context?.Dispose();
         }
     }
 }

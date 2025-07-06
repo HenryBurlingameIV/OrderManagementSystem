@@ -1,7 +1,7 @@
 ﻿using CatalogService.Application.Contracts;
 using CatalogService.Domain;
 using CatalogService.Infrastructure;
-using CatalogService.Infrastructure.Contracts;
+using OrderManagementSystem.Shared.Contracts;
 using CatalogService.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
+using ValidationException = FluentValidation.ValidationException;
 
 namespace CatalogService.Tests.IntegrationTests
 {
@@ -19,6 +21,7 @@ namespace CatalogService.Tests.IntegrationTests
         public ProductRepositoryIntegrationTests(ProductRepositoryFixture fixture)
         {
             _fixture = fixture;
+            _fixture.ResetDatabase().Wait();
         }
 
         private Product CreateTestProduct(int variantNumber)
@@ -74,6 +77,23 @@ namespace CatalogService.Tests.IntegrationTests
             Assert.NotNull(savedProduct);
             AssertProductsEqual(product, savedProduct);
 
+        }
+
+        [Fact]
+        public async Task Should_ThrowValidationException_WhenCreatingProductWithDuplicateName()
+        {
+            //Arrange
+            var initialProduct = CreateTestProduct(1);
+            var duplicateProduct = CreateTestProduct(1);
+
+            //Act && Assert
+            var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            {
+                await _fixture.ProductRepository.CreateAsync(initialProduct, CancellationToken.None);
+                await _fixture.ProductRepository.CreateAsync(duplicateProduct, CancellationToken.None);
+
+            });
+            Assert.Contains("Product name must be unique", exception.Message);            
         }
 
         [Fact]
