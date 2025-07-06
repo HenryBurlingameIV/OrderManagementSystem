@@ -3,9 +3,9 @@ using CatalogService.Application.DTO;
 using CatalogService.Application.Services;
 using CatalogService.Application.Validators;
 using CatalogService.Domain;
-using CatalogService.Domain.Exceptions;
+using OrderManagementSystem.Shared.Exceptions;
 using CatalogService.Infrastructure;
-using CatalogService.Infrastructure.Contracts;
+using OrderManagementSystem.Shared.Contracts;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.EntityFrameworkCore;
@@ -73,31 +73,15 @@ namespace CatalogService.Tests.UnitTests
             _productCreateRequestValidator = new ProductCreateRequestValidator();
             _productUpdateRequestValidator = new ProductUpdateRequestValidator();
             _productUpdateQuantityRequestValidator = new ProductUpdateQuantityValidator();
-            _mockProductValidator = new Mock<IValidator<Product>>();
             _mockRepository = new Mock<IRepository<Product>>();
             _productService = new ProductService(
                 _mockRepository.Object,
                 _productCreateRequestValidator,
                 _productUpdateRequestValidator,
-                _productUpdateQuantityRequestValidator,
-                _mockProductValidator.Object
+                _productUpdateQuantityRequestValidator
                 );
 
         }
-
-        private void SetupMockProductNameUniquenessValidation(string expectedName)
-        {
-            _mockProductValidator.Setup(v => v.ValidateAsync(It.Is<Product>(p => 
-                p.Name == expectedName), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Product product, CancellationToken token) =>
-            {
-                if (_products.Any(p => p.Name == product.Name && p.Id != product.Id))
-                    return new ValidationResult(new[] { new ValidationFailure("Name", "Product name must be unique") });
-                else
-                    return new ValidationResult();
-            });
-        } 
-        
 
         [Fact]
         public async Task Should_CreateProduct_WhenRequestIsValid()
@@ -126,7 +110,6 @@ namespace CatalogService.Tests.UnitTests
                     _products.Add(p);
                     return p.Id;
                 });
-            SetupMockProductNameUniquenessValidation(createRequest.Name);
 
             //Act
             var actualId = await _productService.CreateProductAsync(createRequest, CancellationToken.None);
@@ -134,7 +117,6 @@ namespace CatalogService.Tests.UnitTests
             //Assert
             Assert.NotEqual(Guid.Empty, actualId);
             _mockRepository.VerifyAll();
-            _mockProductValidator.VerifyAll();
             Assert.Equal(createRequest.Name, createdProduct!.Name);
             Assert.Equal(createRequest.Description, createdProduct.Description);
             Assert.Equal(createRequest.Category, createdProduct.Category);
@@ -240,7 +222,6 @@ namespace CatalogService.Tests.UnitTests
                     p.Quantity == updateRequest.Quantity), 
                 It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Product p, CancellationToken token) => p.Id);
-            SetupMockProductNameUniquenessValidation(updateRequest.Name);
  
             //Act
             var actual = await _productService.UpdateProductAsync(id, updateRequest, CancellationToken.None);
@@ -253,8 +234,6 @@ namespace CatalogService.Tests.UnitTests
             Assert.Equal(updateRequest.Price, productToUpdate.Price);
             Assert.Equal(updateRequest.Quantity, productToUpdate.Quantity);
             Assert.True(productToUpdate.UpdatedDateUtc > initialUpdatedDate);
-            _mockProductValidator.VerifyAll();
-            _mockProductValidator.VerifyAll();
         }
 
 
@@ -284,7 +263,6 @@ namespace CatalogService.Tests.UnitTests
                 It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Product p, CancellationToken token) => p.Id);
 
-            SetupMockProductNameUniquenessValidation(productToUpdate.Name);
 
             //Act
             var actual = await _productService.UpdateProductAsync(id, updateRequest, CancellationToken.None);
@@ -300,7 +278,6 @@ namespace CatalogService.Tests.UnitTests
             Assert.Equal(1, updatedProduct.Quantity);
             
             _mockRepository.VerifyAll();       
-            _mockProductValidator.VerifyAll();
         }
 
         [Fact]
@@ -338,14 +315,11 @@ namespace CatalogService.Tests.UnitTests
                 Quantity = 10
             };
 
-            SetupMockProductNameUniquenessValidation(updateRequest.Name);
-
 
             //Act & Assert
             var exception = await Assert.ThrowsAsync<NotFoundException>(async () => await _productService.UpdateProductAsync(id, updateRequest, CancellationToken.None));
             Assert.Contains($"Product with ID {id} not found.", exception.Message);
             _mockRepository.VerifyAll();
-            _mockProductValidator.Verify(validator => validator.ValidateAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()), Times.Never());
         }
 
         [Fact]
@@ -353,13 +327,13 @@ namespace CatalogService.Tests.UnitTests
         {
             var updateRequest = new ProductUpdateQuantityRequest()
             {
-                DeltaQuantity = 1
+                DeltaQuantity = -1
             };
 
             var productToUpdate = _products.First();
             var initialQuantity = productToUpdate.Quantity;
             var id = productToUpdate.Id;
-            var expectedQuantity = initialQuantity - updateRequest.DeltaQuantity;
+            var expectedQuantity = initialQuantity + updateRequest.DeltaQuantity;
 
             _mockRepository.Setup(repo => repo.GetByIdAsync(id, It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Guid id, CancellationToken token) => _products.Find(p => p.Id == id));
@@ -385,7 +359,7 @@ namespace CatalogService.Tests.UnitTests
         {
             var updateRequest = new ProductUpdateQuantityRequest()
             {
-                DeltaQuantity = 100
+                DeltaQuantity = -100
             };
 
             var productToUpdate = _products.First();
@@ -397,7 +371,7 @@ namespace CatalogService.Tests.UnitTests
 
             //Act & Assert
             var exception = await Assert.ThrowsAsync<ValidationException>(async() => await _productService.UpdateProductQuantityAsync(id, updateRequest, CancellationToken.None));
-            Assert.Contains($"Product '{productToUpdate.Name}' does not have enough quantity available. Requested: {updateRequest.DeltaQuantity}, Available: {productToUpdate.Quantity}.", exception.Message);
+            Assert.Contains($"Product '{productToUpdate.Name}' does not have enough quantity available. Requested: {Math.Abs(updateRequest.DeltaQuantity)}, Available: {productToUpdate.Quantity}.", exception.Message);
             _mockRepository.VerifyAll();
   
         }
@@ -428,7 +402,7 @@ namespace CatalogService.Tests.UnitTests
         }
 
         [Fact]
-        public async Task Should_ThrowNotFoundException_WhenProductToDeleteNotFoundt()
+        public async Task Should_ThrowNotFoundException_WhenProductToDeleteNotFound()
         {
             //Arrange
             var id = Guid.NewGuid();
