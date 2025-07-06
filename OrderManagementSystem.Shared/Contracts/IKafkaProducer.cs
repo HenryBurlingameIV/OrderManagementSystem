@@ -8,6 +8,6 @@ namespace OrderManagementSystem.Shared.Contracts
 {
     public interface IKafkaProducer <in TMessage> : IDisposable
     {
-        Task ProduceAsync(TMessage message, CancellationToken cancellationToken);
+        Task ProduceAsync(Guid key, TMessage message, CancellationToken cancellationToken);
     }
 }
