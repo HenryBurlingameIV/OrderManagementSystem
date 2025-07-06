@@ -18,7 +18,7 @@ namespace OrderService.Application.Commands.CreateOrderCommand
         IRepository<Order> orderRepository, 
         ICatalogServiceApi catalogServiceClient,
         IValidator<CreateOrderCommand> validator,
-        IKafkaProducer<Order> kafkaProducer
+        IKafkaProducer<OrderEvent> kafkaProducer
         ) : IRequestHandler<CreateOrderCommand, Guid>
     {
         public async Task<Guid> Handle(CreateOrderCommand command, CancellationToken cancellationToken)
@@ -37,7 +37,7 @@ namespace OrderService.Application.Commands.CreateOrderCommand
             var order = CreateOrder(orderItems, DateTime.UtcNow);
             await orderRepository.CreateAsync(order, cancellationToken);
             Log.Information("Order with Id {@orderId} was created and saved in database", order.Id);
-            await kafkaProducer.ProduceAsync(order.Id, order, cancellationToken);
+            await kafkaProducer.ProduceAsync(order.Id, CreateOrderEvent(order), cancellationToken);
             Log.Information("Order sent to Kafka. OrderId: {OrderId}", order.Id);
             return order.Id;             
         }
@@ -64,6 +64,22 @@ namespace OrderService.Application.Commands.CreateOrderCommand
                 Status = OrderStatus.New,
                 CreatedAtUtc = createdTime,
                 UpdatedAtUtc = createdTime
+            };
+        }
+
+        private OrderEvent CreateOrderEvent(Order order)
+        {
+            return new OrderEvent()
+            {
+                Id = order.Id,
+                Status = order.Status.ToString(),
+                CreatedAtUtc = order.CreatedAtUtc,
+                UpdatedAtUtc = order.UpdatedAtUtc,
+                TotalPrice = order.TotalPrice,
+                Items = order.Items
+                    .Select(p =>
+                        new ProductEvent(p.ProductId, p.Price, p.Quantity))
+                    .ToList(),
             };
         }
     }
