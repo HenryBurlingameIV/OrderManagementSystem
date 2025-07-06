@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CatalogService.Domain.Exceptions
+namespace OrderManagementSystem.Shared.Exceptions
 {
     public class NotFoundException : Exception
     {
-           public NotFoundException(string message) : base(message) { }
+        public NotFoundException(string message) : base(message) {  }
     }
 }

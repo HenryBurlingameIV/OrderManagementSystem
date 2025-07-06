@@ -8,6 +8,6 @@ namespace CatalogService.Application.DTO
 {
     public class ProductUpdateQuantityRequest
     {
-        public int Quantity { get; set; }
+        public int DeltaQuantity { get; set; }
     }
 }

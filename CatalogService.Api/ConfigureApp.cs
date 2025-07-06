@@ -1,6 +1,9 @@
-﻿using CatalogService.Api.Middlewares;
-using CatalogService.Application.Extensions;
+﻿using CatalogService.Application.Extensions;
+using CatalogService.Infrastructure;
 using CatalogService.Infrastructure.Extensions;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using OrderManagementSystem.Shared.Middlewares;
 using Serilog;
 
 namespace CatalogService.Api
@@ -21,14 +24,10 @@ namespace CatalogService.Api
         {
             app.UseMiddleware<ExceptionHandlerMiddleware>();
             app.UseSerilogRequestLogging();
-
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
-
-            app.MapGet("/", () => "Hello World!");
+            app.UseSwagger();
+            app.UseSwaggerUI();
+            app.MapGet("/", () => "CatalogService is running!");
+            app.UseRouting();
             app.MapControllers();
         }
 
@@ -39,5 +38,7 @@ namespace CatalogService.Api
                 configuration.ReadFrom.Configuration(context.Configuration);
             });
         }
+
+
     }
 }

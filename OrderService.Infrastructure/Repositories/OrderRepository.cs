@@ -1,0 +1,47 @@
+﻿using Microsoft.EntityFrameworkCore;
+using OrderManagementSystem.Shared.Contracts;
+using OrderService.Domain.Entities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace OrderService.Infrastructure.Repositories
+{
+    public class OrderRepository : IRepository<Order>
+    {
+        private OrderDbContext _orderDbContext;
+
+        public OrderRepository(OrderDbContext orderDbContext) 
+        {
+            _orderDbContext = orderDbContext;
+        }
+        public async Task<Guid> CreateAsync(Order item, CancellationToken cancellationToken)
+        {
+            await _orderDbContext.Orders.AddAsync(item, cancellationToken);
+            await _orderDbContext.SaveChangesAsync();
+            return item.Id;
+        }
+
+        public async Task<Order?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+        {
+            var order = await _orderDbContext.Orders
+                .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
+            return order;
+        }
+
+        public async Task<Guid> UpdateAsync(Order item, CancellationToken cancellationToken)
+        {
+            _orderDbContext.Entry(item).State = EntityState.Modified;
+            await _orderDbContext.SaveChangesAsync();
+            return item.Id;
+        }
+
+        public Task DeleteAsync(Order item, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+    }
+}

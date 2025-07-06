@@ -3,6 +3,7 @@ using CatalogService.Application.DTO;
 using CatalogService.Application.Services;
 using CatalogService.Application.Validators;
 using CatalogService.Domain;
+using CatalogService.Infrastructure.Validators;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System;
