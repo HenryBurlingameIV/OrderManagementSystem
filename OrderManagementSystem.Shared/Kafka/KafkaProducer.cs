@@ -11,7 +11,7 @@ namespace OrderManagementSystem.Shared.Kafka
 {
     public class KafkaProducer<TMessage> : IKafkaProducer<TMessage>
     {
-        private readonly IProducer<Guid, TMessage> _producer;
+        private readonly IProducer<string, TMessage> _producer;
         private readonly string _topic;
         public KafkaProducer(IOptions<KafkaSettings> settings) 
         {
@@ -19,18 +19,17 @@ namespace OrderManagementSystem.Shared.Kafka
             {
                 BootstrapServers = settings.Value.BootstrapServers,
             };
-            _producer = new ProducerBuilder<Guid, TMessage>(conf)
+            _producer = new ProducerBuilder<string, TMessage>(conf)
                 .SetValueSerializer(new KafkaJsonSerializer<TMessage>())
-                .SetKeySerializer(new KafkaGuidSerializer())
                 .Build();
 
             _topic = settings.Value.Topic;
 
         }
 
-        public async Task ProduceAsync(Guid key, TMessage message, CancellationToken cancellationToken)
+        public async Task ProduceAsync(string key, TMessage message, CancellationToken cancellationToken)
         {
-            await _producer.ProduceAsync(_topic, new Message<Guid, TMessage>()
+            await _producer.ProduceAsync(_topic, new Message<string, TMessage>()
             {
                 Key = key,
                 Value = message
