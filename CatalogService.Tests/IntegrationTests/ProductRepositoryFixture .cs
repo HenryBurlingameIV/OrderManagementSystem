@@ -12,34 +12,31 @@ using CatalogService.Infrastructure.Validators;
 
 namespace CatalogService.Tests.IntegrationTests
 {
-    public class ProductRepositoryFixture : IDisposable
+    public class ProductRepositoryFixture : IAsyncLifetime
     {
-        public CatalogDBContext Context { get; set; }
-        public IRepository<Product> ProductRepository { get; set; }
+        public CatalogDBContext Context { get; private set; }
+        public IRepository<Product> ProductRepository { get; private set; }
 
-        public ProductRepositoryFixture()
+        public async Task InitializeAsync()
         {
-            ResetDatabase().Wait();
-        }
-
-        public async Task ResetDatabase()
-        {
-            if (Context != null)
-            {
-                await Context.DisposeAsync();
-            }
-
             var options = new DbContextOptionsBuilder<CatalogDBContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
                 .Options;
 
             Context = new CatalogDBContext(options);
-            ProductRepository = new ProductRepository(Context, new ProductValidator(Context));
+            ProductRepository = new ProductRepository(Context, new ProductValidator(Context)); 
+            await Context.Database.EnsureCreatedAsync();
         }
 
-        public void Dispose()
+        public async Task DisposeAsync()
         {
-            Context?.Dispose();
+            await Context.DisposeAsync();
+        }
+        public async Task ResetDatabase()
+        {
+            await Context.Database.EnsureDeletedAsync();
+            await Context.Database.EnsureCreatedAsync();
+            Context.ChangeTracker.Clear();
         }
     }
 }

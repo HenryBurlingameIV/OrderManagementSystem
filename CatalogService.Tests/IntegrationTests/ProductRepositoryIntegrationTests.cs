@@ -14,14 +14,13 @@ using ValidationException = FluentValidation.ValidationException;
 
 namespace CatalogService.Tests.IntegrationTests
 {
-    public class ProductRepositoryIntegrationTests : IClassFixture<ProductRepositoryFixture>
+    public class ProductRepositoryIntegrationTests : IClassFixture<ProductRepositoryFixture>, IAsyncLifetime
     {
         private readonly ProductRepositoryFixture _fixture;
 
         public ProductRepositoryIntegrationTests(ProductRepositoryFixture fixture)
         {
             _fixture = fixture;
-            _fixture.ResetDatabase().Wait();
         }
 
         private Product CreateTestProduct(int variantNumber)
@@ -170,6 +169,16 @@ namespace CatalogService.Tests.IntegrationTests
                 .CountAsync();
 
             Assert.Equal(2, remainingProducts);
+        }
+
+        public async Task InitializeAsync()
+        {
+            await _fixture.ResetDatabase();
+        }
+
+        public async Task DisposeAsync()
+        {
+            await Task.CompletedTask;
         }
     }    
 }
