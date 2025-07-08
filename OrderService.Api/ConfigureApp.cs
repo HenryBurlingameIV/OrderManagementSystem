@@ -1,5 +1,8 @@
-﻿using OrderManagementSystem.Shared.Middlewares;
+﻿using OrderManagementSystem.Shared.Kafka;
+using OrderManagementSystem.Shared.Middlewares;
+using OrderService.Application.DTO;
 using OrderService.Application.Extensions;
+using OrderService.Domain.Entities;
 using OrderService.Infrastructure.Extensions;
 using Serilog;
 
@@ -13,6 +16,7 @@ namespace OrderService.Api
             var catalogConnection = builder.Configuration["CatalogService:DefaultConnection"];
             builder.Services.AddInfrastructure(dbConnection!, catalogConnection!);
             builder.Services.AddApplication();
+            builder.Services.AddProducer<OrderEvent>(builder.Configuration.GetSection("Kafka:Order"));
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
