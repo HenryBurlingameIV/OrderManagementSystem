@@ -1,4 +1,5 @@
-﻿using OrderService.Domain.Entities;
+﻿using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using OrderService.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -77,6 +78,28 @@ namespace OrderService.Tests.IntegrationTests
                 .Select (i => CreateSampleOrder(GenerateRandomQuantity(maxItemsPerOrder)))
                 .ToList();
         }
+
+        [Fact]
+        public async Task Should_ReturnOrderIdAndSaveToDatabase_WhenCreatingNewOrder()
+        {
+            //Arrange
+            var order = CreateSampleOrder(5);
+            var expectedId = order.Id;
+
+            //Act
+            var actualId = await _fixture.OrderRepository.CreateAsync(order, CancellationToken.None);
+            
+            //Assert
+            Assert.Equal(expectedId, actualId);
+            var savedOrder = await _fixture.DbContext.Orders.FindAsync(order.Id);
+            Assert.NotNull(savedOrder);
+            Assert.Equal(expectedId, savedOrder.Id);
+            Assert.Equal(order.Status, savedOrder.Status); 
+            Assert.Equal(order.TotalPrice, savedOrder.TotalPrice);
+            Assert.Equal(order.Items.Count, savedOrder.Items.Count);
+        }
+
+
 
 
 
