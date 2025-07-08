@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using OrderManagementSystem.Shared.Exceptions;
 using OrderService.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -116,6 +117,19 @@ namespace OrderService.Tests.IntegrationTests
             Assert.Equal(orders[0].Items.Count, actual.Items.Count);
             Assert.Equal(orders[0].Status, actual.Status);
             Assert.Equal(orders[0].Items[0].ProductId, actual.Items[0].ProductId);
+        }
+
+        [Fact]
+        public async Task Should_ReturnNull_WhenOrderNotFound()
+        {
+            //Arrange
+            var orderId = Guid.NewGuid();
+
+            //Act 
+            var actual = await _fixture.OrderRepository.GetByIdAsync(orderId, CancellationToken.None);
+
+            //Assert
+            Assert.Null(actual);          
         }
 
 
