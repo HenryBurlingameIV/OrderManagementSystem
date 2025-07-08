@@ -99,6 +99,25 @@ namespace OrderService.Tests.IntegrationTests
             Assert.Equal(order.Items.Count, savedOrder.Items.Count);
         }
 
+        [Fact]
+        public async Task Should_ReturnOrder_WhenOrderExists()
+        {
+            //Arrange
+            var orders = GenerateSampleOrders(3).ToArray();
+            await _fixture.DbContext.Orders.AddRangeAsync(orders, CancellationToken.None);
+            await _fixture.DbContext.SaveChangesAsync(CancellationToken.None);
+
+            //Act
+            var actual = await _fixture.OrderRepository.GetByIdAsync(orders[0].Id, CancellationToken.None);
+
+            //Assert
+            Assert.NotNull(actual);
+            Assert.Equal(orders[0].Id, actual.Id);
+            Assert.Equal(orders[0].Items.Count, actual.Items.Count);
+            Assert.Equal(orders[0].Status, actual.Status);
+            Assert.Equal(orders[0].Items[0].ProductId, actual.Items[0].ProductId);
+        }
+
 
 
 
