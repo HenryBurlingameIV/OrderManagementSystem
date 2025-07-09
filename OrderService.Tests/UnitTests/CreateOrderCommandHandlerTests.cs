@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace OrderService.Tests.UnitTests
 {
@@ -47,6 +48,13 @@ namespace OrderService.Tests.UnitTests
         private static bool IsValidGuid(string id)
         {
             return Guid.TryParse(id, out _);
+        }
+
+        private async Task AssertValidationException(CreateOrderCommand command, string expectedMessage, int expectedErrorCount)
+        {
+            var exception = await Assert.ThrowsAsync<ValidationException>(() => _handler.Handle(command, CancellationToken.None));
+            Assert.Contains(expectedMessage, exception.Message);
+            Assert.Equal(expectedErrorCount, exception.Errors.Count());
         }
 
         [Fact]
@@ -106,8 +114,7 @@ namespace OrderService.Tests.UnitTests
             };
 
             //Act && Assert
-            var exception = await Assert.ThrowsAsync<ValidationException>(async () => await _handler.Handle(command, CancellationToken.None));
-            Assert.Contains("'Order Items' must not be empty", exception.Message);
+            await AssertValidationException(command, "'Order Items' must not be empty", 1);
         }
 
         [Fact]
@@ -120,8 +127,7 @@ namespace OrderService.Tests.UnitTests
             };
 
             //Act && Assert
-            var exception = await Assert.ThrowsAsync<ValidationException>(async () => await _handler.Handle(command, CancellationToken.None));
-            Assert.Contains("'Order Items' must not be empty", exception.Message);
+            await AssertValidationException(command, "'Order Items' must not be empty", 1);
         }
 
         [Theory]
@@ -139,9 +145,7 @@ namespace OrderService.Tests.UnitTests
             };
 
             //Act & Assert
-            var exception = await Assert.ThrowsAsync<ValidationException>(() => _handler.Handle(command, CancellationToken.None));
-            Assert.Contains("'Quantity' must be greater than '0'", exception.Message);
-            Assert.Single(exception.Errors);
+            await AssertValidationException(command, "'Quantity' must be greater than '0'", 1);
         }
     }
 }
