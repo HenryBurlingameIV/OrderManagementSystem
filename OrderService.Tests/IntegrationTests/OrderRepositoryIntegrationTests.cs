@@ -27,7 +27,7 @@ namespace OrderService.Tests.IntegrationTests
             await _fixture.ResetDataBase();
         }
 
-        private static decimal GenerateRandomPrice(decimal minValue = 0m, decimal maxValue = 1000m, int decimalPlaces = 2)
+        private static decimal GenerateRandomPrice(decimal minValue = 10m, decimal maxValue = 1000m, int decimalPlaces = 2)
         {
             var random = new Random();
             decimal range = maxValue - minValue;
@@ -88,10 +88,10 @@ namespace OrderService.Tests.IntegrationTests
             var expectedId = order.Id;
 
             //Act
-            var actualId = await _fixture.OrderRepository.CreateAsync(order, CancellationToken.None);
+            var resultId = await _fixture.OrderRepository.CreateAsync(order, CancellationToken.None);
             
             //Assert
-            Assert.Equal(expectedId, actualId);
+            Assert.Equal(expectedId, resultId);
             var savedOrder = await _fixture.DbContext.Orders.FindAsync(order.Id);
             Assert.NotNull(savedOrder);
             Assert.Equal(expectedId, savedOrder.Id);
@@ -109,14 +109,14 @@ namespace OrderService.Tests.IntegrationTests
             await _fixture.DbContext.SaveChangesAsync(CancellationToken.None);
 
             //Act
-            var actual = await _fixture.OrderRepository.GetByIdAsync(orders[0].Id, CancellationToken.None);
+            var result = await _fixture.OrderRepository.GetByIdAsync(orders[0].Id, CancellationToken.None);
 
             //Assert
-            Assert.NotNull(actual);
-            Assert.Equal(orders[0].Id, actual.Id);
-            Assert.Equal(orders[0].Items.Count, actual.Items.Count);
-            Assert.Equal(orders[0].Status, actual.Status);
-            Assert.Equal(orders[0].Items[0].ProductId, actual.Items[0].ProductId);
+            Assert.NotNull(result);
+            Assert.Equal(orders[0].Id, result.Id);
+            Assert.Equal(orders[0].Items.Count, result.Items.Count);
+            Assert.Equal(orders[0].Status, result.Status);
+            Assert.Equal(orders[0].Items[0].ProductId, result.Items[0].ProductId);
         }
 
         [Fact]
@@ -126,10 +126,10 @@ namespace OrderService.Tests.IntegrationTests
             var orderId = Guid.NewGuid();
 
             //Act 
-            var actual = await _fixture.OrderRepository.GetByIdAsync(orderId, CancellationToken.None);
+            var result = await _fixture.OrderRepository.GetByIdAsync(orderId, CancellationToken.None);
 
             //Assert
-            Assert.Null(actual);          
+            Assert.Null(result);          
         }
 
         [Fact]
@@ -152,7 +152,7 @@ namespace OrderService.Tests.IntegrationTests
             Assert.NotNull(updatedOrder);
             Assert.Equal(order.Id, resultId);
             Assert.Equal(newStatus, updatedOrder.Status);
-            Assert.NotEqual(originalUpdatedAt, updatedOrder.UpdatedAtUtc);
+            Assert.True(updatedOrder.UpdatedAtUtc > originalUpdatedAt);
             Assert.Equal(order.TotalPrice, updatedOrder.TotalPrice);
         }
 
