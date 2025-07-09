@@ -132,6 +132,30 @@ namespace OrderService.Tests.IntegrationTests
             Assert.Null(actual);          
         }
 
+        [Fact]
+        public async Task Should_UpdateOrderStatusAndTimestamps_WhenOrderExists()
+        {
+            //Arrange
+            var order = CreateSampleOrder(3);
+            await _fixture.DbContext.AddAsync(order, CancellationToken.None);
+            await _fixture.DbContext.SaveChangesAsync();
+            var originalUpdatedAt = order.UpdatedAtUtc;
+            var newStatus = OrderStatus.Processing;
+
+            //Act
+            order.Status = newStatus;
+            order.UpdatedAtUtc = DateTime.UtcNow;
+            var resultId = await _fixture.OrderRepository.UpdateAsync(order, CancellationToken.None);
+
+            //Assert
+            var updatedOrder = await _fixture.DbContext.Orders.FindAsync(resultId);
+            Assert.NotNull(updatedOrder);
+            Assert.Equal(order.Id, resultId);
+            Assert.Equal(newStatus, updatedOrder.Status);
+            Assert.NotEqual(originalUpdatedAt, updatedOrder.UpdatedAtUtc);
+            Assert.Equal(order.TotalPrice, updatedOrder.TotalPrice);
+        }
+
 
 
 
