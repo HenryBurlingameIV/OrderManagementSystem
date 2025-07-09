@@ -108,6 +108,20 @@ namespace OrderService.Tests.UnitTests
             //Act && Assert
             var exception = await Assert.ThrowsAsync<ValidationException>(async () => await _handler.Handle(command, CancellationToken.None));
             Assert.Contains("'Order Items' must not be empty", exception.Message);
-        }         
+        }
+
+        [Fact]
+        public async Task Should_ThrowValidationException_WhenOrderItemsIsNull()
+        {
+            //Arrange
+            var command = new CreateOrderCommand()
+            {
+                OrderItems = null
+            };
+
+            //Act && Assert
+            var exception = await Assert.ThrowsAsync<ValidationException>(async () => await _handler.Handle(command, CancellationToken.None));
+            Assert.Contains("'Order Items' must not be empty", exception.Message);
+        }
     }
 }
