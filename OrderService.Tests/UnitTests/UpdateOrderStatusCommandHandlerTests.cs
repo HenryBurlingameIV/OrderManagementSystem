@@ -31,11 +31,7 @@ namespace OrderService.Tests.UnitTests
         public async Task Should_UpdateOrderStatus_WhenNewStatusIsValid()
         {
             //Arrange
-            var order = new Order()
-            {
-                Id = Guid.NewGuid(),
-                Status = OrderStatus.New,
-            };
+            var order = OrderFactory.CreateSampleOrder(3);
 
             var newOrderStatus = OrderStatus.Processing;
 
