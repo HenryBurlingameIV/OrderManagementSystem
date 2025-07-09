@@ -40,9 +40,61 @@ namespace OrderService.Tests.UnitTests
             return Enumerable
                 .Range(0, count)
                 .Select(i =>
-                    new OrderItemRequest(Guid.NewGuid(), random.Next(0, 10)))   
+                    new OrderItemRequest(Guid.NewGuid(), random.Next(1, 10)))   
                 .ToList();
         }
+
+        private static bool IsValidGuid(string id)
+        {
+            return Guid.TryParse(id, out _);
+        }
+
+        [Fact]
+        public async Task Should_CreateOrder_WhenRequestIsValid()
+        {
+            //Arrange
+            var command = new CreateOrderCommand()
+            {
+                OrderItems = GenerateOrderItemRequests(5)
+            };
+
+            var expectedTotalPrice = command.OrderItems.Sum(i => i.Quantity * 100m);
+            _mockCatalogServiceApi
+                .Setup(api => api.ReserveProductAsync(
+                    It.Is<Guid>(id => command.OrderItems.Any(item => item.Id == id)),
+                    It.Is<int>(q => command.OrderItems.Any(item => item.Quantity == q)),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Guid id, int quantity, CancellationToken cancellationToken) =>
+                {
+                    return new ProductDto(id, 100m, quantity);
+                });
+
+            _mockRepository
+                .Setup(repo => repo.CreateAsync(
+                    It.Is<Order>(o => 
+                        o.Items.Count == command.OrderItems.Count &&
+                        o.Status == OrderStatus.New &&
+                        o.TotalPrice == expectedTotalPrice),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Order order, CancellationToken cancellationToken) =>
+                    order.Id);
+
+
+            _mockKafkaProducer
+                .Setup(producer => producer.ProduceAsync(
+                    It.Is<string>(id => IsValidGuid(id)),
+                    It.Is<OrderEvent>(e => e.Status == "New" && e.TotalPrice == expectedTotalPrice),
+                    It.IsAny<CancellationToken>()))
+                .Verifiable();
+
+            //Act
+            await _handler.Handle(command, CancellationToken.None);
+
+            //Assert
+            _mockCatalogServiceApi.VerifyAll();
+            _mockKafkaProducer.VerifyAll();
+            _mockRepository.VerifyAll();
+        }       
 
     }
 }
