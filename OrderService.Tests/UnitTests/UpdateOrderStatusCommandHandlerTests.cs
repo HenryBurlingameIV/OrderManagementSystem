@@ -27,13 +27,24 @@ namespace OrderService.Tests.UnitTests
             _handler = new UpdateOrderStatusCommandHandler(_mockOrderRepository.Object, _validator);
         }
 
-        [Fact]
-        public async Task Should_UpdateOrderStatus_WhenNewStatusIsValid()
+        [Theory]
+        [InlineData(OrderStatus.New, OrderStatus.Processing)]
+        [InlineData(OrderStatus.Processing, OrderStatus.Ready)]
+        [InlineData(OrderStatus.Ready, OrderStatus.Delivering)]
+        [InlineData(OrderStatus.Delivering, OrderStatus.Delivered)]
+        [InlineData(OrderStatus.New, OrderStatus.Cancelled)]
+        [InlineData(OrderStatus.Processing, OrderStatus.Cancelled)]
+        [InlineData(OrderStatus.Ready, OrderStatus.Cancelled)]
+        [InlineData(OrderStatus.Delivering, OrderStatus.Cancelled)]
+        public async Task Should_UpdateOrderStatus_WhenNewStatusIsValid(OrderStatus from, OrderStatus to)
         {
             //Arrange
             var order = OrderFactory.CreateSampleOrder(3);
+            order.Status = from;
+            var initialUpdatedAt = order.UpdatedAtUtc;
+            var initialTotalPrice = order.TotalPrice;
 
-            var newOrderStatus = OrderStatus.Processing;
+            var newOrderStatus = to;
 
             var command = new UpdateOrderStatusCommand(order.Id, newOrderStatus);
 
@@ -50,13 +61,15 @@ namespace OrderService.Tests.UnitTests
                 .Verifiable();
 
 
-
             //Act
             await _handler.Handle(command, CancellationToken.None);
 
             //Assert
             _mockOrderRepository.VerifyAll();
             Assert.Equal(newOrderStatus, order.Status);
-        }        
+            Assert.True(order.UpdatedAtUtc > initialUpdatedAt);
+            Assert.Equal(initialTotalPrice, order.TotalPrice);
+        }
+
     }
 }
