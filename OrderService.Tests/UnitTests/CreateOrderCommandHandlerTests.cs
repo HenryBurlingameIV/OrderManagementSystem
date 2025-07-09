@@ -123,5 +123,25 @@ namespace OrderService.Tests.UnitTests
             var exception = await Assert.ThrowsAsync<ValidationException>(async () => await _handler.Handle(command, CancellationToken.None));
             Assert.Contains("'Order Items' must not be empty", exception.Message);
         }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public async Task Should_ThrowValidationException_WhenItemQuantityIsInvalid(int invalidQuantity)
+        {
+            //Arrange
+            var command = new CreateOrderCommand()
+            {
+                OrderItems = new()
+                {
+                    new OrderItemRequest(Guid.NewGuid(), invalidQuantity)
+                }
+            };
+
+            //Act & Assert
+            var exception = await Assert.ThrowsAsync<ValidationException>(() => _handler.Handle(command, CancellationToken.None));
+            Assert.Contains("'Quantity' must be greater than '0'", exception.Message);
+            Assert.Single(exception.Errors);
+        }
     }
 }
