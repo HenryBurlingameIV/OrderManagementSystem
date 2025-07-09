@@ -94,7 +94,20 @@ namespace OrderService.Tests.UnitTests
             _mockCatalogServiceApi.VerifyAll();
             _mockKafkaProducer.VerifyAll();
             _mockRepository.VerifyAll();
-        }       
+        }
 
+        [Fact]
+        public async Task Should_ThrowValidationException_WhenOrderItemsIsEmpty()
+        {
+            //Arrange
+            var command = new CreateOrderCommand()
+            {
+                OrderItems = new List<OrderItemRequest>()
+            };
+
+            //Act && Assert
+            var exception = await Assert.ThrowsAsync<ValidationException>(async () => await _handler.Handle(command, CancellationToken.None));
+            Assert.Contains("'Order Items' must not be empty", exception.Message);
+        }         
     }
 }
