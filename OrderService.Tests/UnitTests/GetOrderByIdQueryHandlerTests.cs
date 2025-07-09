@@ -52,6 +52,23 @@ namespace OrderService.Tests.UnitTests
             _mockOrderRepository.VerifyAll();
         }
 
+        [Fact]
+        public async Task Should_ThrowNotFoundException_WhenOrderNotFound()
+        {
+            //Arrange
+            var request = new GetOrderByIdQuery(Guid.NewGuid());
+            _mockOrderRepository
+                .Setup(repo => repo.GetByIdAsync(
+                    request.Id,
+                    CancellationToken.None))
+                .ReturnsAsync((Order)null);
+
+            //Act && Assert
+            var exception = await Assert.ThrowsAsync<NotFoundException>(() => _handler.Handle(request, CancellationToken.None));
+            Assert.Contains($"Order with ID {request.Id} not found.", exception.Message);
+            _mockOrderRepository .VerifyAll();
+        }
+
 
 
 
