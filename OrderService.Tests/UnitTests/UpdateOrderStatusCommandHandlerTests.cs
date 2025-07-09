@@ -47,7 +47,7 @@ namespace OrderService.Tests.UnitTests
 
             _mockOrderRepository
                 .Setup(repo => repo.GetByIdAsync(
-                    It.Is<Guid>(id => id == order.Id),
+                    order.Id,
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(order);
 
@@ -96,19 +96,15 @@ namespace OrderService.Tests.UnitTests
 
             _mockOrderRepository
                 .Setup(repo => repo.GetByIdAsync(
-                    It.Is<Guid>(id => id == order.Id),
+                    order.Id,
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(order);
 
-            _mockOrderRepository
-                .Setup(repo => repo.UpdateAsync(
-                    It.Is<Order>(o => o.Id == order.Id && o.Status == to),
-                    It.IsAny<CancellationToken>()))
-                .Verifiable();
 
             //Act & Assert
             var exception = await Assert.ThrowsAsync<ValidationException>(() => _handler.Handle(command, CancellationToken.None));
             Assert.Contains("Cannot change order status from", exception.Message);
+            _mockOrderRepository.VerifyAll();
         }
 
     }
