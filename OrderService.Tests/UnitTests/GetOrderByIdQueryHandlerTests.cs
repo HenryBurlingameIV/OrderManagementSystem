@@ -24,12 +24,10 @@ namespace OrderService.Tests.UnitTests
             _handler = new GetOrderByIdQueryHandler(_mockOrderRepository.Object);
         }
 
-        [Fact]
-        public async Task Should_ReturnOrderViewModel_WhenOrderIsExists()
+        [Theory, AutoOrderData]
+        public async Task Should_ReturnOrderViewModel_WhenOrderIsExists(List<Order> orders)
         {
             //Arrange
-            var orders = OrderFactory.GenerateSampleOrders(3);
-
             var request = new GetOrderByIdQuery(orders[0].Id);
             _mockOrderRepository
                 .Setup(repo => repo.GetByIdAsync(
