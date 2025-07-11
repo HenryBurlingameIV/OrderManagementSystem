@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Moq;
 using OrderManagementSystem.Shared.Contracts;
+using OrderManagementSystem.Shared.Exceptions;
 using OrderService.Application.Commands.UpdateOrderStatusCommand;
 using OrderService.Application.DTO;
 using OrderService.Application.Validators;
@@ -104,6 +105,23 @@ namespace OrderService.Tests.UnitTests
             var exception = await Assert.ThrowsAsync<ValidationException>(() => _handler.Handle(command, CancellationToken.None));
             Assert.Contains("Cannot change order status from", exception.Message);
             _mockOrderRepository.VerifyAll();
+        }
+
+        [Fact]
+        public async Task Should_ThrowNotFoundException_WhenOrderDoesNotExist()
+        {
+            //Arrange
+            var orderId = Guid.NewGuid();
+            var command = new UpdateOrderStatusCommand(orderId, OrderStatus.Cancelled);
+            _mockOrderRepository
+                .Setup(repo => repo.GetByIdAsync(
+                    orderId,
+                    It.IsAny<CancellationToken>()
+                    ))
+                .ReturnsAsync((Order)null);
+            //Act & Assert
+            var exception = await Assert.ThrowsAsync<NotFoundException>(() => _handler.Handle(command, CancellationToken.None));
+            Assert.Contains($"Order with ID {orderId} not found.", exception.Message);
         }
 
     }
