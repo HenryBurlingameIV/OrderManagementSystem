@@ -101,6 +101,22 @@ namespace OrderService.Tests.UnitTests
             _mockRepository.VerifyAll();
         }
 
+
+        [Fact]
+        public async Task Should_ThrowValidationException_WhenAnyItemQuantityExceedsMaximumAllowed()
+        {
+            //Arange
+            var command = new CreateOrderCommand()
+            {
+                OrderItems = _autoFixture.CreateMany<OrderItemRequest>(3).ToList()
+            };
+            command.OrderItems.Add(new OrderItemRequest(Guid.NewGuid(), 1001));
+
+            //Act & Assert
+            var exception = await Assert.ThrowsAsync<ValidationException>(() => _handler.Handle(command, CancellationToken.None));
+            Assert.Contains("1000", exception.Message);
+        }
+
         [Fact]
         public async Task Should_ThrowValidationException_WhenOrderItemsIsEmpty()
         {
