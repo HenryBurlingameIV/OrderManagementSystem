@@ -28,18 +28,18 @@ namespace OrderService.Tests.UnitTests
         }
 
         [Theory]
-        [InlineData(OrderStatus.New, OrderStatus.Processing)]
-        [InlineData(OrderStatus.Processing, OrderStatus.Ready)]
-        [InlineData(OrderStatus.Ready, OrderStatus.Delivering)]
-        [InlineData(OrderStatus.Delivering, OrderStatus.Delivered)]
-        [InlineData(OrderStatus.New, OrderStatus.Cancelled)]
-        [InlineData(OrderStatus.Processing, OrderStatus.Cancelled)]
-        [InlineData(OrderStatus.Ready, OrderStatus.Cancelled)]
-        [InlineData(OrderStatus.Delivering, OrderStatus.Cancelled)]
-        public async Task Should_UpdateOrderStatus_WhenNewStatusIsValid(OrderStatus from, OrderStatus to)
+        [InlineAutoOrderData(OrderStatus.New, OrderStatus.Processing)]
+        [InlineAutoOrderData(OrderStatus.Processing, OrderStatus.Ready)]
+        [InlineAutoOrderData(OrderStatus.Ready, OrderStatus.Delivering)]
+        [InlineAutoOrderData(OrderStatus.Delivering, OrderStatus.Delivered)]
+        [InlineAutoOrderData(OrderStatus.New, OrderStatus.Cancelled)]
+        [InlineAutoOrderData(OrderStatus.Processing, OrderStatus.Cancelled)]
+        [InlineAutoOrderData(OrderStatus.Ready, OrderStatus.Cancelled)]
+        [InlineAutoOrderData(OrderStatus.Delivering, OrderStatus.Cancelled)]
+        public async Task Should_UpdateOrderStatus_WhenNewStatusIsValid(OrderStatus from, OrderStatus to, Order order)
         {
             //Arrange
-            var order = OrderFactory.CreateSampleOrder(3);
+            //var order = OrderFactory.CreateSampleOrder(3);
             order.Status = from;
             var initialUpdatedAt = order.UpdatedAtUtc;
             var initialTotalPrice = order.TotalPrice;
@@ -70,25 +70,24 @@ namespace OrderService.Tests.UnitTests
 
 
         [Theory]
-        [InlineData(OrderStatus.New, OrderStatus.New)]
-        [InlineData(OrderStatus.Processing, OrderStatus.Processing)]
-        [InlineData(OrderStatus.Ready, OrderStatus.Ready)]
-        [InlineData(OrderStatus.Delivering, OrderStatus.Delivering)]
-        [InlineData(OrderStatus.Delivered, OrderStatus.Delivered)]
-        [InlineData(OrderStatus.Cancelled, OrderStatus.Cancelled)]
-        [InlineData(OrderStatus.Cancelled, OrderStatus.New)]
-        [InlineData(OrderStatus.Cancelled, OrderStatus.Ready)]
-        [InlineData(OrderStatus.Cancelled, OrderStatus.Delivering)]
-        [InlineData(OrderStatus.Cancelled, OrderStatus.Delivered)]
-        [InlineData(OrderStatus.Delivered, OrderStatus.New)]
-        [InlineData(OrderStatus.Delivered, OrderStatus.Processing)]
-        [InlineData(OrderStatus.Delivered, OrderStatus.Ready)]
-        [InlineData(OrderStatus.Delivered, OrderStatus.Delivering)]
-        [InlineData(OrderStatus.Delivered, OrderStatus.Cancelled)]
-        public async Task Should_ThrowValidationException_WhenNewStatusIsInvalid(OrderStatus from, OrderStatus to)
+        [InlineAutoOrderData(OrderStatus.New, OrderStatus.New)]
+        [InlineAutoOrderData(OrderStatus.Processing, OrderStatus.Processing)]
+        [InlineAutoOrderData(OrderStatus.Ready, OrderStatus.Ready)]
+        [InlineAutoOrderData(OrderStatus.Delivering, OrderStatus.Delivering)]
+        [InlineAutoOrderData(OrderStatus.Delivered, OrderStatus.Delivered)]
+        [InlineAutoOrderData(OrderStatus.Cancelled, OrderStatus.Cancelled)]
+        [InlineAutoOrderData(OrderStatus.Cancelled, OrderStatus.New)]
+        [InlineAutoOrderData(OrderStatus.Cancelled, OrderStatus.Ready)]
+        [InlineAutoOrderData(OrderStatus.Cancelled, OrderStatus.Delivering)]
+        [InlineAutoOrderData(OrderStatus.Cancelled, OrderStatus.Delivered)]
+        [InlineAutoOrderData(OrderStatus.Delivered, OrderStatus.New)]
+        [InlineAutoOrderData(OrderStatus.Delivered, OrderStatus.Processing)]
+        [InlineAutoOrderData(OrderStatus.Delivered, OrderStatus.Ready)]
+        [InlineAutoOrderData(OrderStatus.Delivered, OrderStatus.Delivering)]
+        [InlineAutoOrderData(OrderStatus.Delivered, OrderStatus.Cancelled)]
+        public async Task Should_ThrowValidationException_WhenNewStatusIsInvalid(OrderStatus from, OrderStatus to, Order order)
         {
             //Arrange
-            var order = OrderFactory.CreateSampleOrder(3);
             order.Status = from;
             var initialUpdatedAt = order.UpdatedAtUtc;
             var initialTotalPrice = order.TotalPrice;
