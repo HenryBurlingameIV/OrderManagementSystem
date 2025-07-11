@@ -13,9 +13,9 @@ namespace OrderService.Tests.IntegrationTests
     {
         private readonly OrderRepositoryFixture _fixture;
 
-        public OrderRepositoryIntegrationTests(OrderRepositoryFixture fixture) 
+        public OrderRepositoryIntegrationTests(OrderRepositoryFixture orderRepositoryFixture) 
         {
-            _fixture = fixture;
+            _fixture = orderRepositoryFixture;
         }
         public async Task DisposeAsync()
         {
@@ -28,11 +28,10 @@ namespace OrderService.Tests.IntegrationTests
         }
 
 
-        [Fact]
-        public async Task Should_ReturnOrderIdAndSaveToDatabase_WhenCreatingNewOrder()
+        [Theory, AutoOrderData]
+        public async Task Should_ReturnOrderIdAndSaveToDatabase_WhenCreatingNewOrder(Order order)
         {
             //Arrange
-            var order = OrderFactory.CreateSampleOrder(5);
             var expectedId = order.Id;
 
             //Act

@@ -14,8 +14,17 @@ namespace OrderService.Tests
         public void Customize(IFixture fixture)
         {
             fixture.Customize<OrderItem>(composer => composer
-                .With(oi => oi.Price, fixture.Create<decimal>() % 10000 + 1)
-                .With(pi => pi.Quantity, fixture.Create<int>() % 100 + 1)
+                .FromFactory(() =>
+                {
+                    var item = new OrderItem()
+                    {
+                        Price = fixture.Create<decimal>() % 1000 + 1,
+                        Quantity = fixture.Create<int>() % 1000 + 1,
+                    };
+                    return item;
+                })
+                .OmitAutoProperties()
+
             );
 
             var createdAt = DateTime.UtcNow;
@@ -35,7 +44,8 @@ namespace OrderService.Tests
 
                     order.TotalPrice = order.Items.Sum(oi => oi.Price * oi.Quantity);
                     return order;
-                }));
+                })
+                .OmitAutoProperties());
         }
     }
 }
