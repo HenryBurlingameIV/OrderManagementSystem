@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using AutoFixture;
+using FluentValidation;
 using Moq;
 using OrderManagementSystem.Shared.Contracts;
 using OrderService.Application.Commands.CreateOrderCommand;
@@ -18,12 +19,14 @@ namespace OrderService.Tests.UnitTests
     public class CreateOrderCommandHandlerTests
     {
         private CreateOrderCommandHandler _handler;
+        private Fixture _autoFixture;
         private IValidator<CreateOrderCommand> _validator;
         private Mock<IRepository<Order>> _mockRepository;
         private Mock<IKafkaProducer<OrderEvent>> _mockKafkaProducer;
         private Mock<ICatalogServiceApi> _mockCatalogServiceApi;
         public CreateOrderCommandHandlerTests() 
         {
+            _autoFixture = new Fixture();
             _validator = new CreateOrderCommandValidator();
             _mockRepository = new Mock<IRepository<Order>>();
             _mockKafkaProducer = new Mock<IKafkaProducer<OrderEvent>>();
@@ -35,15 +38,6 @@ namespace OrderService.Tests.UnitTests
                 _mockKafkaProducer.Object);
         }
 
-        private List<OrderItemRequest> GenerateOrderItemRequests(int count)
-        {
-            var random = new Random();
-            return Enumerable
-                .Range(0, count)
-                .Select(i =>
-                    new OrderItemRequest(Guid.NewGuid(), random.Next(1, 10)))   
-                .ToList();
-        }
 
         private static bool IsValidGuid(string id)
         {
@@ -63,7 +57,7 @@ namespace OrderService.Tests.UnitTests
             //Arrange
             var command = new CreateOrderCommand()
             {
-                OrderItems = GenerateOrderItemRequests(5)
+                OrderItems = _autoFixture.CreateMany<OrderItemRequest>(5).ToList()
             };
 
             var expectedTotalPrice = command.OrderItems.Sum(i => i.Quantity * 100m);
