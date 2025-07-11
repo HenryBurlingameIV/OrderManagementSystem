@@ -47,11 +47,10 @@ namespace OrderService.Tests.IntegrationTests
             Assert.Equal(order.Items.Count, savedOrder.Items.Count);
         }
 
-        [Fact]
-        public async Task Should_ReturnOrder_WhenOrderExists()
+        [Theory, AutoOrderData]
+        public async Task Should_ReturnOrder_WhenOrderExists(Order[] orders)
         {
             //Arrange
-            var orders = OrderFactory.GenerateSampleOrders(3).ToArray();
             await _fixture.DbContext.Orders.AddRangeAsync(orders, CancellationToken.None);
             await _fixture.DbContext.SaveChangesAsync(CancellationToken.None);
 
@@ -79,11 +78,10 @@ namespace OrderService.Tests.IntegrationTests
             Assert.Null(result);          
         }
 
-        [Fact]
-        public async Task Should_UpdateOrderStatusAndTimestamps_WhenOrderExists()
+        [Theory, AutoOrderData]
+        public async Task Should_UpdateOrderStatusAndTimestamps_WhenOrderExists(Order order)
         {
             //Arrange
-            var order = OrderFactory.CreateSampleOrder(3);
             await _fixture.DbContext.AddAsync(order, CancellationToken.None);
             await _fixture.DbContext.SaveChangesAsync();
             var originalUpdatedAt = order.UpdatedAtUtc;
