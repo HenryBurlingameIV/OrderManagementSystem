@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderService.Tests
+namespace OrderService.Tests.OrderFixture
 {
     public class AutoOrderDataAttribute : AutoDataAttribute
     {

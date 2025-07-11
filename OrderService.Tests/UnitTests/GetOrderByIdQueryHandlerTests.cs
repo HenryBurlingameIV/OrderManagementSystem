@@ -5,6 +5,7 @@ using OrderService.Application.Commands.UpdateOrderStatusCommand;
 using OrderService.Application.DTO;
 using OrderService.Application.Queries.OrderQuery;
 using OrderService.Domain.Entities;
+using OrderService.Tests.OrderFixture;
 using System;
 using System.Collections.Generic;
 using System.Linq;

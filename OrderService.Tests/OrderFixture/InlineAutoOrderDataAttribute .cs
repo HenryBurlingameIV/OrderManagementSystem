@@ -5,11 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderService.Tests
+namespace OrderService.Tests.OrderFixture
 {
     public class InlineAutoOrderDataAttribute : CompositeDataAttribute
     {
-        public InlineAutoOrderDataAttribute(params object[] values) 
+        public InlineAutoOrderDataAttribute(params object[] values)
             : base(new InlineDataAttribute(values), new AutoOrderDataAttribute())
         { }
     }

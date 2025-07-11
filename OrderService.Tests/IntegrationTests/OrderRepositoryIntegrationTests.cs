@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using OrderManagementSystem.Shared.Exceptions;
 using OrderService.Domain.Entities;
+using OrderService.Tests.OrderFixture;
 using System;
 using System.Collections.Generic;
 using System.Linq;

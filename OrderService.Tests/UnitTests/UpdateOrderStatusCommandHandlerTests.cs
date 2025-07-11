@@ -6,6 +6,7 @@ using OrderService.Application.Commands.UpdateOrderStatusCommand;
 using OrderService.Application.DTO;
 using OrderService.Application.Validators;
 using OrderService.Domain.Entities;
+using OrderService.Tests.OrderFixture;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,7 +41,6 @@ namespace OrderService.Tests.UnitTests
         public async Task Should_UpdateOrderStatus_WhenNewStatusIsValid(OrderStatus from, OrderStatus to, Order order)
         {
             //Arrange
-            //var order = OrderFactory.CreateSampleOrder(3);
             order.Status = from;
             var initialUpdatedAt = order.UpdatedAtUtc;
             var initialTotalPrice = order.TotalPrice;

@@ -27,6 +27,9 @@ namespace OrderService.Tests.UnitTests
         public CreateOrderCommandHandlerTests() 
         {
             _autoFixture = new Fixture();
+            _autoFixture.Customize<OrderItemRequest>(composer => composer
+                .With(x => x.Quantity, () => new Random().Next(1, 1001))
+            );
             _validator = new CreateOrderCommandValidator();
             _mockRepository = new Mock<IRepository<Order>>();
             _mockKafkaProducer = new Mock<IKafkaProducer<OrderEvent>>();
