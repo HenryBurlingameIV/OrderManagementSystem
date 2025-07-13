@@ -36,6 +36,7 @@ namespace OrderService.Application.Commands.UpdateOrderStatusCommand
             }
 
             order.Status = command.NewOrderStatus;
+            order.UpdatedAtUtc = DateTime.UtcNow;
             await orderRepository.UpdateAsync(order, cancellationToken);
             Log.Information("Status of order with ID {@Id} successfully updated", command.Id);
 

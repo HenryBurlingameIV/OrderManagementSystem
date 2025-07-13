@@ -10,12 +10,19 @@ namespace OrderService.Application.Validators
 {
     public class CreateOrderCommandValidator : AbstractValidator<CreateOrderCommand>
     {
-        public CreateOrderCommandValidator() 
+        public CreateOrderCommandValidator()
         {
             RuleFor(command => command.OrderItems)
-                .NotEmpty()
-                .Must(items => items.Count < 100);
-            RuleForEach(command => command.OrderItems).SetValidator(new OrderItemRequestValidator());
+                .NotNull()
+                .DependentRules(() =>
+                {
+                    RuleFor(command => command.OrderItems)
+                        .NotEmpty()
+                        .Must(items => items.Count < 100);                       
+                    RuleForEach(command => command.OrderItems)
+                        .SetValidator(new OrderItemRequestValidator());
+                });
+
         }
     }
 }
