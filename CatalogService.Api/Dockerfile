@@ -23,7 +23,6 @@ RUN dotnet publish "CatalogService.Api.csproj" -c $BUILD_CONFIGURATION -o /app/p
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 EXPOSE 8080
-EXPOSE 8081
 
 COPY --from=publish /app/publish .
 COPY --from=build /app/CatalogService.Infrastructure/Migrations ./Migrations/
