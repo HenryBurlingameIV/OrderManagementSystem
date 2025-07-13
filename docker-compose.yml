@@ -3,7 +3,7 @@
 services:
   catalog_service_api:
     build:
-      context: .
+      context: .\CatalogService.Api
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
