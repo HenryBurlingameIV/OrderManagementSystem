@@ -2,11 +2,11 @@
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /app
 
-
-COPY ["OrderService.Api/OrderService.Api.csproj", "OrderService.Api/"]
-COPY ["OrderService.Application/OrderService.Application.csproj", "OrderService.Application/"]
-COPY ["OrderService.Domain/OrderService.Domain.csproj", "OrderService.Domain/"]
-COPY ["OrderService.OrderService/OrderService.Infrastructure.csproj", "OrderService.Infrastructure/"]
+COPY ["./OrderManagementSystem.Shared/OrderManagementSystem.Shared.csproj", "OrderManagementSystem.Shared/"]
+COPY ["./OrderService.Api/OrderService.Api.csproj", "OrderService.Api/"]
+COPY ["./OrderService.Application/OrderService.Application.csproj", "OrderService.Application/"]
+COPY ["./OrderService.Domain/OrderService.Domain.csproj", "OrderService.Domain/"]
+COPY ["./OrderService.Infrastructure/OrderService.Infrastructure.csproj", "OrderService.Infrastructure/"]
 RUN dotnet restore "OrderService.Api/OrderService.Api.csproj"
 
 
