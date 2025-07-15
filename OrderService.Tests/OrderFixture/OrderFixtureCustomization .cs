@@ -18,12 +18,14 @@ namespace OrderService.Tests.OrderFixture
                 {
                     var item = new OrderItem()
                     {
+                        ProductId = Guid.NewGuid(),
                         Price = fixture.Create<decimal>() % 1000 + 1,
                         Quantity = fixture.Create<int>() % 1000 + 1,
                     };
                     return item;
                 })
                 .OmitAutoProperties()
+
 
             );
 
