@@ -1,8 +1,10 @@
 ﻿using FluentValidation;
+using Microsoft.VisualStudio.TestPlatform.Common.Interfaces;
 using Moq;
 using OrderManagementSystem.Shared.Contracts;
 using OrderManagementSystem.Shared.Exceptions;
 using OrderService.Application.Commands.UpdateOrderStatusCommand;
+using OrderService.Application.Contracts;
 using OrderService.Application.DTO;
 using OrderService.Application.Validators;
 using OrderService.Domain.Entities;
@@ -19,6 +21,7 @@ namespace OrderService.Tests.UnitTests
     {
         private IValidator<OrderStatusValidationModel> _validator;
         private Mock<IRepository<Order>> _mockOrderRepository;
+        private Mock<ICatalogServiceApi> _mockCatalogServiceApi;
         private UpdateOrderStatusCommandHandler _handler;
 
 
@@ -26,7 +29,8 @@ namespace OrderService.Tests.UnitTests
         {
             _validator = new OrderStatusTransitionValidator();
             _mockOrderRepository = new Mock<IRepository<Order>>();
-            _handler = new UpdateOrderStatusCommandHandler(_mockOrderRepository.Object, _validator);
+            _mockCatalogServiceApi = new Mock<ICatalogServiceApi>();
+            _handler = new UpdateOrderStatusCommandHandler(_mockOrderRepository.Object, _validator, _mockCatalogServiceApi.Object);
         }
 
         [Theory]
@@ -58,7 +62,6 @@ namespace OrderService.Tests.UnitTests
                     It.IsAny<CancellationToken>()))
                 .Verifiable();
 
-
             //Act
             await _handler.Handle(command, CancellationToken.None);
 
@@ -67,6 +70,43 @@ namespace OrderService.Tests.UnitTests
             Assert.Equal(to, order.Status);
             Assert.True(order.UpdatedAtUtc > initialUpdatedAt);
             Assert.Equal(initialTotalPrice, order.TotalPrice);
+        }
+
+        [Theory]
+        [InlineAutoOrderData(OrderStatus.New, OrderStatus.Cancelled)]
+        [InlineAutoOrderData(OrderStatus.Processing, OrderStatus.Cancelled)]
+        [InlineAutoOrderData(OrderStatus.Ready, OrderStatus.Cancelled)]
+        [InlineAutoOrderData(OrderStatus.Delivering, OrderStatus.Cancelled)]
+        public async Task Should_ReleaseProducts_WhenOrderWasCancelled(OrderStatus from, OrderStatus to, Order order)
+        {
+            //Arrange
+            order.Status = from;
+            var initialUpdatedAt = order.UpdatedAtUtc;
+            var command = new UpdateOrderStatusCommand(order.Id, to);
+
+            _mockOrderRepository
+                .Setup(repo => repo.GetByIdAsync(
+                    order.Id,
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(order);
+
+            _mockOrderRepository
+                .Setup(repo => repo.UpdateAsync(
+                    It.Is<Order>(o => o.Id == order.Id && o.Status == to),
+                    It.IsAny<CancellationToken>()))
+                .Verifiable();
+
+            //Act
+            await _handler.Handle(command, CancellationToken.None);
+
+            //Assert
+            Assert.True(order.UpdatedAtUtc > initialUpdatedAt);
+            _mockOrderRepository.VerifyAll();
+            _mockCatalogServiceApi
+                .Verify(api => api.ReleaseProductAsync(
+                    It.Is<Guid>(id => order.Items.Any(item => item.ProductId == id)),
+                    It.Is<int>(quantity => order.Items.Any(item => item.Quantity == quantity)),
+                    It.IsAny<CancellationToken>()), Times.Exactly(order.Items.Count));
         }
 
 
