@@ -35,7 +35,6 @@ namespace CatalogService.Tests.IntegrationTests
         public async Task ResetDatabase()
         {
             await Context.Database.EnsureDeletedAsync();
-            await Context.Database.EnsureCreatedAsync();
             Context.ChangeTracker.Clear();
         }
     }

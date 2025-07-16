@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using ValidationException = FluentValidation.ValidationException;
+using CatalogService.Tests.ProductFixture;
 
 namespace CatalogService.Tests.IntegrationTests
 {
@@ -23,67 +24,26 @@ namespace CatalogService.Tests.IntegrationTests
             _fixture = fixture;
         }
 
-        private Product CreateTestProduct(int variantNumber)
-        {
-            return new Product()
-            {
-                Id = Guid.NewGuid(),
-                Name =$"test{variantNumber}",
-                Description = $"test{variantNumber}",
-                Category = $"test{variantNumber}",
-                Price = variantNumber*100,
-                Quantity = variantNumber*1,
-                UpdatedDateUtc = DateTime.UtcNow,
-                CreatedDateUtc = DateTime.UtcNow
-            };
-        }
-
-        private async Task<IEnumerable<Product>> AddTestProducts(int count)
-        {
-            List<Product> products = new List<Product>();
-            for (int i = 1; i <= count; i++)
-                products.Add(CreateTestProduct(i));
-
-            await _fixture.Context.AddRangeAsync(products);
-            await _fixture.Context.SaveChangesAsync();
-            return products;
-        }
-
-        private void AssertProductsEqual(Product expected, Product actual)
-        {
-            Assert.Equal(expected.Id, actual.Id);
-            Assert.Equal(expected.Name, actual.Name);
-            Assert.Equal(expected.Description, actual.Description);
-            Assert.Equal(expected.Category, actual.Category);
-            Assert.Equal(expected.Price, actual.Price);
-            Assert.Equal(expected.Quantity, actual.Quantity);
-            Assert.Equal(expected.CreatedDateUtc, actual.CreatedDateUtc);
-            Assert.Equal(expected.UpdatedDateUtc, actual.UpdatedDateUtc);
-        }
-
-        [Fact]
-        public async Task Should_ReturnIdAndPersistProduct_WhenCreateNewProduct()
+        [Theory, AutoProductData]
+        public async Task Should_ReturnProductIdAndSaveToDataBase_WhenCreateNewProduct(Product product)
         {
             //Arrange
-            var product = CreateTestProduct(1);
+            var expectedId = product.Id;
 
             //Act
             var actualId = await _fixture.ProductRepository.CreateAsync(product, CancellationToken.None);
 
             //Assert
-            Assert.Equal(product.Id, actualId);
+            Assert.Equal(expectedId, actualId);
             var savedProduct = await _fixture.Context.Products.FindAsync(product.Id);
-            Assert.NotNull(savedProduct);
-            AssertProductsEqual(product, savedProduct);
-
+            Assert.Equivalent(product, savedProduct);
         }
 
-        [Fact]
-        public async Task Should_ThrowValidationException_WhenCreatingProductWithDuplicateName()
+        [Theory, AutoProductData]
+        public async Task Should_ThrowValidationException_WhenCreatingProductWithDuplicateName(Product initialProduct, Product duplicateProduct)
         {
             //Arrange
-            var initialProduct = CreateTestProduct(1);
-            var duplicateProduct = CreateTestProduct(1);
+            duplicateProduct.Name = initialProduct.Name;
 
             //Act && Assert
             var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
@@ -95,19 +55,19 @@ namespace CatalogService.Tests.IntegrationTests
             Assert.Contains("Product name must be unique", exception.Message);            
         }
 
-        [Fact]
-        public async Task Should_ReturnProduct_WhenProductExists()
+        [Theory, AutoProductData]
+        public async Task Should_ReturnProduct_WhenProductExists(List<Product> products)
         {
             //Arrange
-            var addedProducts = await AddTestProducts(3);
-            var expectedProduct = addedProducts.First();
+            await _fixture.Context.Products.AddRangeAsync(products);
+            await _fixture.Context.SaveChangesAsync();
+            var expectedProduct = products.First();
 
             //Act
             var actualProduct = await _fixture.ProductRepository!.GetByIdAsync(expectedProduct.Id, CancellationToken.None);
 
             //Assert
-            Assert.NotNull(actualProduct);
-            AssertProductsEqual(expectedProduct, actualProduct);
+            Assert.Equivalent(expectedProduct, actualProduct);
 
         }
 
@@ -123,14 +83,14 @@ namespace CatalogService.Tests.IntegrationTests
             Assert.Null(actualProduct);
         }
 
-        [Fact]
-        public async Task Should_SaveAllChanges_WhenProductIsUpdated()
+        [Theory, AutoProductData]
+        public async Task Should_SaveAllChanges_WhenProductIsUpdated(Product product)
         {
             //Arrange
-            var product = CreateTestProduct(1);
             await _fixture.Context.Products.AddAsync(product);
             await _fixture.Context.SaveChangesAsync();
-            product.Name = "Updated Name";
+            string newProductName = "Updated";
+            product.Name = newProductName;
             product.UpdatedDateUtc = DateTime.UtcNow;
 
 
@@ -140,16 +100,17 @@ namespace CatalogService.Tests.IntegrationTests
             //Assert
             var dbProduct = await _fixture.Context.Products.FindAsync(product.Id);
             Assert.NotNull(dbProduct);
-            Assert.Equal("Updated Name", dbProduct!.Name);
+            Assert.Equal(newProductName, dbProduct!.Name);
             Assert.NotEqual(dbProduct.CreatedDateUtc, dbProduct.UpdatedDateUtc);            
 
         }
 
-        [Fact]
-        public async Task Should_RemoveProduct_WhenProductExists()
+        [Theory, AutoProductData]
+        public async Task Should_RemoveProduct_WhenProductExists(List<Product> initialProducts)
         {
             //Arrange
-            var initialProducts = await AddTestProducts(3);
+            await _fixture.Context.Products.AddRangeAsync(initialProducts);
+            await _fixture.Context.SaveChangesAsync();
             var productToDelete = initialProducts.First();
             var initialCount = await _fixture.Context.Products.CountAsync();
 
