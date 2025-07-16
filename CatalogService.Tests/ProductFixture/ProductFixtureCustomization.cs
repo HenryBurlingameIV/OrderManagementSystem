@@ -33,6 +33,14 @@ namespace CatalogService.Tests.ProductFixture
                     .With(p => p.Category, "Electronics")
                     );
 
+            fixture
+                .Customize<ProductUpdateRequest>(composer => composer
+                    .With(p => p.Name, () => Guid.NewGuid().ToString())
+                    .With(p => p.Price, () => Math.Round((decimal)new Random().NextDouble() * 100, 2))
+                    .With(p => p.Quantity, () => new Random().Next(1, 101))
+                    .With(p => p.Category, "Groceries")
+                );
+
 
         }
     }
