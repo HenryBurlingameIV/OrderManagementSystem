@@ -15,6 +15,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using ValidationException = FluentValidation.ValidationException;
 using ValidationResult = FluentValidation.Results.ValidationResult;
+using AutoFixture;
 namespace CatalogService.Tests.UnitTests
 {
     public class ProductServiceUnitTests
@@ -95,6 +96,8 @@ namespace CatalogService.Tests.UnitTests
                 Price = 400,
                 Quantity = 4
             };
+            createRequest = new Fixture().Create<ProductCreateRequest>();
+            
             Product createdProduct = null;
             _mockRepository.Setup(repo => repo.CreateAsync(
                 It.Is<Product>(p => 
