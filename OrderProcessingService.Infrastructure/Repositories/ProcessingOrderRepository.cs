@@ -1,0 +1,42 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
+using OrderManagementSystem.Shared.Contracts;
+using OrderProcessingService.Domain.Entities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace OrderProcessingService.Infrastructure.Repositories
+{
+    public class ProcessingOrderRepository(OrderProcessingDbContext dbContext) : IRepository<ProcessingOrder>
+    {
+        public async Task<Guid> CreateAsync(ProcessingOrder item, CancellationToken cancellationToken)
+        {
+            await dbContext.AddAsync(item, cancellationToken);
+            await dbContext.SaveChangesAsync();
+            return item.Id;
+        }
+
+
+        public async Task<ProcessingOrder?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+        {
+            var processingOrder = await dbContext.ProcessingOrders
+                .Include(po => po.Items)
+                .FirstOrDefaultAsync(po => po.Id == id, cancellationToken);
+            return processingOrder;
+        }
+
+        public async Task<Guid> UpdateAsync(ProcessingOrder item, CancellationToken cancellationToken)
+        {
+            dbContext.Entry(item).State = EntityState.Modified;
+            await dbContext.SaveChangesAsync();
+            return item.Id;
+        }
+        public Task DeleteAsync(ProcessingOrder item, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\OrderManagementSystem.Shared\OrderManagementSystem.Shared.csproj" />
     <ProjectReference Include="..\OrderProcessingService.Domain\OrderProcessingService.Domain.csproj" />
   </ItemGroup>
 
