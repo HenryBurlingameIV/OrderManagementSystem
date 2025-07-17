@@ -21,7 +21,7 @@ namespace OrderProcessingService.Domain.Entities
 
         public ProcessingStatus Status { get; set; }
 
-        public string? Tracking { get; set; }
+        public string? TrackingNumber { get; set; }
     }
 
     public enum Stage

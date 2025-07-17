@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using OrderProcessingService.Domain.Entities;
+using OrderProcessingService.Infrastructure.EntityConfigurations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace OrderProcessingService.Infrastructure
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            
+            modelBuilder.ApplyConfiguration(new ProcessingOrderConfiguration());
         }
 
         public DbSet<ProcessingOrder> ProcessingOrders { get; set; }       
