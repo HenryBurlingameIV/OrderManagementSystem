@@ -35,6 +35,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderProcessingService.Api"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderProcessingService.Application", "OrderProcessingService.Application\OrderProcessingService.Application.csproj", "{38D98787-88C9-4A5A-ADE1-2D242EA3A0DC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderProcessingService.Domain", "OrderProcessingService.Domain\OrderProcessingService.Domain.csproj", "{76AF435C-7AFB-4D59-81BE-8B3C7AB57665}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -93,6 +95,10 @@ Global
 		{38D98787-88C9-4A5A-ADE1-2D242EA3A0DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{38D98787-88C9-4A5A-ADE1-2D242EA3A0DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{38D98787-88C9-4A5A-ADE1-2D242EA3A0DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76AF435C-7AFB-4D59-81BE-8B3C7AB57665}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76AF435C-7AFB-4D59-81BE-8B3C7AB57665}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76AF435C-7AFB-4D59-81BE-8B3C7AB57665}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76AF435C-7AFB-4D59-81BE-8B3C7AB57665}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
