@@ -29,7 +29,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderService.Infrastructure
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderManagementSystem.Shared", "OrderManagementSystem.Shared\OrderManagementSystem.Shared.csproj", "{CEF79D4A-77E3-41A1-8976-656751709439}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderService.Tests", "OrderService.Tests\OrderService.Tests.csproj", "{408B23D6-8787-4F4D-ADB8-96EAAAF4EB98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderService.Tests", "OrderService.Tests\OrderService.Tests.csproj", "{408B23D6-8787-4F4D-ADB8-96EAAAF4EB98}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderProcessingService.Api", "OrderProcessingService.Api\OrderProcessingService.Api.csproj", "{D21A40C6-6A63-4875-9091-500D516C3847}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,6 +83,10 @@ Global
 		{408B23D6-8787-4F4D-ADB8-96EAAAF4EB98}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{408B23D6-8787-4F4D-ADB8-96EAAAF4EB98}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{408B23D6-8787-4F4D-ADB8-96EAAAF4EB98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D21A40C6-6A63-4875-9091-500D516C3847}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D21A40C6-6A63-4875-9091-500D516C3847}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D21A40C6-6A63-4875-9091-500D516C3847}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D21A40C6-6A63-4875-9091-500D516C3847}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
