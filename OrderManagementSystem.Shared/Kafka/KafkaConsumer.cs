@@ -48,7 +48,8 @@ namespace OrderManagementSystem.Shared.Kafka
             {
                 while (!stoppingToken.IsCancellationRequested)
                 {
-                    var result = _consumer.Consume();
+                    var result = _consumer.Consume(stoppingToken);
+                    Log.Information("Processing message...");
                     await _handler.HandleAsync(result.Value!, stoppingToken);
                     _consumer.Commit(result);
                 }
