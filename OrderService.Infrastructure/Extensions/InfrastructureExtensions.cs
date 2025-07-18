@@ -28,6 +28,8 @@ namespace OrderService.Infrastructure.Extensions
                 conf.BaseAddress = new Uri(catalogConnection);
             });
 
+
+
             services.AddScoped<IRepository<Order>, OrderRepository>();
         }
 
