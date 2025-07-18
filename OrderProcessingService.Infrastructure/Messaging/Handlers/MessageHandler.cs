@@ -1,4 +1,5 @@
-﻿using OrderManagementSystem.Shared.Contracts;
+﻿using Microsoft.Extensions.DependencyInjection;
+using OrderManagementSystem.Shared.Contracts;
 using OrderProcessingService.Application.Contracts;
 using OrderProcessingService.Application.DTO;
 using OrderProcessingService.Infrastructure.Messaging.Messages;
@@ -10,10 +11,16 @@ using System.Threading.Tasks;
 
 namespace OrderProcessingService.Infrastructure.Messaging.Handlers
 {
-    public class MessageHandler(IOrderProcessingInitializer initializer) : IMessageHandler<OrderCreatedMessage>
+    public class MessageHandler : IMessageHandler<OrderCreatedMessage>
     {
+        private readonly IServiceProvider _serviceProvider;
+
+        public MessageHandler(IServiceProvider serviceProvider)
+            => _serviceProvider = serviceProvider;
         public async Task HandleAsync(OrderCreatedMessage message, CancellationToken cancellationToken)
         {
+            using var scope = _serviceProvider.CreateScope();
+            var initializer = scope.ServiceProvider.GetRequiredService<IOrderProcessingInitializer>();
             var order = MapToOrderDto(message);
             await initializer.InitializeProcessingAsync(order, cancellationToken);
         }
