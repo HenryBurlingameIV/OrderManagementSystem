@@ -14,11 +14,11 @@ namespace OrderProcessingService.Infrastructure.Messaging.Handlers
     {
         public async Task HandleAsync(OrderCreatedMessage message, CancellationToken cancellationToken)
         {
-            var order = GetOrderFromMessage(message);
+            var order = MapToOrderDto(message);
             await initializer.InitializeProcessingAsync(order, cancellationToken);
         }
 
-        private OrderDto GetOrderFromMessage(OrderCreatedMessage message)
+        private OrderDto MapToOrderDto(OrderCreatedMessage message)
         {
             var items = message.Items.Select(i => new OrderItemDto(i.Id, i.Quantity)).ToList();
             return new OrderDto(

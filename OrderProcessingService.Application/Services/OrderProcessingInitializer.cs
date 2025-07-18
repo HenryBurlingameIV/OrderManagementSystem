@@ -15,11 +15,11 @@ namespace OrderProcessingService.Application.Services
     {
         public async Task InitializeProcessingAsync(OrderDto dto, CancellationToken cancellationToken)
         {
-            var processingOrder = GetProcessingOrder(dto);
+            var processingOrder = CreateFromOrderDto(dto);
             await repository.CreateAsync(processingOrder, cancellationToken);            
         }
 
-        public ProcessingOrder GetProcessingOrder(OrderDto dto)
+        public ProcessingOrder CreateFromOrderDto(OrderDto dto)
         {
             return new ProcessingOrder()
             {
@@ -38,7 +38,6 @@ namespace OrderProcessingService.Application.Services
                         Status = ItemAssemblyStatus.Pending,
                     })
                     .ToList(),
-
             };
         }
     }
