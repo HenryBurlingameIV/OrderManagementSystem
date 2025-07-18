@@ -9,6 +9,6 @@ namespace OrderProcessingService.Application.Contracts
 {
     public interface IOrderProcessingInitializer
     {
-        Task InitializeProcessingAsync(OrderDto dto);
+        Task InitializeProcessingAsync(OrderDto dto, CancellationToken cancellationToken);
     }
 }
