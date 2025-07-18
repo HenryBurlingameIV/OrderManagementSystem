@@ -6,8 +6,9 @@ namespace OrderProcessingService.Api
         {
             var builder = WebApplication.CreateBuilder(args);
             builder.ConfigureServices();
+            builder.ConfigureSerilog();
             var app = builder.Build();
-
+            
             app.MapGet("/", () => "Hello World!");
 
             app.Run();
