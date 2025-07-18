@@ -33,29 +33,41 @@ namespace OrderManagementSystem.Shared.Kafka
                 .Build();
 
             _handler = handler;
-  
+
         }
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+
+            return Task.Run(() => ConsumeAsync(stoppingToken));
+        }
+
+        private async Task ConsumeAsync(CancellationToken stoppingToken)
         {
             _consumer.Subscribe(_topic);
             try
             {
                 while (!stoppingToken.IsCancellationRequested)
                 {
-                    var result = _consumer.Consume(stoppingToken);
+                    var result = _consumer.Consume();
                     await _handler.HandleAsync(result.Value!, stoppingToken);
                     _consumer.Commit(result);
                 }
 
             }
-            catch(OperationCanceledException) 
+            catch (OperationCanceledException)
             {
                 Log.Information("Consumer stopped");
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "Unexpected background service error.");
-            }            
+            }
+        }
+
+        public override Task StopAsync(CancellationToken cancellationToken)
+        {
+            _consumer?.Close();
+            return base.StopAsync(cancellationToken);
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using OrderProcessingService.Infrastructure.Extensions;
+﻿using OrderManagementSystem.Shared.Kafka;
+using OrderProcessingService.Application.Extensions;
+using OrderProcessingService.Infrastructure.Extensions;
 using Serilog;
 namespace OrderProcessingService.Api
 {
@@ -6,8 +8,10 @@ namespace OrderProcessingService.Api
     {
         public static void ConfigureServices(this WebApplicationBuilder builder)
         {
-            string? dbconnection = builder.Configuration.GetConnectionString("DefaultConnection");
-            builder.Services.AddInfrastructure(dbconnection!);
+            
+            builder.Services.AddApplication();
+            builder.Services.AddInfrastructure(builder.Configuration);
+            
         }
 
         public static void ConfigureSerilog(this WebApplicationBuilder builder)
