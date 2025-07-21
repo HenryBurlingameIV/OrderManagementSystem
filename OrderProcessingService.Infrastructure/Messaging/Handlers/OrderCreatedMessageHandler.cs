@@ -3,6 +3,7 @@ using OrderManagementSystem.Shared.Contracts;
 using OrderProcessingService.Application.Contracts;
 using OrderProcessingService.Application.DTO;
 using OrderProcessingService.Infrastructure.Messaging.Messages;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,18 +12,17 @@ using System.Threading.Tasks;
 
 namespace OrderProcessingService.Infrastructure.Messaging.Handlers
 {
-    public class MessageHandler : IMessageHandler<OrderCreatedMessage>
+    public class OrderCreatedMessageHandler : IMessageHandler<OrderCreatedMessage>
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IOrderProcessingInitializer _processingInitializer;
 
-        public MessageHandler(IServiceProvider serviceProvider)
-            => _serviceProvider = serviceProvider;
+        public OrderCreatedMessageHandler(IOrderProcessingInitializer processingInitializer)
+            => _processingInitializer = processingInitializer;
         public async Task HandleAsync(OrderCreatedMessage message, CancellationToken cancellationToken)
         {
-            using var scope = _serviceProvider.CreateScope();
-            var initializer = scope.ServiceProvider.GetRequiredService<IOrderProcessingInitializer>();
-            var order = MapToOrderDto(message);
-            await initializer.InitializeProcessingAsync(order, cancellationToken);
+            var order = MapToOrderDto(message);            
+            await _processingInitializer.InitializeProcessingAsync(order, cancellationToken);
+            Log.Information($"Processing of order with ID {order.Id} initialized.");
         }
 
         private OrderDto MapToOrderDto(OrderCreatedMessage message)

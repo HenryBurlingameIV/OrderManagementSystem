@@ -1,4 +1,5 @@
 ﻿using Confluent.Kafka;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OrderManagementSystem.Shared.Contracts;
@@ -15,15 +16,16 @@ namespace OrderManagementSystem.Shared.Kafka
     {
         private readonly string _topic;
         private readonly IConsumer<string, TMessage> _consumer;
-        private readonly IMessageHandler<TMessage> _handler;
+        private readonly IServiceProvider _serviceProvider;
 
-        public KafkaConsumer(IOptions<KafkaConsumerSettings> settings, IMessageHandler<TMessage> handler)
+        public KafkaConsumer(IOptions<KafkaConsumerSettings> settings, IServiceProvider serviceProvider)
         {
             var conf = new ConsumerConfig()
             {
                 BootstrapServers = settings.Value.BootstrapServers,
                 GroupId = settings.Value.GroupId,
-                AutoOffsetReset = AutoOffsetReset.Earliest
+                AutoOffsetReset = AutoOffsetReset.Earliest,
+                EnableAutoCommit = false
             };
 
             _topic = settings.Value.Topic;
@@ -32,7 +34,7 @@ namespace OrderManagementSystem.Shared.Kafka
                 .SetValueDeserializer(new KafkaJsonDeserializer<TMessage>())
                 .Build();
 
-            _handler = handler;
+            _serviceProvider = serviceProvider;
 
         }
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -44,14 +46,28 @@ namespace OrderManagementSystem.Shared.Kafka
         private async Task ConsumeAsync(CancellationToken stoppingToken)
         {
             _consumer.Subscribe(_topic);
+            Log.Information($"Subscribed to topic: {_topic}");
             try
             {
+                
                 while (!stoppingToken.IsCancellationRequested)
                 {
-                    var result = _consumer.Consume(stoppingToken);
-                    Log.Information("Processing message...");
-                    await _handler.HandleAsync(result.Value!, stoppingToken);
-                    _consumer.Commit(result);
+                    try
+                    {
+                        var result = _consumer.Consume(TimeSpan.FromSeconds(10));
+                        if (result == null) continue;
+                        Log.Information("Received message. Key: {MessageKey}, Offset: {Offset}",
+                            result.Message.Key, result.Offset);
+                        using var scope = _serviceProvider.CreateScope();
+                        var handler = scope.ServiceProvider.GetRequiredService<IMessageHandler<TMessage>>();
+                        await handler.HandleAsync(result.Value, stoppingToken);
+                        _consumer.Commit(result);
+                    }
+                    catch (ConsumeException ex)
+                    {
+                        Log.Error(ex, $"Consume error: {ex.Error.Reason}.");
+                    }
+     
                 }
 
             }
@@ -62,6 +78,7 @@ namespace OrderManagementSystem.Shared.Kafka
             catch (Exception ex)
             {
                 Log.Error(ex, "Unexpected background service error.");
+                throw;
             }
         }
 

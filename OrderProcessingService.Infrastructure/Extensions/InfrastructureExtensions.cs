@@ -26,7 +26,7 @@ namespace OrderProcessingService.Infrastructure.Extensions
             });
             services.AddScoped<IRepository<ProcessingOrder>, ProcessingOrderRepository>();
             var kafkaConf = configuration.GetSection("Kafka:Order");
-            services.AddConsumer<OrderCreatedMessage, MessageHandler>(kafkaConf);
+            services.AddConsumer<OrderCreatedMessage, OrderCreatedMessageHandler>(kafkaConf);
         }
     }
 }

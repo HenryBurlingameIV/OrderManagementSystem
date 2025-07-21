@@ -21,7 +21,7 @@ namespace OrderManagementSystem.Shared.Kafka
         {
             services.Configure<KafkaConsumerSettings>(config);
             services.AddHostedService<KafkaConsumer<TMessage>>();
-            services.AddSingleton<IMessageHandler<TMessage>, THandler>();
+            services.AddScoped<IMessageHandler<TMessage>, THandler>();
         }
     }
 }
