@@ -16,5 +16,12 @@ namespace OrderManagementSystem.Shared.Kafka
             services.Configure<KafkaSettings>(config);
             services.AddSingleton<IKafkaProducer<TMessage>, KafkaProducer<TMessage>>();
         }
+
+        public static void AddConsumer<TMessage, THandler>(this IServiceCollection services, IConfigurationSection config) where THandler : class, IMessageHandler<TMessage>
+        {
+            services.Configure<KafkaConsumerSettings>(config);
+            services.AddHostedService<KafkaConsumer<TMessage>>();
+            services.AddScoped<IMessageHandler<TMessage>, THandler>();
+        }
     }
 }
