@@ -48,9 +48,9 @@ namespace OrderProcessingService.Application.Services
             _logger.LogInformation("Processing order with ID {@Id} successfully found", id);
             await _validator.ValidateAndThrowAsync(new StartAssemblyStatus(po.Stage, po.Status), cancellationToken);
 
+            await _orderServiceApi.UpdateStatus(po.OrderId, "Processing", cancellationToken);
             po.Status = ProcessingStatus.Processing;
             await _repository.UpdateAsync(po, cancellationToken);
-            await _orderServiceApi.UpdateStatus(po.OrderId, "Processing", cancellationToken);
 
             await _assemblyWorker.ScheduleAsync(new StartAssemblyCommand(po.Id), cancellationToken);
             _logger.LogInformation("Processing order with ID {@Id} scheduled", id);
