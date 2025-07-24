@@ -7,6 +7,6 @@ using System.Threading.Tasks;
 
 namespace OrderProcessingService.Application.DTO
 {
-    public record StartAssemblyCommand(ProcessingOrder ProcessingOrder);
+    public record StartAssemblyCommand(Guid ProcessingOrderId);
 
 }

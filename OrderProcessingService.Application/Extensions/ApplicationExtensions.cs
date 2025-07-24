@@ -14,6 +14,7 @@ namespace OrderProcessingService.Application.Extensions
         public static void AddApplication(this IServiceCollection services)
         {
             services.AddScoped<IOrderProcessingInitializer, OrderProcessingInitializer>();
+            services.AddScoped<IOrderProcessor, OrderProcessor>();
         }
     }
 }

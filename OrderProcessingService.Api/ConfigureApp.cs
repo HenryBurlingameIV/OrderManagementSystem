@@ -1,4 +1,5 @@
-﻿using OrderManagementSystem.Shared.Kafka;
+﻿using Hangfire;
+using OrderManagementSystem.Shared.Kafka;
 using OrderManagementSystem.Shared.Middlewares;
 using OrderProcessingService.Application.Extensions;
 using OrderProcessingService.Infrastructure.Extensions;
@@ -26,6 +27,7 @@ namespace OrderProcessingService.Api
             app.UseRouting();
             app.MapControllers();
             app.MapGet("/", () => "OrderProcessingService is running!");
+            app.UseHangfireDashboard("/hangfire");
         }
 
         public static void ConfigureSerilog(this WebApplicationBuilder builder)

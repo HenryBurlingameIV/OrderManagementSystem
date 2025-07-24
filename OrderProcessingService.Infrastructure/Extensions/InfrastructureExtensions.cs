@@ -1,10 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Hangfire;
+using Hangfire.PostgreSql;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OrderManagementSystem.Shared.Contracts;
 using OrderManagementSystem.Shared.Kafka;
 using OrderProcessingService.Application.Contracts;
+using OrderProcessingService.Application.DTO;
 using OrderProcessingService.Domain.Entities;
+using OrderProcessingService.Infrastructure.BackgroundWorkers;
 using OrderProcessingService.Infrastructure.ExternalServices;
 using OrderProcessingService.Infrastructure.Messaging.Handlers;
 using OrderProcessingService.Infrastructure.Messaging.Messages;
@@ -33,6 +37,15 @@ namespace OrderProcessingService.Infrastructure.Extensions
             {
                 conf.BaseAddress = new Uri(configuration["OrderService:DefaultConnection"]!);
             });
+            string hangfireStorageConnection = configuration.GetConnectionString("HangfireConnection")!;
+            services.AddHangfire(conf => 
+                conf.UsePostgreSqlStorage(options => 
+                    options.UseNpgsqlConnection(hangfireStorageConnection)));
+
+            services.AddHangfireServer();
+
+            services.AddScoped<IOrderBackgroundWorker<StartAssemblyCommand>, AssemblyWorker>();
+            
         }
     }
 }
