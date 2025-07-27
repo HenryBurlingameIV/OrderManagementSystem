@@ -50,6 +50,7 @@ namespace OrderProcessingService.Application.Services
 
             await _orderServiceApi.UpdateStatus(po.OrderId, "Processing", cancellationToken);
             po.Status = ProcessingStatus.Processing;
+            po.UpdatedAt = DateTime.UtcNow;
             await _repository.UpdateAsync(po, cancellationToken);
 
             await _assemblyWorker.ScheduleAsync(new StartAssemblyCommand(po.Id), cancellationToken);

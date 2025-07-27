@@ -16,13 +16,13 @@ namespace OrderProcessingService.Infrastructure.BackgroundWorkers
     public class AssemblyWorker : IOrderBackgroundWorker<StartAssemblyCommand>
     {
         private readonly IBackgroundJobClient _hangfire;
-        private readonly IRepository<ProcessingOrder> _repository;
+        private readonly IProcessingOrderRepository _repository;
         private readonly IOrderServiceApi _orderServiceApi;
         private readonly ILogger<AssemblyWorker> _logger;
 
         public AssemblyWorker(
             IBackgroundJobClient hangfire,
-            IRepository<ProcessingOrder> repository,
+            IProcessingOrderRepository repository,
             IOrderServiceApi orderServiceApi,
             ILogger<AssemblyWorker> logger
             )
@@ -53,13 +53,12 @@ namespace OrderProcessingService.Infrastructure.BackgroundWorkers
                 foreach (var item in processingOrder.Items)
                 {
                     await Task.Delay(TimeSpan.FromSeconds(30));
-                    item.Status = ItemAssemblyStatus.Ready;
-                    await _repository.UpdateAsync(processingOrder, cancellationToken); //не уверен стоит ли обновлять репозиторий на каждой итерации
                     _logger.LogInformation("Order item with ID {id} is ready", item.ProductId);
                 }
-
+                await _repository.UpdateItemsAssemblyStatusAsync(id, ItemAssemblyStatus.Ready, cancellationToken);
                 await _orderServiceApi.UpdateStatus(processingOrder.OrderId, "Ready", cancellationToken);
                 processingOrder.Status = ProcessingStatus.Completed;
+                processingOrder.UpdatedAt = DateTime.UtcNow;
                 await _repository.UpdateAsync(processingOrder, cancellationToken);
                 _logger.LogInformation("Assembly processing with ID {id} completed. Order ID is {OrderId}", processingOrder.Id, processingOrder.OrderId);
             }

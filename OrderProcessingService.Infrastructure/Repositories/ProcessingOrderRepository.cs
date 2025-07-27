@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using OrderManagementSystem.Shared.Contracts;
+using OrderProcessingService.Application.Contracts;
 using OrderProcessingService.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace OrderProcessingService.Infrastructure.Repositories
 {
-    public class ProcessingOrderRepository(OrderProcessingDbContext dbContext) : IRepository<ProcessingOrder>
+    public class ProcessingOrderRepository(OrderProcessingDbContext dbContext) : IProcessingOrderRepository
     {
         public async Task<Guid> CreateAsync(ProcessingOrder item, CancellationToken cancellationToken)
         {
@@ -38,5 +39,14 @@ namespace OrderProcessingService.Infrastructure.Repositories
         {
             throw new NotImplementedException();
         }
+
+        public async Task UpdateItemsAssemblyStatusAsync(Guid proccessingOrderId, ItemAssemblyStatus newStatus, CancellationToken cancellationToken)
+        {
+            await dbContext.ProcessingOrders
+                .Where(po => po.Id == proccessingOrderId)
+                .SelectMany(po => po.Items)
+                .ExecuteUpdateAsync(i => i.SetProperty(p => p.Status, newStatus));               
+        }
+
     }
 }
