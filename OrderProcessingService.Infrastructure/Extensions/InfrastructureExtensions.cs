@@ -1,9 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Hangfire;
+using Hangfire.PostgreSql;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OrderManagementSystem.Shared.Contracts;
 using OrderManagementSystem.Shared.Kafka;
+using OrderProcessingService.Application.Contracts;
+using OrderProcessingService.Application.DTO;
 using OrderProcessingService.Domain.Entities;
+using OrderProcessingService.Infrastructure.BackgroundWorkers;
+using OrderProcessingService.Infrastructure.ExternalServices;
 using OrderProcessingService.Infrastructure.Messaging.Handlers;
 using OrderProcessingService.Infrastructure.Messaging.Messages;
 using OrderProcessingService.Infrastructure.Repositories;
@@ -25,8 +31,22 @@ namespace OrderProcessingService.Infrastructure.Extensions
                 options.UseNpgsql(dbconnection);
             });
             services.AddScoped<IRepository<ProcessingOrder>, ProcessingOrderRepository>();
+            services.AddScoped<IProcessingOrderRepository, ProcessingOrderRepository>();
             var kafkaConf = configuration.GetSection("Kafka:Order");
             services.AddConsumer<OrderCreatedMessage, OrderCreatedMessageHandler>(kafkaConf);
+            services.AddHttpClient<IOrderServiceApi, OrderServiceApi>(conf =>
+            {
+                conf.BaseAddress = new Uri(configuration["OrderService:DefaultConnection"]!);
+            });
+            string hangfireStorageConnection = configuration.GetConnectionString("HangfireConnection")!;
+            services.AddHangfire(conf => 
+                conf.UsePostgreSqlStorage(options => 
+                    options.UseNpgsqlConnection(hangfireStorageConnection)));
+
+            services.AddHangfireServer();
+
+            services.AddScoped<IOrderBackgroundWorker<StartAssemblyCommand>, AssemblyWorker>();
+            
         }
     }
 }

@@ -8,8 +8,9 @@ namespace OrderProcessingService.Api
             builder.ConfigureSerilog();
             builder.ConfigureServices();
             var app = builder.Build();
+            app.ConfigurePipeline();
             
-            app.MapGet("/", () => "Hello World!");
+            
 
 
             app.Run();

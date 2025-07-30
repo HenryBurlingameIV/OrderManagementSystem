@@ -1,6 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using FluentValidation;
+using Microsoft.Extensions.DependencyInjection;
 using OrderProcessingService.Application.Contracts;
+using OrderProcessingService.Application.DTO;
 using OrderProcessingService.Application.Services;
+using OrderProcessingService.Application.Validators;
+using OrderProcessingService.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +18,9 @@ namespace OrderProcessingService.Application.Extensions
         public static void AddApplication(this IServiceCollection services)
         {
             services.AddScoped<IOrderProcessingInitializer, OrderProcessingInitializer>();
+            services.AddScoped<IOrderProcessor, OrderProcessor>();
+            services.AddScoped<IValidator<StartAssemblyStatus>, StartAssemblyValidator>();
+
         }
     }
 }
