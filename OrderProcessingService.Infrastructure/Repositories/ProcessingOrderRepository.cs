@@ -48,5 +48,23 @@ namespace OrderProcessingService.Infrastructure.Repositories
                 .ExecuteUpdateAsync(i => i.SetProperty(p => p.Status, newStatus));               
         }
 
+        public async Task BulkUpdateProcessingOrdersAsync(IEnumerable<Guid> ids, ProcessingStatus newStatus, Stage newStage, CancellationToken cancellationToken)
+        {
+            var date = DateTime.UtcNow;
+            await dbContext.ProcessingOrders
+                .Where(po => ids.Contains(po.Id))
+                .ExecuteUpdateAsync(po => po
+                    .SetProperty(po => po.Status, newStatus)
+                    .SetProperty(po => po.Stage, newStage)
+                    .SetProperty(po => po.UpdatedAt, date)
+                    );
+        }
+
+        public async Task<List<ProcessingOrder>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken)
+        {
+            return await dbContext.ProcessingOrders
+                .Where(po => ids.Contains(po.Id))
+                .ToListAsync(cancellationToken);
+        }
     }
 }

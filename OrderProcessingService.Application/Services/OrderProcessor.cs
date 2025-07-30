@@ -18,15 +18,17 @@ namespace OrderProcessingService.Application.Services
 {
     public class OrderProcessor : IOrderProcessor
     {
-        private readonly IRepository<ProcessingOrder> _repository;
+        private readonly IProcessingOrderRepository _repository;
         private readonly IOrderBackgroundWorker<StartAssemblyCommand> _assemblyWorker;
         private readonly IOrderServiceApi _orderServiceApi;
         private readonly ILogger<OrderProcessor> _logger;
         private readonly IValidator<StartAssemblyStatus> _validator;
+        private readonly IOrderBackgroundWorker<StartDeliveryCommand> _deliveryWorker;
 
         public OrderProcessor(
-            IRepository<ProcessingOrder> repository, 
+            IProcessingOrderRepository repository, 
             IOrderBackgroundWorker<StartAssemblyCommand> assemblyWorker,
+            IOrderBackgroundWorker<StartDeliveryCommand> deliveryWorker,
             IOrderServiceApi orderServiceApi,
             ILogger<OrderProcessor> logger,
             IValidator<StartAssemblyStatus> validator
@@ -37,6 +39,7 @@ namespace OrderProcessingService.Application.Services
             _orderServiceApi = orderServiceApi;
             _logger = logger;
             _validator = validator;
+            _deliveryWorker = deliveryWorker;
         }
         public async Task BeginAssembly(Guid id, CancellationToken cancellationToken)
         {
@@ -57,9 +60,27 @@ namespace OrderProcessingService.Application.Services
             _logger.LogInformation("Processing order with ID {@Id} scheduled", id);
         }
 
-        public Task BeginDelivery(List<Guid> ids, CancellationToken cancellationToken)
+        public async Task BeginDelivery(List<Guid> ids, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var processingOrders = await _repository.GetByIdsAsync(ids, cancellationToken);
+            if (processingOrders.Count != ids.Count)
+            {
+                var missingIds = ids.Except(processingOrders.Select(x => x.Id));
+                throw new NotFoundException($"Processing orders not found. Missing IDs:\n{string.Join("\n", missingIds)}");
+            }
+            //validator
+            await _repository.BulkUpdateProcessingOrdersAsync(ids, 
+                ProcessingStatus.Processing, 
+                Stage.Delivery, 
+                cancellationToken);
+
+            foreach(var po in processingOrders)
+            {
+                await _orderServiceApi.UpdateStatus(po.OrderId, "Delivering", cancellationToken);
+            }
+
+            await _deliveryWorker.ScheduleAsync(new StartDeliveryCommand(ids), cancellationToken);
+            _logger.LogInformation("Delivery for {OrdersCount} orders scheduled.", ids.Count);
         }
     }
 }
