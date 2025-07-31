@@ -22,7 +22,8 @@ namespace OrderProcessingService.Application.Services
         private readonly IOrderBackgroundWorker<StartAssemblyCommand> _assemblyWorker;
         private readonly IOrderServiceApi _orderServiceApi;
         private readonly ILogger<OrderProcessor> _logger;
-        private readonly IValidator<StartAssemblyStatus> _validator;
+        private readonly IValidator<StartAssemblyStatus> _assemblyStatusValidator;
+        private readonly IValidator<StartDeliveryStatus> _deliveryStatusValidator;
         private readonly IOrderBackgroundWorker<StartDeliveryCommand> _deliveryWorker;
 
         public OrderProcessor(
@@ -31,14 +32,16 @@ namespace OrderProcessingService.Application.Services
             IOrderBackgroundWorker<StartDeliveryCommand> deliveryWorker,
             IOrderServiceApi orderServiceApi,
             ILogger<OrderProcessor> logger,
-            IValidator<StartAssemblyStatus> validator
+            IValidator<StartAssemblyStatus> assemblyStatusValidator,
+            IValidator<StartDeliveryStatus> deliveryStatusValidator
             )
         {
             _repository = repository;
             _assemblyWorker = assemblyWorker;
             _orderServiceApi = orderServiceApi;
             _logger = logger;
-            _validator = validator;
+            _assemblyStatusValidator = assemblyStatusValidator;
+            _deliveryStatusValidator = deliveryStatusValidator;
             _deliveryWorker = deliveryWorker;
         }
         public async Task BeginAssembly(Guid id, CancellationToken cancellationToken)
@@ -49,7 +52,7 @@ namespace OrderProcessingService.Application.Services
                 throw new NotFoundException($"Processing order with ID {id} not found.");
             }
             _logger.LogInformation("Processing order with ID {@Id} successfully found", id);
-            await _validator.ValidateAndThrowAsync(new StartAssemblyStatus(po.Stage, po.Status), cancellationToken);
+            await _assemblyStatusValidator.ValidateAndThrowAsync(new StartAssemblyStatus(po.Stage, po.Status), cancellationToken);
 
             await _orderServiceApi.UpdateStatus(po.OrderId, "Processing", cancellationToken);
             po.Status = ProcessingStatus.Processing;
@@ -68,7 +71,10 @@ namespace OrderProcessingService.Application.Services
                 var missingIds = ids.Except(processingOrders.Select(x => x.Id));
                 throw new NotFoundException($"Processing orders not found. Missing IDs:\n{string.Join("\n", missingIds)}");
             }
-            //validator
+            
+            foreach (var po in processingOrders)
+                await _deliveryStatusValidator.ValidateAndThrowAsync(new StartDeliveryStatus(po.Stage, po.Status), cancellationToken);
+
             await _repository.BulkUpdateProcessingOrdersStatusAsync(ids, 
                 ProcessingStatus.Processing, 
                 Stage.Delivery, 

@@ -6,5 +6,5 @@ using System.Threading.Tasks;
 
 namespace OrderProcessingService.Application.DTO
 {
-    public record DeliveryRequest(List<Guid> Ids)
+    public record DeliveryRequest(List<Guid> Ids);
 }
