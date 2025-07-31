@@ -52,9 +52,9 @@ namespace OrderProcessingService.Infrastructure.BackgroundWorkers
                 foreach (var po in processingOrders)
                 {
                     await Task.Delay(TimeSpan.FromSeconds(30));
-
-                    _logger.LogInformation("Delivery with ID: {Id} completed. Order ID: {OrderId}. TrackingNumber: {TrackingNumber}\nAddress: {Address}", 
-                        po.Id, po.OrderId, po.TrackingNumber, Guid.NewGuid().ToString());
+                    var address = GetRandomAddress();
+                    _logger.LogInformation("Delivery with ID: {Id} completed. Order ID: {OrderId}. TrackingNumber: {TrackingNumber}. Address: {Address}", 
+                        po.Id, po.OrderId, po.TrackingNumber, address);
                     po.Status = ProcessingStatus.Completed;
                     po.UpdatedAt = DateTime.UtcNow;
                     await _repository.UpdateAsync(po, cancellationToken);
@@ -66,6 +66,12 @@ namespace OrderProcessingService.Infrastructure.BackgroundWorkers
             {
                 _logger.LogError(ex, "Delivery failed.");
             }
+        }
+
+        public string GetRandomAddress()
+        {
+            var faker = new Faker("ru");
+            return $"г. {faker.Address.City()}, ул. {faker.Address.StreetName()}, д. {faker.Random.Number(100)}, кв. {faker.Random.Number(500)}";
         }
     }
 }
