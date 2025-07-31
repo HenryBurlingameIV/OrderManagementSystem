@@ -19,6 +19,11 @@ namespace OrderProcessingService.Api.Controllers
         [HttpPatch("begin-delivery")]
         public async Task<ActionResult> BeginDelivery([FromBody] DeliveryRequest request, CancellationToken cancellationToken)
         {
+            if (!request.Ids.Any()) 
+            {
+                return BadRequest(new { Message = "Delivery request is empty" });
+            }
+            await orderProcessor.BeginDelivery(request.Ids, cancellationToken);
             return NoContent();
         }
     }
