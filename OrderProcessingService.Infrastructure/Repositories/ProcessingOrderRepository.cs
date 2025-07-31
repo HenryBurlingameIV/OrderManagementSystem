@@ -48,15 +48,15 @@ namespace OrderProcessingService.Infrastructure.Repositories
                 .ExecuteUpdateAsync(i => i.SetProperty(p => p.Status, newStatus));               
         }
 
-        public async Task BulkUpdateProcessingOrdersAsync(IEnumerable<Guid> ids, ProcessingStatus newStatus, Stage newStage, CancellationToken cancellationToken)
+        public async Task BulkUpdateProcessingOrdersStatusAsync(IEnumerable<Guid> ids, ProcessingStatus newStatus, Stage newStage, CancellationToken cancellationToken)
         {
-            var date = DateTime.UtcNow;
+            var updatedAt = DateTime.UtcNow;
             await dbContext.ProcessingOrders
                 .Where(po => ids.Contains(po.Id))
                 .ExecuteUpdateAsync(po => po
                     .SetProperty(po => po.Status, newStatus)
                     .SetProperty(po => po.Stage, newStage)
-                    .SetProperty(po => po.UpdatedAt, date)
+                    .SetProperty(po => po.UpdatedAt, updatedAt)
                     );
         }
 
@@ -65,6 +65,16 @@ namespace OrderProcessingService.Infrastructure.Repositories
             return await dbContext.ProcessingOrders
                 .Where(po => ids.Contains(po.Id))
                 .ToListAsync(cancellationToken);
+        }
+
+        public async Task BulkUpdateProcessingOrdersTrackingAsync(IEnumerable<Guid> ids, string trackingNumber, CancellationToken cancellationToken)
+        {
+            var updatedAt = DateTime.UtcNow;
+            await dbContext.ProcessingOrders
+                .Where(po => ids.Contains(po.Id))
+                .ExecuteUpdateAsync(po => po
+                    .SetProperty(po => po.TrackingNumber, trackingNumber)
+                    .SetProperty(po => po.UpdatedAt, updatedAt));
         }
     }
 }

@@ -69,7 +69,7 @@ namespace OrderProcessingService.Application.Services
                 throw new NotFoundException($"Processing orders not found. Missing IDs:\n{string.Join("\n", missingIds)}");
             }
             //validator
-            await _repository.BulkUpdateProcessingOrdersAsync(ids, 
+            await _repository.BulkUpdateProcessingOrdersStatusAsync(ids, 
                 ProcessingStatus.Processing, 
                 Stage.Delivery, 
                 cancellationToken);

@@ -1,8 +1,10 @@
-﻿using Hangfire;
+﻿using Bogus;
+using Hangfire;
 using Microsoft.Extensions.Logging;
 using OrderManagementSystem.Shared.Contracts;
 using OrderProcessingService.Application.Contracts;
 using OrderProcessingService.Application.DTO;
+using OrderProcessingService.Domain.Entities;
 using OrderProcessingService.Infrastructure.Repositories;
 using System;
 using System.Collections.Generic;
@@ -40,7 +42,29 @@ namespace OrderProcessingService.Infrastructure.BackgroundWorkers
 
         private async Task ProcessAsync(List<Guid> ids, CancellationToken cancellationToken)
         {
+            try
+            {
+                var processingOrders = await _repository.GetByIdsAsync(ids, cancellationToken);
+                await _repository.BulkUpdateProcessingOrdersTrackingAsync(ids, Guid.NewGuid().ToString(), cancellationToken);
+       
+                _logger.LogInformation("Starting delivery for {OrdersCount} orders.", processingOrders.Count);
 
+                foreach (var po in processingOrders)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(30));
+
+                    _logger.LogInformation("Delivery with ID: {Id} completed.\nOrder ID: {OrderId}.\nTrackingNumber: {TrackingNumber}\nAddress: {Address}", 
+                        po.Id, po.OrderId, po.TrackingNumber, Guid.NewGuid().ToString());
+                    po.Status = ProcessingStatus.Completed;
+                    po.UpdatedAt = DateTime.UtcNow;
+                    await _repository.UpdateAsync(po, cancellationToken);
+                    await _orderServiceApi.UpdateStatus(po.OrderId, "Delivered", cancellationToken);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Delivery failed.");
+            }
         }
     }
 }
