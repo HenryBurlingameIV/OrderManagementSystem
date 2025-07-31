@@ -69,7 +69,7 @@ namespace OrderProcessingService.Application.Services
             if (processingOrders.Count != ids.Count)
             {
                 var missingIds = ids.Except(processingOrders.Select(x => x.Id));
-                throw new NotFoundException($"Processing orders not found. Missing IDs:\n{string.Join("\n", missingIds)}");
+                throw new NotFoundException($"Processing orders not found. Missing IDs: {string.Join(", ", missingIds)}");
             }
             
             foreach (var po in processingOrders)

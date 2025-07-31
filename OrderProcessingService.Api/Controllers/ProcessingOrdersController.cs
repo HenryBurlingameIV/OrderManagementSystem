@@ -13,7 +13,7 @@ namespace OrderProcessingService.Api.Controllers
         public async Task<ActionResult> BeginAssembly(Guid id, CancellationToken cancellationToken)
         {
             await orderProcessor.BeginAssembly(id, cancellationToken);
-            return NoContent();
+            return Accepted();
         }
 
         [HttpPatch("begin-delivery")]
@@ -24,7 +24,7 @@ namespace OrderProcessingService.Api.Controllers
                 return BadRequest(new { Message = "Delivery request is empty" });
             }
             await orderProcessor.BeginDelivery(request.Ids, cancellationToken);
-            return NoContent();
+            return Accepted();
         }
     }
 }
