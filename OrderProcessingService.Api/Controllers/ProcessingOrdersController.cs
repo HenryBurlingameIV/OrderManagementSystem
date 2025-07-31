@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using OrderProcessingService.Application.Contracts;
+using OrderProcessingService.Application.DTO;
 
 namespace OrderProcessingService.Api.Controllers
 {
@@ -16,7 +17,7 @@ namespace OrderProcessingService.Api.Controllers
         }
 
         [HttpPatch("begin-delivery")]
-        public async Task<ActionResult> BeginDelivery(Guid id, CancellationToken cancellationToken)
+        public async Task<ActionResult> BeginDelivery([FromBody] DeliveryRequest request, CancellationToken cancellationToken)
         {
             return NoContent();
         }
