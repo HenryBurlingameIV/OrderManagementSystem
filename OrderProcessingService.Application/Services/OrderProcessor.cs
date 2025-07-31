@@ -60,7 +60,7 @@ namespace OrderProcessingService.Application.Services
             await _repository.UpdateAsync(po, cancellationToken);
 
             await _assemblyWorker.ScheduleAsync(new StartAssemblyCommand(po.Id), cancellationToken);
-            _logger.LogInformation("Processing order with ID {@Id} scheduled", id);
+            _logger.LogInformation("Assembly processing with ID {@Id} scheduled", id);
         }
 
         public async Task BeginDelivery(List<Guid> ids, CancellationToken cancellationToken)
@@ -81,12 +81,10 @@ namespace OrderProcessingService.Application.Services
                 cancellationToken);
 
             foreach(var po in processingOrders)
-            {
                 await _orderServiceApi.UpdateStatus(po.OrderId, "Delivering", cancellationToken);
-            }
 
             await _deliveryWorker.ScheduleAsync(new StartDeliveryCommand(ids), cancellationToken);
-            _logger.LogInformation("Delivery for {OrdersCount} orders scheduled.", ids.Count);
+            _logger.LogInformation("Delivery processing for {OrdersCount} orders scheduled.", ids.Count);
         }
     }
 }

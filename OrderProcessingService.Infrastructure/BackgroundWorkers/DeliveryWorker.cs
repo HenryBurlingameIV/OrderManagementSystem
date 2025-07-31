@@ -47,20 +47,20 @@ namespace OrderProcessingService.Infrastructure.BackgroundWorkers
                 await _repository.BulkUpdateProcessingOrdersTrackingAsync(ids, Guid.NewGuid().ToString(), cancellationToken);
                 var processingOrders = await _repository.GetByIdsAsync(ids, cancellationToken);
        
-                _logger.LogInformation("Delivery for {OrdersCount} orders started.", processingOrders.Count);
+                _logger.LogInformation("Delivery process for {OrdersCount} orders started.", processingOrders.Count);
 
                 foreach (var po in processingOrders)
                 {
                     await Task.Delay(TimeSpan.FromSeconds(30));
-                    var address = GetRandomAddress();
-                    _logger.LogInformation("Delivery with ID: {Id} completed. Order ID: {OrderId}. TrackingNumber: {TrackingNumber}. Address: {Address}", 
-                        po.Id, po.OrderId, po.TrackingNumber, address);
                     po.Status = ProcessingStatus.Completed;
                     po.UpdatedAt = DateTime.UtcNow;
                     await _repository.UpdateAsync(po, cancellationToken);
-                    await _orderServiceApi.UpdateStatus(po.OrderId, "Delivered", cancellationToken);
-                    _logger.LogInformation("Delivery for {OrdersCount} orders completed.", processingOrders.Count);
+                    await _orderServiceApi.UpdateStatus(po.OrderId, "Delivered", cancellationToken);                   
+                    var address = GetRandomAddress();
+                    _logger.LogInformation("Delivery with ID: {Id} completed. Order ID: {OrderId}. TrackingNumber: {TrackingNumber}. Address: {Address}", 
+                        po.Id, po.OrderId, po.TrackingNumber, address);
                 }
+                _logger.LogInformation("Delivery successfully completed for all {OrdersCount} orders.", processingOrders.Count);
             }
             catch (Exception ex)
             {
