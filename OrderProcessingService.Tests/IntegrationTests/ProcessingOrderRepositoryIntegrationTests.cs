@@ -96,5 +96,39 @@ namespace OrderProcessingService.Tests.IntegrationTests
             //Assert
             Assert.Null(actualProcessingOrder);
         }
+
+        [Theory, AutoProcessingOrderData]
+        public async Task Should_UpdateProcessingAndReturnId_WhenExists(ProcessingOrder processingOrder)
+        {
+            //Arrange
+            processingOrder.Stage = Stage.Assembly;
+            processingOrder.Status = ProcessingStatus.New;
+            await _fixture.DbContext.AddAsync(processingOrder, CancellationToken.None);
+            await _fixture.DbContext.SaveChangesAsync(CancellationToken.None);
+            _fixture.DbContext.ChangeTracker.Clear();
+            var newUpdatedAt = processingOrder.UpdatedAt;
+            var newStage = Stage.Delivery;
+            var newStatus = ProcessingStatus.Completed;
+            var processingOrderToUpdate = await _fixture.DbContext.ProcessingOrders.FindAsync(processingOrder.Id);
+
+            //Act
+            processingOrderToUpdate!.UpdatedAt = newUpdatedAt;
+            processingOrderToUpdate.Stage = newStage;
+            processingOrderToUpdate.Status = newStatus;
+            var actualId = await _fixture.ProcessingOrderRepository.UpdateAsync(processingOrderToUpdate, CancellationToken.None);
+            _fixture.DbContext.ChangeTracker.Clear();
+
+            //Assert
+            Assert.Equal(processingOrder.Id, actualId);
+            var updatedProcessingOrder = await _fixture.DbContext.ProcessingOrders
+                .Include(po => po.Items)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(po => po.Id == actualId);
+            Assert.NotNull(updatedProcessingOrder);
+            Assert.Equal(newUpdatedAt, updatedProcessingOrder.UpdatedAt);
+            Assert.Equal(newStage, updatedProcessingOrder.Stage);
+            Assert.Equal(processingOrder.CreatedAt, updatedProcessingOrder.CreatedAt);
+            AssertOrderItemsEquality(processingOrder.Items, updatedProcessingOrder.Items);
+        }
     }
 }
