@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using OrderProcessingService.Application.Contracts;
+using OrderProcessingService.Application.DTO;
 
 namespace OrderProcessingService.Api.Controllers
 {
@@ -12,13 +13,18 @@ namespace OrderProcessingService.Api.Controllers
         public async Task<ActionResult> BeginAssembly(Guid id, CancellationToken cancellationToken)
         {
             await orderProcessor.BeginAssembly(id, cancellationToken);
-            return NoContent();
+            return Accepted();
         }
 
         [HttpPatch("begin-delivery")]
-        public async Task<ActionResult> BeginDelivery(Guid id, CancellationToken cancellationToken)
+        public async Task<ActionResult> BeginDelivery([FromBody] DeliveryRequest request, CancellationToken cancellationToken)
         {
-            return NoContent();
+            if (!request.Ids.Any()) 
+            {
+                return BadRequest(new { Message = "Delivery request is empty" });
+            }
+            await orderProcessor.BeginDelivery(request.Ids, cancellationToken);
+            return Accepted();
         }
     }
 }

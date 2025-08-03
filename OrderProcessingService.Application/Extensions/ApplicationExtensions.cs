@@ -20,6 +20,7 @@ namespace OrderProcessingService.Application.Extensions
             services.AddScoped<IOrderProcessingInitializer, OrderProcessingInitializer>();
             services.AddScoped<IOrderProcessor, OrderProcessor>();
             services.AddScoped<IValidator<StartAssemblyStatus>, StartAssemblyValidator>();
+            services.AddScoped<IValidator<StartDeliveryStatus>, StartDeliveryValidator>();
 
         }
     }

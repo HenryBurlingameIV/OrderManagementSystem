@@ -46,6 +46,7 @@ namespace OrderProcessingService.Infrastructure.Extensions
             services.AddHangfireServer();
 
             services.AddScoped<IOrderBackgroundWorker<StartAssemblyCommand>, AssemblyWorker>();
+            services.AddScoped<IOrderBackgroundWorker<StartDeliveryCommand>, DeliveryWorker>();
             
         }
     }
