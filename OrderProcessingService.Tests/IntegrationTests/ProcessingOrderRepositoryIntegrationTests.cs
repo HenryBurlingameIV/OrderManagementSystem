@@ -130,5 +130,28 @@ namespace OrderProcessingService.Tests.IntegrationTests
             Assert.Equal(processingOrder.CreatedAt, updatedProcessingOrder.CreatedAt);
             AssertOrderItemsEquality(processingOrder.Items, updatedProcessingOrder.Items);
         }
+
+        [Theory, AutoProcessingOrderData]
+        public async Task Should_UpdateAllItemsAssemblyStatusInOrder_WhenProcessingOrderExists(ProcessingOrder processingOrder)
+        {
+            //Arrange
+            await _fixture.DbContext.ProcessingOrders.AddAsync(processingOrder, CancellationToken.None);
+            await _fixture.DbContext.SaveChangesAsync(CancellationToken.None);
+            _fixture.DbContext.ChangeTracker.Clear();
+
+            //Act
+            await _fixture.ProcessingOrderRepository.UpdateItemsAssemblyStatusAsync(processingOrder.Id, ItemAssemblyStatus.Ready, CancellationToken.None);
+
+            //Assert
+            var updatedProcessingOrder = await _fixture.DbContext.ProcessingOrders
+               .Include(po => po.Items)
+               .AsNoTracking()
+               .FirstOrDefaultAsync(po => po.Id == processingOrder.Id);
+            Assert.NotNull(updatedProcessingOrder);
+            Assert.All(updatedProcessingOrder!.Items, i =>
+            {
+                Assert.Equal(ItemAssemblyStatus.Ready, i.Status);
+            });
+        }
     }
 }

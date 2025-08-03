@@ -17,7 +17,7 @@ namespace OrderProcessingService.Tests.IntegrationTests
         public async Task InitializeAsync()
         {
             var options = new DbContextOptionsBuilder()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .UseNpgsql("Host=localhost;Database=order_processing_test_db;Port=5432;Username=postgres;Password=0807")
                 .Options;
 
             DbContext = new OrderProcessingDbContext(options);
@@ -34,6 +34,7 @@ namespace OrderProcessingService.Tests.IntegrationTests
         public async Task ResetDataBase()
         {
             await DbContext.Database.EnsureDeletedAsync();
+            await DbContext.Database.EnsureCreatedAsync();
             DbContext.ChangeTracker.Clear();
         }
 
