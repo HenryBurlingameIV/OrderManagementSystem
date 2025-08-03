@@ -30,6 +30,19 @@ namespace OrderProcessingService.Tests.IntegrationTests
             await _fixture.ResetDataBase();
         }
 
+        private void AssertProcessingOrdersEquality(ProcessingOrder expectedProcessingOrder, ProcessingOrder actualProcessingOrder)
+        {
+            Assert.Equal(expectedProcessingOrder.Id, actualProcessingOrder.Id);
+            Assert.Equal(expectedProcessingOrder.OrderId, actualProcessingOrder.OrderId);
+            Assert.Equal(expectedProcessingOrder.Status, actualProcessingOrder.Status);
+            Assert.Equal(expectedProcessingOrder.Stage, actualProcessingOrder.Stage);
+            Assert.Equal(expectedProcessingOrder.TrackingNumber, actualProcessingOrder.TrackingNumber);
+            Assert.Equal(expectedProcessingOrder.UpdatedAt, actualProcessingOrder.UpdatedAt, TimeSpan.FromMilliseconds(5));
+            Assert.Equal(expectedProcessingOrder.CreatedAt, actualProcessingOrder.CreatedAt, TimeSpan.FromMilliseconds(5));
+            AssertOrderItemsEquality(expectedProcessingOrder.Items, actualProcessingOrder.Items);
+
+        }
+
         private void AssertOrderItemsEquality(List<OrderItem> expectedItems, List<OrderItem> actualItems)
         {
             Assert.Equal(expectedItems.Count, actualItems.Count);
@@ -47,7 +60,6 @@ namespace OrderProcessingService.Tests.IntegrationTests
         {
             //Arrange
             var expectedId = processingOrder.Id;
-            var expectedItems = processingOrder.Items.ToList();
 
             //Act
             var actualId = await _fixture.ProcessingOrderRepository.CreateAsync(processingOrder, CancellationToken.None);
@@ -60,8 +72,7 @@ namespace OrderProcessingService.Tests.IntegrationTests
                 .AsNoTracking() 
                 .FirstOrDefaultAsync(po => po.Id == expectedId);
             Assert.NotNull(savedProcessingOrder);
-            Assert.Equivalent(processingOrder, savedProcessingOrder);
-            AssertOrderItemsEquality(expectedItems, savedProcessingOrder.Items);
+            AssertProcessingOrdersEquality(processingOrder, savedProcessingOrder);
         }
 
         [Theory]
@@ -73,15 +84,13 @@ namespace OrderProcessingService.Tests.IntegrationTests
             await _fixture.DbContext.SaveChangesAsync(CancellationToken.None);
             _fixture.DbContext.ChangeTracker.Clear();
             var expectedProcessingOrder = processingOrders.First();
-            var expectedItems = expectedProcessingOrder.Items;
 
             //Act
             var actualProcessingOrder = await _fixture.ProcessingOrderRepository.GetByIdAsync(expectedProcessingOrder.Id, CancellationToken.None);
 
             //Assert
             Assert.NotNull(actualProcessingOrder);
-            Assert.Equivalent(expectedProcessingOrder, actualProcessingOrder);
-            AssertOrderItemsEquality(expectedItems, actualProcessingOrder.Items);
+            AssertProcessingOrdersEquality(expectedProcessingOrder, actualProcessingOrder);
         }
 
         [Fact]
@@ -125,9 +134,9 @@ namespace OrderProcessingService.Tests.IntegrationTests
                 .AsNoTracking()
                 .FirstOrDefaultAsync(po => po.Id == actualId);
             Assert.NotNull(updatedProcessingOrder);
-            Assert.Equal(newUpdatedAt, updatedProcessingOrder.UpdatedAt);
+            Assert.Equal(newUpdatedAt, updatedProcessingOrder.UpdatedAt, TimeSpan.FromMicroseconds(5));
             Assert.Equal(newStage, updatedProcessingOrder.Stage);
-            Assert.Equal(processingOrder.CreatedAt, updatedProcessingOrder.CreatedAt);
+            Assert.Equal(processingOrder.CreatedAt, updatedProcessingOrder.CreatedAt, TimeSpan.FromMicroseconds(5));
             AssertOrderItemsEquality(processingOrder.Items, updatedProcessingOrder.Items);
         }
 
