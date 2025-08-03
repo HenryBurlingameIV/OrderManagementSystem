@@ -187,5 +187,22 @@ namespace OrderProcessingService.Tests.IntegrationTests
                 AssertProcessingOrdersEquality(expectedProcessingOrder, actualProcessingOrder);
             }
         }
+
+        [Theory, AutoProcessingOrderData]
+        public async Task Should_ReturnOnlyExistingProcessingOrders(ProcessingOrder processingOrder)
+        {
+            //Arange
+            await _fixture.DbContext.AddAsync(processingOrder, CancellationToken.None);
+            await _fixture.DbContext.SaveChangesAsync(CancellationToken.None);
+            _fixture.DbContext.ChangeTracker.Clear();
+            var idsToFins = new List<Guid>() { Guid.NewGuid() , processingOrder.Id};
+
+            //Act
+            var actualProcessingOrders = await _fixture.ProcessingOrderRepository.GetByIdsAsync(idsToFins, CancellationToken.None);
+
+            //Arrange
+            Assert.Single(actualProcessingOrders);
+            AssertProcessingOrdersEquality(processingOrder, actualProcessingOrders[0]);
+        }
     }
 }
