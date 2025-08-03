@@ -83,5 +83,18 @@ namespace OrderProcessingService.Tests.IntegrationTests
             Assert.Equivalent(expectedProcessingOrder, actualProcessingOrder);
             AssertOrderItemsEquality(expectedItems, actualProcessingOrder.Items);
         }
+
+        [Fact]
+        public async Task Should_ReturnNull_WhenProcessingOrderNotFound()
+        {
+            //Arange
+            var expectedId = Guid.NewGuid();
+
+            //Act
+            var actualProcessingOrder = await _fixture.ProcessingOrderRepository.GetByIdAsync(expectedId, CancellationToken.None);
+
+            //Assert
+            Assert.Null(actualProcessingOrder);
+        }
     }
 }
