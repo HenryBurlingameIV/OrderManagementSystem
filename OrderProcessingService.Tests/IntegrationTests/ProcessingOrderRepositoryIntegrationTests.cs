@@ -30,6 +30,17 @@ namespace OrderProcessingService.Tests.IntegrationTests
             await _fixture.ResetDataBase();
         }
 
+        private void AssertOrderItemsEquality(List<OrderItem> expectedItems, List<OrderItem> actualItems)
+        {
+            Assert.Equal(expectedItems.Count, actualItems.Count);
+            foreach (var expectedItem in expectedItems)
+            {
+                var actualItem = actualItems.First(i => i.ProductId == expectedItem.ProductId);
+                Assert.Equal(expectedItem.Quantity, actualItem.Quantity);
+                Assert.Equal(expectedItem.Status, actualItem.Status);
+            }
+        }
+
         [Theory]
         [AutoProcessingOrderData]
         public async Task Should_ReturnProcessingOrderIdAndSaveToDB_WhenCreatingNewProcessingOrder(ProcessingOrder processingOrder)
@@ -50,15 +61,7 @@ namespace OrderProcessingService.Tests.IntegrationTests
                 .FirstOrDefaultAsync(po => po.Id == expectedId);
             Assert.NotNull(savedProcessingOrder);
             Assert.Equivalent(processingOrder, savedProcessingOrder);
-
-            Assert.Equal(expectedItems.Count, savedProcessingOrder.Items.Count);
-
-            foreach(var expectedItem in expectedItems)
-            {
-                var actualItem = savedProcessingOrder.Items.First(i => i.ProductId == expectedItem.ProductId);
-                Assert.Equal(expectedItem.Status, actualItem.Status);
-                Assert.Equal(expectedItem.Quantity, actualItem.Quantity);
-            }
+            AssertOrderItemsEquality(expectedItems, savedProcessingOrder.Items);
         }
 
         [Theory]
@@ -78,14 +81,7 @@ namespace OrderProcessingService.Tests.IntegrationTests
             //Assert
             Assert.NotNull(actualProcessingOrder);
             Assert.Equivalent(expectedProcessingOrder, actualProcessingOrder);
-            Assert.Equal(expectedProcessingOrder.Items.Count, actualProcessingOrder.Items.Count);
-
-            foreach (var expectedItem in expectedItems)
-            {
-                var actualItem = actualProcessingOrder.Items.First(i => i.ProductId == expectedItem.ProductId);
-                Assert.Equal(expectedItem.Status, actualItem.Status);
-                Assert.Equal(expectedItem.Quantity, actualItem.Quantity);
-            }
+            AssertOrderItemsEquality(expectedItems, actualProcessingOrder.Items);
         }
     }
 }
