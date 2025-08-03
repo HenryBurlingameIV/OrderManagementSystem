@@ -162,5 +162,30 @@ namespace OrderProcessingService.Tests.IntegrationTests
                 Assert.Equal(ItemAssemblyStatus.Ready, i.Status);
             });
         }
+
+        [Theory, AutoProcessingOrderData]
+        public async Task Should_ReturnProcessingOrdersWithRequiredIds(List<ProcessingOrder> processingOrders)
+        {
+            //Arrange
+            await _fixture.DbContext.AddRangeAsync(processingOrders, CancellationToken.None);
+            await _fixture.DbContext.SaveChangesAsync(CancellationToken.None);
+            _fixture.DbContext.ChangeTracker.Clear();
+            var processingOrdersToFind = processingOrders.Skip(1).ToList();
+            var idsToFind = processingOrdersToFind.Select(po => po.Id).ToList();
+            var expectedIds = new HashSet<Guid>(idsToFind);
+
+            //Act
+            var actualProcessinOrders = await _fixture.ProcessingOrderRepository.GetByIdsAsync(idsToFind, CancellationToken.None);
+
+            //Assert
+            var actualIds = new HashSet<Guid>(actualProcessinOrders.Select(po => po.Id));
+            Assert.True(expectedIds.SetEquals(actualIds));
+            Assert.Equal(processingOrdersToFind.Count, actualProcessinOrders.Count);
+            foreach(var actualProcessingOrder in  actualProcessinOrders)
+            {
+                var expectedProcessingOrder = processingOrdersToFind.First(po => po.Id == actualProcessingOrder.Id);
+                AssertProcessingOrdersEquality(expectedProcessingOrder, actualProcessingOrder);
+            }
+        }
     }
 }

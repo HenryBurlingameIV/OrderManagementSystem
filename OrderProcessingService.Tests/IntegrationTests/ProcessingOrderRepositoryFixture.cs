@@ -28,6 +28,7 @@ namespace OrderProcessingService.Tests.IntegrationTests
 
         public async Task DisposeAsync()
         {
+            await DbContext.Database.EnsureDeletedAsync();
             await DbContext.DisposeAsync();
         }
 
