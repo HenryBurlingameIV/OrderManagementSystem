@@ -14,7 +14,7 @@ namespace OrderProcessingService.Application.Contracts
 
         Task BulkUpdateProcessingOrdersStatusAsync(IEnumerable<Guid> ids, ProcessingStatus newStatus, Stage stage, CancellationToken cancellationToken);
 
-        Task BulkUpdateProcessingOrdersTrackingAsync(IEnumerable<Guid> ids, string trackingNumber, CancellationToken cancellationToken);
+        Task AssignUniqueTrackingNumbersAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken);
 
         Task<List<ProcessingOrder>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken);
     }
