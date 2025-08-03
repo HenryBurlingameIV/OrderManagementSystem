@@ -191,7 +191,7 @@ namespace OrderProcessingService.Tests.IntegrationTests
         [Theory, AutoProcessingOrderData]
         public async Task Should_ReturnOnlyExistingProcessingOrders(ProcessingOrder processingOrder)
         {
-            //Arange
+            //Arrange
             await _fixture.DbContext.AddAsync(processingOrder, CancellationToken.None);
             await _fixture.DbContext.SaveChangesAsync(CancellationToken.None);
             _fixture.DbContext.ChangeTracker.Clear();
@@ -200,9 +200,46 @@ namespace OrderProcessingService.Tests.IntegrationTests
             //Act
             var actualProcessingOrders = await _fixture.ProcessingOrderRepository.GetByIdsAsync(idsToFins, CancellationToken.None);
 
-            //Arrange
+            //Assert
             Assert.Single(actualProcessingOrders);
             AssertProcessingOrdersEquality(processingOrder, actualProcessingOrders[0]);
+        }
+
+
+        [Theory, AutoProcessingOrderData]
+        public async Task Should_AssignUniqueTrackingNumbersToProcessingOrdersWithRequiredIds(List<ProcessingOrder> processingOrders)
+        {
+            //Arrange
+            await _fixture.DbContext.AddRangeAsync(processingOrders, CancellationToken.None);
+            await _fixture.DbContext.SaveChangesAsync(CancellationToken.None);
+            _fixture.DbContext.ChangeTracker.Clear();
+            var processingOrdersToUpdate = processingOrders.Skip(1).ToList();
+            var idsToFind = processingOrdersToUpdate.Select(po => po.Id).ToList();
+
+            //Act
+            await _fixture.ProcessingOrderRepository.AssignUniqueTrackingNumbersAsync(idsToFind, CancellationToken.None);
+
+            //Assert
+            var updatedProcessingOrders = await _fixture.DbContext.ProcessingOrders
+                .Where(po => idsToFind.Contains(po.Id))
+                .ToListAsync();
+
+            Assert.All(updatedProcessingOrders, po =>
+            {
+                Assert.NotNull(po.TrackingNumber);
+                Assert.True(Guid.TryParse(po.TrackingNumber, out _));
+            });
+            Assert.True(processingOrdersToUpdate[0].UpdatedAt < updatedProcessingOrders[0].UpdatedAt);
+
+            var trackingNumbers = updatedProcessingOrders
+                .Select(po => po.TrackingNumber)
+                .ToList();
+
+            Assert.Equal(trackingNumbers.Count, new HashSet<string>(trackingNumbers).Count);
+
+            var notUpdatedProcessingOrder = await _fixture.DbContext.ProcessingOrders.FindAsync(processingOrders[0].Id);
+            Assert.Null(notUpdatedProcessingOrder!.TrackingNumber);
+            Assert.Equal(processingOrders[0].UpdatedAt, notUpdatedProcessingOrder!.UpdatedAt, TimeSpan.FromMicroseconds(5));
         }
     }
 }
