@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoFixture;
+using Microsoft.EntityFrameworkCore;
 using OrderProcessingService.Application.Contracts;
 using OrderProcessingService.Domain.Entities;
 using OrderProcessingService.Tests.ProcessingOrderFixture;
@@ -55,6 +56,33 @@ namespace OrderProcessingService.Tests.IntegrationTests
             foreach(var expectedItem in expectedItems)
             {
                 var actualItem = savedProcessingOrder.Items.First(i => i.ProductId == expectedItem.ProductId);
+                Assert.Equal(expectedItem.Status, actualItem.Status);
+                Assert.Equal(expectedItem.Quantity, actualItem.Quantity);
+            }
+        }
+
+        [Theory]
+        [AutoProcessingOrderData]
+        public async Task Should_ReturnProcessingOrder_WhenExists(List<ProcessingOrder> processingOrders)
+        {
+            //Arrange
+            await _fixture.DbContext.AddRangeAsync(processingOrders, CancellationToken.None);
+            await _fixture.DbContext.SaveChangesAsync(CancellationToken.None);
+            _fixture.DbContext.ChangeTracker.Clear();
+            var expectedProcessingOrder = processingOrders.First();
+            var expectedItems = expectedProcessingOrder.Items;
+
+            //Act
+            var actualProcessingOrder = await _fixture.ProcessingOrderRepository.GetByIdAsync(expectedProcessingOrder.Id, CancellationToken.None);
+
+            //Assert
+            Assert.NotNull(actualProcessingOrder);
+            Assert.Equivalent(expectedProcessingOrder, actualProcessingOrder);
+            Assert.Equal(expectedProcessingOrder.Items.Count, actualProcessingOrder.Items.Count);
+
+            foreach (var expectedItem in expectedItems)
+            {
+                var actualItem = actualProcessingOrder.Items.First(i => i.ProductId == expectedItem.ProductId);
                 Assert.Equal(expectedItem.Status, actualItem.Status);
                 Assert.Equal(expectedItem.Quantity, actualItem.Quantity);
             }
