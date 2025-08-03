@@ -12,7 +12,7 @@ namespace OrderProcessingService.Tests.IntegrationTests
     public class ProcessingOrderRepositoryFixture : IAsyncLifetime
     {
         public OrderProcessingDbContext DbContext { get; private set; }
-        public ProcessingOrderRepository processingOrderRepository { get; private set; }
+        public ProcessingOrderRepository ProcessingOrderRepository { get; private set; }
 
         public async Task InitializeAsync()
         {
@@ -22,7 +22,7 @@ namespace OrderProcessingService.Tests.IntegrationTests
 
             DbContext = new OrderProcessingDbContext(options);
 
-            processingOrderRepository = new ProcessingOrderRepository(DbContext);
+            ProcessingOrderRepository = new ProcessingOrderRepository(DbContext);
             await DbContext.Database.EnsureCreatedAsync();
         }
 
