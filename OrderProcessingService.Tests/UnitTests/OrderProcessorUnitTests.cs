@@ -1,4 +1,5 @@
 ﻿using Castle.Core.Logging;
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Moq;
 using OrderManagementSystem.Shared.Exceptions;
@@ -102,5 +103,22 @@ namespace OrderProcessingService.Tests.UnitTests
             Assert.Contains($"Processing order with ID {nonExistentId} not found.", exception.Message);
         }
 
+
+        [Theory, AutoProcessingOrderData]
+        public async Task Should_ThrowValidationException_WhenStatusIsNotNew_ForBeginAssembly(ProcessingOrder processingOrder)
+        {
+            //Arrange
+            processingOrder.Status = ProcessingStatus.Completed;
+            _mockRepository
+                .Setup(repo => repo.GetByIdAsync(processingOrder.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Guid id, CancellationToken ct) => processingOrder);
+
+            //Act & Assert
+            var exception = await Assert.ThrowsAsync<ValidationException>(() =>
+              _orderProcessor.BeginAssembly(processingOrder.Id, CancellationToken.None));
+            Assert.Contains("Validation failed", exception.Message);
+            Assert.Contains("New", exception.Message);
+            Assert.Contains("Status", exception.Message);
+        }
     }
 }
