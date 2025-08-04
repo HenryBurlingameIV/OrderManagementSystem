@@ -165,6 +165,44 @@ namespace OrderProcessingService.Tests.UnitTests
                     Times.Exactly(processingOrders.Count));
         }
 
+        [Theory, AutoProcessingOrderData]
+        public async Task Should_ThrowNotFoundException_WhenAnyOrderMissing(List<ProcessingOrder> processingOrders)
+        {
+            //Arrange
+            foreach (var processingOrder in processingOrders)
+                processingOrder.Status = ProcessingStatus.Completed;
+
+            var poIds = processingOrders.Select(po => po.Id).ToList();
+            poIds.Add(Guid.NewGuid());
+
+            _mockRepository
+                .Setup(repo => repo.GetByIdsAsync(poIds, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((List<Guid> ids, CancellationToken ct) => processingOrders);
+
+            //Act & Assert
+            var exception = await Assert.ThrowsAsync<NotFoundException>(() => 
+                _orderProcessor.BeginDelivery(poIds, CancellationToken.None));
+
+            //Assert
+            Assert.Contains("not found", exception.Message);
+            Assert.Contains($"{poIds.Last().ToString()}", exception.Message);
+            _mockRepository.VerifyAll();
+            _mockDeliveryWorker
+                .Verify(worker => 
+                    worker.ScheduleAsync(
+                        It.IsAny<StartDeliveryCommand>(),
+                        It.IsAny<CancellationToken>()),
+                    Times.Never());
+
+            _mockOrderServiceApi
+                .Verify(api =>
+                    api.UpdateStatus(
+                        It.IsAny<Guid>(),
+                        "Delivering",
+                        It.IsAny<CancellationToken>()
+                        ),
+                    Times.Never());
+        }
 
     }
 }
