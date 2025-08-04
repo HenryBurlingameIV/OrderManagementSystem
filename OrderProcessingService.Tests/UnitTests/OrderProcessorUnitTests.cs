@@ -204,5 +204,46 @@ namespace OrderProcessingService.Tests.UnitTests
                     Times.Never());
         }
 
+
+        [Theory, AutoProcessingOrderData]
+        public async Task Should_ThrowValidationException_WhenNotAllOrdersInAssemblyStage_ForBeginDelivery(List<ProcessingOrder> processingOrders)
+        {
+            //Arrange
+            foreach (var processingOrder in processingOrders)
+                processingOrder.Status = ProcessingStatus.Completed;
+            processingOrders[0].Stage = Stage.Delivery;
+
+            var poIds = processingOrders.Select(po => po.Id).ToList();
+            var orderIds = processingOrders.Select(po => po.OrderId).ToList();
+
+            _mockRepository
+                .Setup(repo => repo.GetByIdsAsync(poIds, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((List<Guid> ids, CancellationToken ct) => processingOrders);
+
+            //Act & Assert
+            var exception = await Assert.ThrowsAsync<ValidationException>(() =>
+                _orderProcessor.BeginDelivery(poIds, CancellationToken.None));
+
+            //Assert
+            Assert.Contains("Validation failed", exception.Message);
+            Assert.Contains($"Assembly", exception.Message);
+            _mockRepository.VerifyAll();
+            _mockDeliveryWorker
+                .Verify(worker =>
+                    worker.ScheduleAsync(
+                        It.IsAny<StartDeliveryCommand>(),
+                        It.IsAny<CancellationToken>()),
+                    Times.Never());
+
+            _mockOrderServiceApi
+                .Verify(api =>
+                    api.UpdateStatus(
+                        It.IsAny<Guid>(),
+                        "Delivering",
+                        It.IsAny<CancellationToken>()
+                        ),
+                    Times.Never());
+        }
+
     }
 }
