@@ -1,6 +1,7 @@
 ﻿using Castle.Core.Logging;
 using Microsoft.Extensions.Logging;
 using Moq;
+using OrderManagementSystem.Shared.Exceptions;
 using OrderProcessingService.Application.Contracts;
 using OrderProcessingService.Application.DTO;
 using OrderProcessingService.Application.Services;
@@ -86,5 +87,20 @@ namespace OrderProcessingService.Tests.UnitTests
             _mockOrderServiceApi.VerifyAll();
 
         }
+
+
+        [Fact]
+        public async Task Should_ThrowNotFoundException_WhenProcessingOrderNotFound()
+        {
+            //Arange
+            var nonExistentId = Guid.NewGuid();
+            _mockRepository.Setup(x => x.GetByIdAsync(nonExistentId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((ProcessingOrder)null);
+            //Act & Assert
+            var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
+                _orderProcessor.BeginAssembly(nonExistentId, CancellationToken.None));
+            Assert.Contains($"Processing order with ID {nonExistentId} not found.", exception.Message);
+        }
+
     }
 }
