@@ -120,5 +120,51 @@ namespace OrderProcessingService.Tests.UnitTests
             Assert.Contains("New", exception.Message);
             Assert.Contains("Status", exception.Message);
         }
+
+        [Theory, AutoProcessingOrderData]
+        public async Task Should_BeginDeliveryAndUpdateOrder_WhenProcessingOrdersExist(List<ProcessingOrder> processingOrders)
+        {
+            //Arrange
+            foreach (var processingOrder in processingOrders) 
+                processingOrder.Status = ProcessingStatus.Completed;
+
+            var poIds = processingOrders.Select(po => po.Id).ToList();
+            var orderIds = processingOrders.Select(po => po.OrderId).ToList();
+
+            _mockRepository
+                .Setup(repo => repo.GetByIdsAsync(poIds, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((List<Guid> ids, CancellationToken ct) => processingOrders);
+
+            _mockRepository
+                .Setup(repo => repo.BulkUpdateProcessingOrdersStatusAsync(
+                    poIds,
+                    ProcessingStatus.Processing,
+                    Stage.Delivery,
+                    It.IsAny<CancellationToken>()));
+
+            _mockDeliveryWorker
+                .Setup(worker => worker.ScheduleAsync(
+                    It.Is<StartDeliveryCommand>(c =>
+                        c.ProcessingOrderIds.Count == poIds.Count &&
+                        c.ProcessingOrderIds.All(id => poIds.Any(poId => id == poId))),
+                    It.IsAny<CancellationToken>()));
+
+            //Act
+            await _orderProcessor.BeginDelivery(poIds, CancellationToken.None);
+
+            //Assert
+            _mockRepository.VerifyAll();
+            _mockAssemblyWorker.VerifyAll();
+            _mockOrderServiceApi
+                .Verify(api => 
+                    api.UpdateStatus(
+                        It.Is<Guid>(id => orderIds.Contains(id)),
+                        "Delivering",
+                        It.IsAny<CancellationToken>()
+                        ),
+                    Times.Exactly(processingOrders.Count));
+        }
+
+
     }
 }
