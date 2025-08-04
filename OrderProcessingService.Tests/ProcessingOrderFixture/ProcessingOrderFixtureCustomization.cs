@@ -1,4 +1,5 @@
 ﻿using AutoFixture;
+using OrderProcessingService.Application.DTO;
 using OrderProcessingService.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -40,7 +41,21 @@ namespace OrderProcessingService.Tests.ProcessingOrderFixture
                         .ToList();
                 })
                 .OmitAutoProperties()
-                );                                
+                );
+
+
+            fixture.Customize<OrderItemDto>(composer => composer
+                .With(i => i.ProductId, () => Guid.NewGuid())
+                .With(i => i.Quantity, () => new Random().Next(1, 1001))
+                .OmitAutoProperties());
+
+            var createdAd = DateTime.UtcNow;
+            fixture.Customize<OrderDto>(composer => composer
+                .With(o => o.Items, () => fixture.CreateMany<OrderItemDto>(new Random().Next(1, 11)))
+                .With(o => o.Id, () => Guid.NewGuid())
+                .With(o => o.CreatedAt, createdAd)
+                .With(o => o.UpdatedAt, createdAd)
+                .OmitAutoProperties());
         }
     }
 }
