@@ -5,6 +5,8 @@ using OrderProcessingService.Application.Contracts;
 using OrderProcessingService.Application.DTO;
 using OrderProcessingService.Application.Services;
 using OrderProcessingService.Application.Validators;
+using OrderProcessingService.Domain.Entities;
+using OrderProcessingService.Tests.ProcessingOrderFixture;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,6 +44,47 @@ namespace OrderProcessingService.Tests.UnitTests
                 _assemblyStatusValidator,
                 _deliveryStatusValidator
                 );
+        }
+
+        [Theory, AutoProcessingOrderData]
+        public async Task Should_BeginAssemblyAndUpdateOrder_WhenProcessingOrderExists(ProcessingOrder processingOrder)
+        {
+            //Arrange
+            var poId = processingOrder.Id;
+            var orderId = processingOrder.OrderId;
+            var initialUpdatedAt = processingOrder.UpdatedAt;
+            _mockRepository
+                .Setup(repo => repo.GetByIdAsync(poId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Guid id, CancellationToken ct) => processingOrder);
+
+            _mockRepository
+               .Setup(repo => repo.UpdateAsync(
+                    It.Is<ProcessingOrder>(po => 
+                        po.Id == poId &&
+                        po.OrderId == orderId &&
+                        po.Items.Count == processingOrder.Items.Count &&
+                        po.Status == ProcessingStatus.Processing &&
+                        po.Stage == Stage.Assembly &&
+                        po.UpdatedAt > initialUpdatedAt),
+                    It.IsAny<CancellationToken>()))
+               .ReturnsAsync((ProcessingOrder processingOrder, CancellationToken ct) => processingOrder.Id);
+
+            _mockAssemblyWorker
+                .Setup(worker => worker.ScheduleAsync(
+                    It.Is<StartAssemblyCommand>(c => c.ProcessingOrderId == poId),
+                    It.IsAny<CancellationToken>()));
+
+            _mockOrderServiceApi
+                .Setup(api => api.UpdateStatus(orderId, "Processing", It.IsAny<CancellationToken>()));
+
+            //Act
+            await _orderProcessor.BeginAssembly(poId, CancellationToken.None);
+
+            //Assert
+            _mockRepository.VerifyAll();
+            _mockAssemblyWorker.VerifyAll();
+            _mockOrderServiceApi.VerifyAll();
+
         }
     }
 }
