@@ -49,12 +49,12 @@ namespace OrderProcessingService.Tests.ProcessingOrderFixture
                 .With(i => i.Quantity, () => new Random().Next(1, 1001))
                 .OmitAutoProperties());
 
-            var createdAd = DateTime.UtcNow;
+
             fixture.Customize<OrderDto>(composer => composer
-                .With(o => o.Items, () => fixture.CreateMany<OrderItemDto>(new Random().Next(1, 11)))
+                .With(o => o.Items, () => fixture.CreateMany<OrderItemDto>(new Random().Next(1, 11)).ToList())
                 .With(o => o.Id, () => Guid.NewGuid())
-                .With(o => o.CreatedAt, createdAd)
-                .With(o => o.UpdatedAt, createdAd)
+                .With(o => o.CreatedAt, createdAt)
+                .With(o => o.UpdatedAt, createdAt)
                 .OmitAutoProperties());
         }
     }
