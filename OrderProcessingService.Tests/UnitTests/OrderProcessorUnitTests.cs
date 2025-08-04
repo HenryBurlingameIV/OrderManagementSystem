@@ -101,6 +101,21 @@ namespace OrderProcessingService.Tests.UnitTests
             var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
                 _orderProcessor.BeginAssembly(nonExistentId, CancellationToken.None));
             Assert.Contains($"Processing order with ID {nonExistentId} not found.", exception.Message);
+            _mockAssemblyWorker
+               .Verify(worker =>
+                   worker.ScheduleAsync(
+                       It.IsAny<StartAssemblyCommand>(),
+                       It.IsAny<CancellationToken>()),
+                   Times.Never());
+
+            _mockOrderServiceApi
+                .Verify(api =>
+                    api.UpdateStatus(
+                        It.IsAny<Guid>(),
+                        "Processing",
+                        It.IsAny<CancellationToken>()
+                        ),
+                    Times.Never());
         }
 
 
@@ -119,6 +134,21 @@ namespace OrderProcessingService.Tests.UnitTests
             Assert.Contains("Validation failed", exception.Message);
             Assert.Contains("New", exception.Message);
             Assert.Contains("Status", exception.Message);
+            _mockAssemblyWorker
+                .Verify(worker =>
+                    worker.ScheduleAsync(
+                        It.IsAny<StartAssemblyCommand>(),
+                        It.IsAny<CancellationToken>()),
+                    Times.Never());
+
+            _mockOrderServiceApi
+                .Verify(api =>
+                    api.UpdateStatus(
+                        It.IsAny<Guid>(),
+                        "Processing",
+                        It.IsAny<CancellationToken>()
+                        ),
+                    Times.Never());
         }
 
         [Theory, AutoProcessingOrderData]
@@ -160,8 +190,7 @@ namespace OrderProcessingService.Tests.UnitTests
                     api.UpdateStatus(
                         It.Is<Guid>(id => orderIds.Contains(id)),
                         "Delivering",
-                        It.IsAny<CancellationToken>()
-                        ),
+                        It.IsAny<CancellationToken>()),
                     Times.Exactly(processingOrders.Count));
         }
 
@@ -199,8 +228,7 @@ namespace OrderProcessingService.Tests.UnitTests
                     api.UpdateStatus(
                         It.IsAny<Guid>(),
                         "Delivering",
-                        It.IsAny<CancellationToken>()
-                        ),
+                        It.IsAny<CancellationToken>()),
                     Times.Never());
         }
 
@@ -240,8 +268,7 @@ namespace OrderProcessingService.Tests.UnitTests
                     api.UpdateStatus(
                         It.IsAny<Guid>(),
                         "Delivering",
-                        It.IsAny<CancellationToken>()
-                        ),
+                        It.IsAny<CancellationToken>()),
                     Times.Never());
         }
 
