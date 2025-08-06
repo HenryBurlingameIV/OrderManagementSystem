@@ -22,7 +22,7 @@ namespace OrderProcessingService.Tests.UnitTests
     {
         private readonly Mock<IProcessingOrderRepository> _mockRepository;
         private readonly Mock<IBackgroundJobClient> _mockBackgroundJobClient;
-        private readonly Mock<IOrderServiceApi> _mockOrderServoceApi;
+        private readonly Mock<IOrderServiceApi> _mockOrderServiceApi;
         private readonly Mock<ILogger<AssemblyWorker>> _mockLogger;
         private readonly AssemblyWorker _asseblyWorker;
 
@@ -30,12 +30,12 @@ namespace OrderProcessingService.Tests.UnitTests
         {
             _mockRepository = new Mock<IProcessingOrderRepository>();
             _mockBackgroundJobClient = new Mock<IBackgroundJobClient>();
-            _mockOrderServoceApi = new Mock<IOrderServiceApi>();
+            _mockOrderServiceApi = new Mock<IOrderServiceApi>();
             _mockLogger = new Mock<ILogger<AssemblyWorker>>();
             _asseblyWorker = new AssemblyWorker(
                 _mockBackgroundJobClient.Object,
                 _mockRepository.Object,
-                _mockOrderServoceApi.Object,
+                _mockOrderServiceApi.Object,
                 _mockLogger.Object
                 );
         }
@@ -70,7 +70,7 @@ namespace OrderProcessingService.Tests.UnitTests
                         po.Stage == Stage.Assembly),
                     It.IsAny<CancellationToken>()));
 
-            _mockOrderServoceApi
+            _mockOrderServiceApi
                 .Setup(api => api.UpdateStatus(
                     processingOrder.OrderId,
                     "Ready",
@@ -83,12 +83,58 @@ namespace OrderProcessingService.Tests.UnitTests
 
             //Assert
             _mockRepository.VerifyAll();
-            _mockOrderServoceApi.VerifyAll();
+            _mockOrderServiceApi.VerifyAll();
             Assert.True(processingOrder.Items.All(i => i.Status == ItemAssemblyStatus.Ready));
             Assert.Equal(ProcessingStatus.Completed, processingOrder.Status);
             Assert.Equal(Stage.Assembly, processingOrder.Stage);
             Assert.True(initialUpdatedAt < processingOrder.UpdatedAt);
             stopWatch.Elapsed.Should().BeCloseTo(expectedTime, TimeSpan.FromMilliseconds(500));
+        }
+
+        [Fact]
+        public async Task Should_CancelAssembly_WhenProcessingOrderNotFound()
+        {
+            //Arrange
+            var nonExistentId = Guid.NewGuid();
+
+            //Act
+            await _asseblyWorker.ProcessAsync(nonExistentId, CancellationToken.None);
+
+            //Assert
+            _mockRepository
+                .Verify(repo => repo.GetByIdAsync(
+                    nonExistentId,
+                    It.IsAny<CancellationToken>()),
+                    Times.Once());
+
+            _mockRepository
+                .Verify(repo => repo.UpdateItemsAssemblyStatusAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<ItemAssemblyStatus>(),
+                    It.IsAny<CancellationToken>()),
+                    Times.Never());
+
+            _mockRepository
+                .Verify(repo => repo.UpdateAsync(
+                    It.IsAny<ProcessingOrder>(),
+                    It.IsAny<CancellationToken>()),
+                    Times.Never());
+
+            _mockOrderServiceApi
+                .Verify(api => api.UpdateStatus(
+                    It.IsAny<Guid>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()),
+                    Times.Never());
+
+            _mockLogger.Verify(
+                x => x.Log(
+                    LogLevel.Error,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, _) => v.ToString().Contains($"Processing order with ID {nonExistentId} not found")),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                Times.Once);
         }
     }
 }
