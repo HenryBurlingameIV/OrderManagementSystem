@@ -6,9 +6,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="Dockerfile" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.6">
@@ -24,6 +21,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\OrderManagementSystem.Shared\OrderManagementSystem.Shared.csproj" />
+    <ProjectReference Include="..\OrderProcessingService.Application\OrderProcessingService.Application.csproj" />
+    <ProjectReference Include="..\OrderProcessingService.Domain\OrderProcessingService.Domain.csproj" />
     <ProjectReference Include="..\OrderProcessingService.Infrastructure\OrderProcessingService.Infrastructure.csproj" />
   </ItemGroup>
 
