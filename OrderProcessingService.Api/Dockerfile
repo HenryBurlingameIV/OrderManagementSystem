@@ -4,14 +4,14 @@ WORKDIR /app
 
 COPY ["./OrderManagementSystem.Shared/OrderManagementSystem.Shared.csproj", "OrderManagementSystem.Shared/"]
 COPY ["./OrderProcessingService.Api/OrderProcessingService.Api.csproj", "OrderProcessingService.Api/"]
-COPY ["./OrderProcessingService.Application/OrderService.Application.csproj", "OrderProcessingService.Application/"]
+COPY ["./OrderProcessingService.Application/OrderProcessingService.Application.csproj", "OrderProcessingService.Application/"]
 COPY ["./OrderProcessingService.Domain/OrderProcessingService.Domain.csproj", "OrderProcessingService.Domain/"]
-COPY ["./OrderService.Infrastructure/OrderService.Infrastructure.csproj", "OrderService.Infrastructure/"]
-RUN dotnet restore "OrderService.Api/OrderService.Api.csproj"
+COPY ["./OrderProcessingService.Infrastructure/OrderProcessingService.Infrastructure.csproj", "OrderProcessingService.Infrastructure/"]
+RUN dotnet restore "OrderProcessingService.Api/OrderProcessingService.Api.csproj"
 
 
 COPY . .
-WORKDIR "/app/OrderService.Api"
+WORKDIR "/app/OrderProcessingService.Api"
 RUN dotnet build "OrderProcessingService.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish
 
 
@@ -26,5 +26,5 @@ EXPOSE 8082
 COPY --from=publish /app/publish .
 COPY --from=build /app/OrderProcessingService.Infrastructure/Migrations ./Migrations/
 
-ENTRYPOINT ["dotnet", "OrderService.Api.dll"]
+ENTRYPOINT ["dotnet", "OrderProcessingService.Api.dll"]
 
