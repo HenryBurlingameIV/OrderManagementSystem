@@ -67,13 +67,13 @@ namespace OrderProcessingService.Infrastructure.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task BulkUpdateProcessingOrdersTrackingAsync(IEnumerable<Guid> ids, string trackingNumber, CancellationToken cancellationToken)
+        public async Task AssignUniqueTrackingNumbersAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken)
         {
             var updatedAt = DateTime.UtcNow;
             await dbContext.ProcessingOrders
                 .Where(po => ids.Contains(po.Id))
                 .ExecuteUpdateAsync(po => po
-                    .SetProperty(po => po.TrackingNumber, trackingNumber)
+                    .SetProperty(po => po.TrackingNumber, Guid.NewGuid().ToString())
                     .SetProperty(po => po.UpdatedAt, updatedAt));
         }
     }

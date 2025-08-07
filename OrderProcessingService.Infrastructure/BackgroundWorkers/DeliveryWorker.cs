@@ -44,7 +44,7 @@ namespace OrderProcessingService.Infrastructure.BackgroundWorkers
         {
             try
             {
-                await _repository.BulkUpdateProcessingOrdersTrackingAsync(ids, Guid.NewGuid().ToString(), cancellationToken);
+                await _repository.AssignUniqueTrackingNumbersAsync(ids, cancellationToken);
                 var processingOrders = await _repository.GetByIdsAsync(ids, cancellationToken);
        
                 _logger.LogInformation("Delivery process for {OrdersCount} orders started.", processingOrders.Count);
