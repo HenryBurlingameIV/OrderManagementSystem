@@ -19,7 +19,8 @@ namespace OrderService.Application.Commands.CreateOrderCommand
         IRepository<Order> orderRepository, 
         ICatalogServiceApi catalogServiceClient,
         IValidator<CreateOrderCommand> validator,
-        IKafkaProducer<OrderEvent> kafkaProducer
+        IKafkaProducer<OrderEvent> kafkaOrderProducer,
+        IKafkaProducer<NotificationEvent> kafkaNotificationProducer
         ) : IRequestHandler<CreateOrderCommand, Guid>
     {
         public async Task<Guid> Handle(CreateOrderCommand command, CancellationToken cancellationToken)
@@ -38,8 +39,18 @@ namespace OrderService.Application.Commands.CreateOrderCommand
             var order = CreateOrder(orderItems, command.Email, DateTime.UtcNow);
             await orderRepository.CreateAsync(order, cancellationToken);
             Log.Information("Order with Id {@orderId} was created and saved in database", order.Id);
-            await kafkaProducer.ProduceAsync(order.Id.ToString(), CreateOrderEvent(order), cancellationToken);
+            await kafkaOrderProducer.ProduceAsync(order.Id.ToString(), CreateOrderEvent(order), cancellationToken);
             Log.Information("Order sent to Kafka. OrderId: {OrderId}", order.Id);
+            await kafkaNotificationProducer.ProduceAsync(
+                order.Id.ToString(),
+                new NotificationEvent(
+                    order.Id,
+                    (int)order.Status,
+                    order.Email
+                ),
+                cancellationToken);
+
+            Log.Information("Notification sent to Email: {email}.", order.Email);
             return order.Id;             
         }
 
@@ -84,5 +95,6 @@ namespace OrderService.Application.Commands.CreateOrderCommand
                     .ToList(),
             };
         }
+
     }
 }

@@ -18,7 +18,8 @@ namespace OrderService.Application.Commands.UpdateOrderStatusCommand
     public class UpdateOrderStatusCommandHandler(
         IRepository<Order> orderRepository,
         IValidator<OrderStatusValidationModel> validator,
-        ICatalogServiceApi catalogServiceClient
+        ICatalogServiceApi catalogServiceClient,
+        IKafkaProducer<NotificationEvent> kafkaNotificationProducer
         ) : IRequestHandler<UpdateOrderStatusCommand>
     {
         public async Task Handle(UpdateOrderStatusCommand command, CancellationToken cancellationToken)
@@ -47,6 +48,16 @@ namespace OrderService.Application.Commands.UpdateOrderStatusCommand
             order.UpdatedAtUtc = DateTime.UtcNow;
             await orderRepository.UpdateAsync(order, cancellationToken);
             Log.Information("Status of order with ID {@Id} successfully updated", command.Id);
+            await kafkaNotificationProducer.ProduceAsync(
+                order.Id.ToString(), 
+                new NotificationEvent(
+                    order.Id,
+                    (int)order.Status,
+                    order.Email
+                ),
+                cancellationToken);
+
+            Log.Information("Notification sent to Email: {email}.", order.Email);
 
         }
 

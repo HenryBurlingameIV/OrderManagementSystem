@@ -16,7 +16,8 @@ namespace OrderService.Api
             var catalogConnection = builder.Configuration["CatalogService:DefaultConnection"];
             builder.Services.AddInfrastructure(dbConnection!, catalogConnection!);
             builder.Services.AddApplication();
-            builder.Services.AddProducer<OrderEvent>(builder.Configuration.GetSection("Kafka:Order"));
+            builder.Services.AddProducer<OrderEvent>(builder.Configuration.GetSection("Kafka:OrderProducer"), "OrderProducer");
+            builder.Services.AddProducer<NotificationEvent>(builder.Configuration.GetSection("Kafka:NotificationProducer"), "NotificationProducer");
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
