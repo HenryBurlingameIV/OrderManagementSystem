@@ -8,11 +8,11 @@ namespace OrderManagementSystem.Shared.Enums
 {
     public enum OrderStatus
     {
-        New,
-        Cancelled,
-        Processing,
-        Ready,
-        Delivering,
-        Delivered
+        New = 1,
+        Cancelled = 2,
+        Processing = 3,
+        Ready = 4,
+        Delivering = 5,
+        Delivered = 6
     }
 }

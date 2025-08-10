@@ -18,6 +18,11 @@ namespace OrderNotificationService.Infrasrtucture.EntityConfigurations
                 .HasKey(n => n.Id);
 
             builder
+                .Property(n => n.Id)
+                .ValueGeneratedNever();
+
+
+            builder
                 .Property(n => n.Name)
                 .IsRequired()
                 .HasMaxLength(50);
@@ -34,6 +39,12 @@ namespace OrderNotificationService.Infrasrtucture.EntityConfigurations
                     Id = (int)OrderStatus.New,
                     Name = "Создан",
                     TemplateText = "Ваш заказ {OrderId} создан."
+                },
+                new NotificationTemplate()
+                {
+                    Id = (int)OrderStatus.Cancelled,
+                    Name = "Отменен",
+                    TemplateText = "Ваш заказ {OrderId} отменен."
                 },
                 new NotificationTemplate()
                 {
@@ -58,12 +69,6 @@ namespace OrderNotificationService.Infrasrtucture.EntityConfigurations
                     Id = (int)OrderStatus.Delivered,
                     Name = "Доставлен",
                     TemplateText = "Ваш заказ {OrderId} доставлен по указанному адресу."
-                },
-                new NotificationTemplate()
-                {
-                    Id = (int)OrderStatus.Cancelled,
-                    Name = "Отменен",
-                    TemplateText = "Ваш заказ {OrderId} отменен."
                 }
                 );
         }
