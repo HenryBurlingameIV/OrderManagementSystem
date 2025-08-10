@@ -4,7 +4,7 @@
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace OrderNotificationService.Infrasrtucture.Migrations
+namespace OrderNotificationService.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class Initial : Migration

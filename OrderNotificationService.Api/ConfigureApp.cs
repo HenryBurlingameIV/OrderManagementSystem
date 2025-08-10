@@ -1,4 +1,4 @@
-﻿using OrderNotificationService.Infrasrtucture.InfrastructureExtensions;
+﻿using OrderNotificationService.Infrastructure.InfrastructureExtensions;
 
 namespace OrderNotificationService.Api
 {

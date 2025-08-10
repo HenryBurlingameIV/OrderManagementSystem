@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderNotificationService.Infrasrtucture.EntityConfigurations
+namespace OrderNotificationService.Infrastructure.EntityConfigurations
 {
     public class NotificationTemplateConfiguration : IEntityTypeConfiguration<NotificationTemplate>
     {

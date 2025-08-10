@@ -47,7 +47,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderNotificationService.Ap
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderNotificationService.Domain", "OrderNotificationService.Domain\OrderNotificationService.Domain.csproj", "{C2FD6933-3B70-4AB0-A77F-6B8712E6FD21}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderNotificationService.Infrasrtucture", "OrderNotificationService.Infrasrtucture\OrderNotificationService.Infrasrtucture.csproj", "{B53E974E-4DA1-496E-9E53-CBC1B1BEE87B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderNotificationService.Infrastructure", "OrderNotificationService.Infrasrtucture\OrderNotificationService.Infrastructure.csproj", "{B53E974E-4DA1-496E-9E53-CBC1B1BEE87B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

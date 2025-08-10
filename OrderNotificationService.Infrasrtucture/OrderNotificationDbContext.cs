@@ -1,13 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OrderNotificationService.Domain.Entities;
-using OrderNotificationService.Infrasrtucture.EntityConfigurations;
+using OrderNotificationService.Infrastructure.EntityConfigurations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderNotificationService.Infrasrtucture
+namespace OrderNotificationService.Infrastructure
 {
     public class OrderNotificationDbContext : DbContext
     {

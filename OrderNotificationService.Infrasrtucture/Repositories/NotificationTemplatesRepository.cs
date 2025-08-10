@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderNotificationService.Infrasrtucture.Repositories
+namespace OrderNotificationService.Infrastructure.Repositories
 {
     public class NotificationTemplatesRepository : INotificationTemplatesRepository
     {

@@ -3,11 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using OrderNotificationService.Infrasrtucture;
+using OrderNotificationService.Infrastructure;
 
 #nullable disable
 
-namespace OrderNotificationService.Infrasrtucture.Migrations
+namespace OrderNotificationService.Infrastructure.Migrations
 {
     [DbContext(typeof(OrderNotificationDbContext))]
     partial class OrderNotificationDbContextModelSnapshot : ModelSnapshot

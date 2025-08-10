@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OrderNotificationService.Infrasrtucture\OrderNotificationService.Infrasrtucture.csproj" />
+    <ProjectReference Include="..\OrderNotificationService.Infrasrtucture\OrderNotificationService.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
