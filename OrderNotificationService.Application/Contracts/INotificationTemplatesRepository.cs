@@ -9,6 +9,6 @@ namespace OrderNotificationService.Application.Contracts
 {
     public interface INotificationTemplatesRepository
     {
-        Task<NotificationTemplate> GetNotificationTemplateByIdAsync(int id, CancellationToken cancellationToken);
+        Task<NotificationTemplate?> GetNotificationTemplateByIdAsync(int id, CancellationToken cancellationToken);
     }
 }

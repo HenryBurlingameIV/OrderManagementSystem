@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OrderManagementSystem.Shared\OrderManagementSystem.Shared.csproj" />
+    <ProjectReference Include="..\OrderNotificationService.Application\OrderNotificationService.Application.csproj" />
     <ProjectReference Include="..\OrderNotificationService.Domain\OrderNotificationService.Domain.csproj" />
   </ItemGroup>
 

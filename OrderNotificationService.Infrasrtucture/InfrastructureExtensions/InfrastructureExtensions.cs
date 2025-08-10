@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OrderNotificationService.Application.Contracts;
+using OrderNotificationService.Infrasrtucture.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +21,8 @@ namespace OrderNotificationService.Infrasrtucture.InfrastructureExtensions
             {
                 options.UseNpgsql(dbconnection);
             });
+
+            services.AddScoped<INotificationTemplatesRepository, NotificationTemplatesRepository>();
         }
     }
 }
