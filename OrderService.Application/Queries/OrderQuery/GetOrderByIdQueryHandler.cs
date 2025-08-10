@@ -37,6 +37,7 @@ namespace OrderService.Application.Queries.OrderQuery
                 CreatedAtUtc = order.CreatedAtUtc,
                 UpdatedAtUtc = order.UpdatedAtUtc,
                 TotalPrice = order.TotalPrice,
+                Email = order.Email,
                 Items = order.Items
                     .Select(p => 
                         new ProductDto(p.ProductId, p.Price, p.Quantity))

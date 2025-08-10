@@ -35,7 +35,7 @@ namespace OrderService.Application.Commands.CreateOrderCommand
 
             var orderItems = (await Task.WhenAll(orderItemsTasks)).ToList();
 
-            var order = CreateOrder(orderItems, DateTime.UtcNow);
+            var order = CreateOrder(orderItems, command.Email, DateTime.UtcNow);
             await orderRepository.CreateAsync(order, cancellationToken);
             Log.Information("Order with Id {@orderId} was created and saved in database", order.Id);
             await kafkaProducer.ProduceAsync(order.Id.ToString(), CreateOrderEvent(order), cancellationToken);
@@ -55,7 +55,7 @@ namespace OrderService.Application.Commands.CreateOrderCommand
             };
         }
 
-        private Order CreateOrder(List<OrderItem> orderItems, DateTime createdTime)
+        private Order CreateOrder(List<OrderItem> orderItems, string email, DateTime createdTime)
         {
             return new Order()
             {
@@ -64,7 +64,8 @@ namespace OrderService.Application.Commands.CreateOrderCommand
                 TotalPrice = orderItems.Sum(i => i.Price * i.Quantity),
                 Status = OrderStatus.New,
                 CreatedAtUtc = createdTime,
-                UpdatedAtUtc = createdTime
+                UpdatedAtUtc = createdTime,
+                Email = email,
             };
         }
 

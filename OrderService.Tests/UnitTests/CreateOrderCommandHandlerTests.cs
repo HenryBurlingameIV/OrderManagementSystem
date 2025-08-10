@@ -2,6 +2,7 @@
 using FluentValidation;
 using Moq;
 using OrderManagementSystem.Shared.Contracts;
+using OrderManagementSystem.Shared.Enums;
 using OrderService.Application.Commands.CreateOrderCommand;
 using OrderService.Application.Contracts;
 using OrderService.Application.DTO;

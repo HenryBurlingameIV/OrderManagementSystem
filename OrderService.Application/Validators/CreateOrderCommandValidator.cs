@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using OrderService.Application.Commands.CreateOrderCommand;
+using System.Text.RegularExpressions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +24,20 @@ namespace OrderService.Application.Validators
                         .SetValidator(new OrderItemRequestValidator());
                 });
 
+            RuleFor(command => command.Email)
+                .NotNull()
+                .DependentRules(() =>
+                {
+                    RuleFor(command => command.Email)
+                        .NotEmpty()
+                        .MaximumLength(254)
+                        .Must(email =>
+                        {
+                            string pattern = @"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$";
+                            return Regex.IsMatch(email, pattern);
+                        })
+                        .WithMessage("Invalid email format.");
+                });
         }
     }
 }

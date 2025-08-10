@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestPlatform.Common.Interfaces;
 using Moq;
 using OrderManagementSystem.Shared.Contracts;
+using OrderManagementSystem.Shared.Enums;
 using OrderManagementSystem.Shared.Exceptions;
 using OrderService.Application.Commands.UpdateOrderStatusCommand;
 using OrderService.Application.Contracts;

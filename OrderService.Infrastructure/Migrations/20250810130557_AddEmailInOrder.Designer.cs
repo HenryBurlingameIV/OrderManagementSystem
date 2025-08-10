@@ -12,7 +12,7 @@ using OrderService.Infrastructure;
 namespace OrderService.Infrastructure.Migrations
 {
     [DbContext(typeof(OrderDbContext))]
-    [Migration("20250810123050_AddEmailInOrder")]
+    [Migration("20250810130557_AddEmailInOrder")]
     partial class AddEmailInOrder
     {
         /// <inheritdoc />
@@ -36,8 +36,8 @@ namespace OrderService.Infrastructure.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");

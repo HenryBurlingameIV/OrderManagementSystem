@@ -13,8 +13,8 @@ namespace OrderService.Infrastructure.Migrations
             migrationBuilder.AddColumn<string>(
                 name: "Email",
                 table: "Orders",
-                type: "character varying(50)",
-                maxLength: 50,
+                type: "character varying(254)",
+                maxLength: 254,
                 nullable: false,
                 defaultValue: "");
         }

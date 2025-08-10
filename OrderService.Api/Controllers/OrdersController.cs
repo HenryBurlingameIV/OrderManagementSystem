@@ -18,7 +18,11 @@ namespace OrderService.Api.Controllers
             [FromBody] CreateOrderRequest request,
             CancellationToken cancellationToken)
         {
-            var command = new CreateOrderCommand() { OrderItems = request.Items };
+            var command = new CreateOrderCommand() 
+            { 
+                OrderItems = request.Items, 
+                Email = request.Email 
+            };
             var result = await mediator.Send(command, cancellationToken);
             return CreatedAtRoute("GetOrder", new { id = result }, result);
         }

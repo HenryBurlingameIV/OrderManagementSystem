@@ -44,7 +44,7 @@ namespace OrderService.Infrastructure.EntityConfigurations
             builder
                 .Property(o => o.Email)
                 .IsRequired()
-                .HasMaxLength(50);
+                .HasMaxLength(254);
 
         }
 
