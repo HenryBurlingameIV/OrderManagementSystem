@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using MediatR;
 using OrderManagementSystem.Shared.Contracts;
+using OrderManagementSystem.Shared.Enums;
 using OrderManagementSystem.Shared.Exceptions;
 using OrderService.Application.Contracts;
 using OrderService.Application.DTO;
