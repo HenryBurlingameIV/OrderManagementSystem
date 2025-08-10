@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OrderNotificationService.Domain.Entities;
+using OrderNotificationService.Infrasrtucture.EntityConfigurations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,11 @@ namespace OrderNotificationService.Infrasrtucture
 
         public DbSet<NotificationTemplate> NotificationTemplates { get; set; }
 
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfiguration(new NotificationTemplateConfiguration());
+        }
 
     }
 }
