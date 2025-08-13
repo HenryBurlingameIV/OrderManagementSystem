@@ -19,7 +19,7 @@ namespace OrderService.Application.Commands.UpdateOrderStatusCommand
         IRepository<Order> orderRepository,
         IValidator<OrderStatusValidationModel> validator,
         ICatalogServiceApi catalogServiceClient,
-        IKafkaProducer<NotificationEvent> kafkaNotificationProducer
+        IKafkaProducer<OrderStatusEvent> kafkaNotificationProducer
         ) : IRequestHandler<UpdateOrderStatusCommand>
     {
         public async Task Handle(UpdateOrderStatusCommand command, CancellationToken cancellationToken)
@@ -50,7 +50,7 @@ namespace OrderService.Application.Commands.UpdateOrderStatusCommand
             Log.Information("Status of order with ID {@Id} successfully updated", command.Id);
             await kafkaNotificationProducer.ProduceAsync(
                 order.Id.ToString(), 
-                new NotificationEvent(
+                new OrderStatusEvent(
                     order.Id,
                     (int)order.Status,
                     order.Email

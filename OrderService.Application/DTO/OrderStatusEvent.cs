@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 namespace OrderService.Application.DTO
 {
-    public record NotificationEvent(Guid OrderId, int OrderStatus, string Email);
+    public record OrderStatusEvent(Guid OrderId, int OrderStatus, string Email);
 
 }
