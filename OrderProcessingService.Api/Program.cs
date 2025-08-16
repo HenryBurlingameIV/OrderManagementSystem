@@ -1,3 +1,5 @@
+using OrderProcessingService.Infrastructure.Extensions;
+
 namespace OrderProcessingService.Api
 {
     public class Program
@@ -9,10 +11,11 @@ namespace OrderProcessingService.Api
             builder.ConfigureServices();
             var app = builder.Build();
             app.ConfigurePipeline();
-            
-            
 
-
+            if (!app.Environment.IsDevelopment())
+            {
+                app.RunDatabaseMigrations();
+            }
             app.Run();
         }
     }

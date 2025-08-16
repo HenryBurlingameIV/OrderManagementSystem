@@ -34,6 +34,24 @@ services:
     restart: unless-stopped
     container_name: order_service_api_container
 
+  order_processing_service_api:
+    build:
+        context: .
+        dockerfile: OrderProcessingService.Api/Dockerfile
+    ports:
+      - "8082:8082"
+    environment: 
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=opsdb;Username=postgres;Password=qazQWESZ178
+      - Kafka__BootstrapServers=kafka:9092
+    depends_on:
+      db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    restart: unless-stopped
+    container_name: ops_api_container
+
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
     container_name: zookeeper
@@ -73,7 +91,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: qazQWESZ178
-      POSTGRES_MULTIPLE_DATABASES: catalogdb,orderdb
+      POSTGRES_MULTIPLE_DATABASES: catalogdb,orderdb,opsdb
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s

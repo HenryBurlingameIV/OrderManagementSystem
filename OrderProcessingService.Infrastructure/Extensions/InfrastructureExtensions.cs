@@ -1,5 +1,6 @@
 ﻿using Hangfire;
 using Hangfire.PostgreSql;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,6 +49,19 @@ namespace OrderProcessingService.Infrastructure.Extensions
             services.AddScoped<IOrderBackgroundWorker<StartAssemblyCommand>, AssemblyWorker>();
             services.AddScoped<IOrderBackgroundWorker<StartDeliveryCommand>, DeliveryWorker>();
             
+        }
+
+        public static void RunDatabaseMigrations(this WebApplication app)
+        {
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<OrderProcessingDbContext>();
+                var pendingMigrations = db.Database.GetPendingMigrations().ToList();
+                if (pendingMigrations.Any())
+                {
+                    db.Database.Migrate();
+                }
+            }
         }
     }
 }

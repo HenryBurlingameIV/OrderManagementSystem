@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using MediatR;
 using OrderManagementSystem.Shared.Contracts;
+using OrderManagementSystem.Shared.Enums;
 using OrderManagementSystem.Shared.Exceptions;
 using OrderService.Application.Contracts;
 using OrderService.Application.DTO;
@@ -17,7 +18,8 @@ namespace OrderService.Application.Commands.UpdateOrderStatusCommand
     public class UpdateOrderStatusCommandHandler(
         IRepository<Order> orderRepository,
         IValidator<OrderStatusValidationModel> validator,
-        ICatalogServiceApi catalogServiceClient
+        ICatalogServiceApi catalogServiceClient,
+        IKafkaProducer<OrderStatusEvent> kafkaNotificationProducer
         ) : IRequestHandler<UpdateOrderStatusCommand>
     {
         public async Task Handle(UpdateOrderStatusCommand command, CancellationToken cancellationToken)
@@ -46,6 +48,16 @@ namespace OrderService.Application.Commands.UpdateOrderStatusCommand
             order.UpdatedAtUtc = DateTime.UtcNow;
             await orderRepository.UpdateAsync(order, cancellationToken);
             Log.Information("Status of order with ID {@Id} successfully updated", command.Id);
+            await kafkaNotificationProducer.ProduceAsync(
+                order.Id.ToString(), 
+                new OrderStatusEvent(
+                    order.Id,
+                    (int)order.Status,
+                    order.Email
+                ),
+                cancellationToken);
+
+            Log.Information("Notification sent to Email: {email}.", order.Email);
 
         }
 

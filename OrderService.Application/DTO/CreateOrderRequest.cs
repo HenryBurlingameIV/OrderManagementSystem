@@ -6,5 +6,5 @@ using System.Threading.Tasks;
 
 namespace OrderService.Application.DTO
 {
-    public record CreateOrderRequest(List<OrderItemRequest> Items);
+    public record CreateOrderRequest(List<OrderItemRequest> Items, string Email);
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OrderManagementSystem.Shared.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,15 +15,7 @@ namespace OrderService.Domain.Entities
         public decimal TotalPrice { get; set; }
         public DateTime CreatedAtUtc { get; set; }
         public DateTime UpdatedAtUtc { get; set; }
-    }
+        public string Email { get; set; }
 
-    public enum OrderStatus
-    {
-        New,
-        Cancelled,
-        Processing,
-        Ready,
-        Delivering,
-        Delivered
     }
 }

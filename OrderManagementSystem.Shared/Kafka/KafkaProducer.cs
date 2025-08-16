@@ -13,17 +13,18 @@ namespace OrderManagementSystem.Shared.Kafka
     {
         private readonly IProducer<string, TMessage> _producer;
         private readonly string _topic;
-        public KafkaProducer(IOptions<KafkaSettings> settings) 
+        public KafkaProducer(IOptionsMonitor<KafkaSettings> kafkaSettings, string configSectionName) 
         {
+            var settings = kafkaSettings.Get(configSectionName);
             var conf = new ProducerConfig()
             {
-                BootstrapServers = settings.Value.BootstrapServers,
+                BootstrapServers = settings.BootstrapServers,
             };
             _producer = new ProducerBuilder<string, TMessage>(conf)
                 .SetValueSerializer(new KafkaJsonSerializer<TMessage>())
                 .Build();
 
-            _topic = settings.Value.Topic;
+            _topic = settings.Topic;
 
         }
 

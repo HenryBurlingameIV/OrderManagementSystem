@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using OrderManagementSystem.Shared.Enums;
 using OrderManagementSystem.Shared.Exceptions;
 using OrderService.Domain.Entities;
 using OrderService.Tests.OrderFixture;

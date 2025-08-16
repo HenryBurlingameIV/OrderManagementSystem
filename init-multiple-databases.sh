@@ -4,6 +4,18 @@ set -e
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
     CREATE DATABASE catalogdb;
     CREATE DATABASE orderdb;
+    CREATE DATABASE opsdb;
+    
     GRANT ALL PRIVILEGES ON DATABASE catalogdb TO "$POSTGRES_USER";
     GRANT ALL PRIVILEGES ON DATABASE orderdb TO "$POSTGRES_USER";
+    GRANT ALL PRIVILEGES ON DATABASE opsdb TO "$POSTGRES_USER";
+    
+    \c catalogdb
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    
+    \c orderdb
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    
+    \c opsdb
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 EOSQL

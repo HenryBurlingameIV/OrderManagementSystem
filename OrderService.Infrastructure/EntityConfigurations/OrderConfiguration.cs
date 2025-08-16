@@ -40,6 +40,12 @@ namespace OrderService.Infrastructure.EntityConfigurations
                 .IsRequired();
             builder.Property(o => o.UpdatedAtUtc) 
                 .IsRequired();
+
+            builder
+                .Property(o => o.Email)
+                .IsRequired()
+                .HasMaxLength(254);
+
         }
 
     }

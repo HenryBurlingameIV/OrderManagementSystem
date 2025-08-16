@@ -11,6 +11,7 @@ using OrderService.Application.DTO;
 using FluentValidation;
 using Serilog;
 using OrderManagementSystem.Shared.Contracts;
+using OrderManagementSystem.Shared.Enums;
 
 namespace OrderService.Application.Commands.CreateOrderCommand
 {
@@ -18,7 +19,8 @@ namespace OrderService.Application.Commands.CreateOrderCommand
         IRepository<Order> orderRepository, 
         ICatalogServiceApi catalogServiceClient,
         IValidator<CreateOrderCommand> validator,
-        IKafkaProducer<OrderEvent> kafkaProducer
+        IKafkaProducer<OrderEvent> kafkaOrderProducer,
+        IKafkaProducer<OrderStatusEvent> kafkaNotificationProducer
         ) : IRequestHandler<CreateOrderCommand, Guid>
     {
         public async Task<Guid> Handle(CreateOrderCommand command, CancellationToken cancellationToken)
@@ -34,11 +36,21 @@ namespace OrderService.Application.Commands.CreateOrderCommand
 
             var orderItems = (await Task.WhenAll(orderItemsTasks)).ToList();
 
-            var order = CreateOrder(orderItems, DateTime.UtcNow);
+            var order = CreateOrder(orderItems, command.Email, DateTime.UtcNow);
             await orderRepository.CreateAsync(order, cancellationToken);
             Log.Information("Order with Id {@orderId} was created and saved in database", order.Id);
-            await kafkaProducer.ProduceAsync(order.Id.ToString(), CreateOrderEvent(order), cancellationToken);
-            Log.Information("Order sent to Kafka. OrderId: {OrderId}", order.Id);
+            await kafkaOrderProducer.ProduceAsync(order.Id.ToString(), CreateOrderEvent(order), cancellationToken);
+            Log.Information("Order sent to Kafka. OrderId: {@OrderId}", order.Id);
+            await kafkaNotificationProducer.ProduceAsync(
+                order.Id.ToString(),
+                new OrderStatusEvent(
+                    order.Id,
+                    (int)order.Status,
+                    order.Email
+                ),
+                cancellationToken);
+
+            Log.Information("OrderStatus sent to Kafka. OrderId: {@OrderId}", order.Id);
             return order.Id;             
         }
 
@@ -54,7 +66,7 @@ namespace OrderService.Application.Commands.CreateOrderCommand
             };
         }
 
-        private Order CreateOrder(List<OrderItem> orderItems, DateTime createdTime)
+        private Order CreateOrder(List<OrderItem> orderItems, string email, DateTime createdTime)
         {
             return new Order()
             {
@@ -63,7 +75,8 @@ namespace OrderService.Application.Commands.CreateOrderCommand
                 TotalPrice = orderItems.Sum(i => i.Price * i.Quantity),
                 Status = OrderStatus.New,
                 CreatedAtUtc = createdTime,
-                UpdatedAtUtc = createdTime
+                UpdatedAtUtc = createdTime,
+                Email = email,
             };
         }
 
@@ -82,5 +95,6 @@ namespace OrderService.Application.Commands.CreateOrderCommand
                     .ToList(),
             };
         }
+
     }
 }
