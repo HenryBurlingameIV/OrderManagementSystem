@@ -9,13 +9,13 @@ using System.Threading.Tasks;
 
 namespace OrderNotificationService.Application.Services
 {
-    public class OrderNotificationService : INotificationService<NotificationRequest>
+    public class NotificationService : INotificationService<NotificationRequest>
     {
         private readonly INotificationTemplatesRepository _repository;
         private readonly IEmailMessageSender _sender;
         private readonly IMessageTemplateRenderer _messageTemplateRenderer;
 
-        public OrderNotificationService(INotificationTemplatesRepository repository, IEmailMessageSender sender, IMessageTemplateRenderer renderer)
+        public NotificationService(INotificationTemplatesRepository repository, IEmailMessageSender sender, IMessageTemplateRenderer renderer)
         {
             _repository = repository;
             _sender = sender;

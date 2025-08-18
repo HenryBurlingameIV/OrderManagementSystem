@@ -2,8 +2,12 @@
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OrderManagementSystem.Shared.Kafka;
 using OrderNotificationService.Application.Contracts;
+using OrderNotificationService.Infrastructure.Messaging.Handlers;
+using OrderNotificationService.Infrastructure.Messaging.Messages;
 using OrderNotificationService.Infrastructure.Repositories;
+using OrderNotificationService.Infrastructure.Senders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +27,10 @@ namespace OrderNotificationService.Infrastructure.InfrastructureExtensions
             });
 
             services.AddScoped<INotificationTemplatesRepository, NotificationTemplatesRepository>();
+            services.AddScoped<IEmailMessageSender, SmptEmailSender>();
+
+            var kafkaConsumerConf = configuration.GetSection("Kafka:OrderStatusConsumer");
+            services.AddConsumer<OrderStatusChangedMessage, OrderStatusChangedMessageHandler>(kafkaConsumerConf);
         }
     }
 }
