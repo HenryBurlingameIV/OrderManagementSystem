@@ -9,6 +9,7 @@ using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
 using SmtpClient = MailKit.Net.Smtp.SmtpClient;
+using Microsoft.Extensions.Logging;
 
 namespace OrderNotificationService.Infrastructure.Senders
 {
@@ -17,7 +18,7 @@ namespace OrderNotificationService.Infrastructure.Senders
         public async Task SendAsync(string message, string recipientEmail)
         {
             var mimeMessage = new MimeMessage();
-            mimeMessage.From.Add(new MailboxAddress("Sender", "mr.ivliev@gmail.com"));
+            mimeMessage.From.Add(new MailboxAddress("OrderService", "mr.ivliev@gmail.com"));
             mimeMessage.To.Add(new MailboxAddress("Reciever", recipientEmail));
             mimeMessage.Subject = "OrderStatusChanged";
 

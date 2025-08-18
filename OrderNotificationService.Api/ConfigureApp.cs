@@ -1,5 +1,6 @@
-﻿using OrderNotificationService.Infrastructure.InfrastructureExtensions;
-using OrderNotificationService.Application.Extensions;
+﻿using OrderNotificationService.Application.Extensions;
+using OrderNotificationService.Infrastructure.InfrastructureExtensions;
+using Serilog;
 
 namespace OrderNotificationService.Api
 {
@@ -9,6 +10,14 @@ namespace OrderNotificationService.Api
         {
             builder.Services.AddApplication();
             builder.Services.AddInfrastructure(builder.Configuration);
+        }
+
+        public static void ConfigureSerilog(this WebApplicationBuilder builder)
+        {
+            builder.Host.UseSerilog((context, configuration) =>
+            {
+                configuration.ReadFrom.Configuration(context.Configuration);
+            });
         }
     }
 }

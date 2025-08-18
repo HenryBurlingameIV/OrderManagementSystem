@@ -1,4 +1,5 @@
-﻿using OrderManagementSystem.Shared.Exceptions;
+﻿using Microsoft.Extensions.Logging;
+using OrderManagementSystem.Shared.Exceptions;
 using OrderNotificationService.Application.Contracts;
 using OrderNotificationService.Application.DTO;
 using System;
@@ -14,12 +15,17 @@ namespace OrderNotificationService.Application.Services
         private readonly INotificationTemplatesRepository _repository;
         private readonly IEmailMessageSender _sender;
         private readonly IMessageTemplateRenderer _messageTemplateRenderer;
+        private readonly ILogger<NotificationService> _logger;
 
-        public NotificationService(INotificationTemplatesRepository repository, IEmailMessageSender sender, IMessageTemplateRenderer renderer)
+        public NotificationService(INotificationTemplatesRepository repository,
+            IEmailMessageSender sender, 
+            IMessageTemplateRenderer renderer,
+            ILogger<NotificationService> logger)
         {
             _repository = repository;
             _sender = sender;
             _messageTemplateRenderer = renderer;
+            _logger = logger;
             
         }
         public async Task NotifyAsync(NotificationRequest request, CancellationToken ct)
@@ -33,6 +39,7 @@ namespace OrderNotificationService.Application.Services
 
 
             await _sender.SendAsync(message, request.Email);
+            _logger.LogInformation("Notification sent successfully for order {OrderId} to {Email}.", request.OrderId, request.Email);
         }
     }
 }

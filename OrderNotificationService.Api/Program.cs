@@ -5,7 +5,7 @@ namespace OrderNotificationService.Api
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+            builder.ConfigureSerilog();
             builder.ConfigureServices();
             var app = builder.Build();
 
