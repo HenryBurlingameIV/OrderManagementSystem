@@ -1,0 +1,38 @@
+﻿using OrderManagementSystem.Shared.Exceptions;
+using OrderNotificationService.Application.Contracts;
+using OrderNotificationService.Application.DTO;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace OrderNotificationService.Application.Services
+{
+    public class OrderNotificationService : INotificationService<NotificationRequest>
+    {
+        private readonly INotificationTemplatesRepository _repository;
+        private readonly IEmailMessageSender _sender;
+        private readonly IMessageTemplateRenderer _messageTemplateRenderer;
+
+        public OrderNotificationService(INotificationTemplatesRepository repository, IEmailMessageSender sender, IMessageTemplateRenderer renderer)
+        {
+            _repository = repository;
+            _sender = sender;
+            _messageTemplateRenderer = renderer;
+            
+        }
+        public async Task NotifyAsync(NotificationRequest request, CancellationToken ct)
+        {
+            var template = await _repository.GetNotificationTemplateByIdAsync(request.OrderStatus, ct);
+            if (template == null)
+                throw new NotFoundException($"Template with Id {request.OrderStatus} not found.");
+
+            var text = template.TemplateText;
+            var message = _messageTemplateRenderer.Render(text, request);
+
+
+            await _sender.SendAsync(message, request.Email);
+        }
+    }
+}
