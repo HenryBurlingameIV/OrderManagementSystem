@@ -1,3 +1,4 @@
+using OrderNotificationService.Infrastructure.InfrastructureExtensions;
 namespace OrderNotificationService.Api
 {
     public class Program
@@ -8,8 +9,12 @@ namespace OrderNotificationService.Api
             builder.ConfigureSerilog();
             builder.ConfigureServices();
             var app = builder.Build();
+            if (!app.Environment.IsDevelopment())
+            {
+                app.RunDatabaseMigrations();
+            }
 
-            app.MapGet("/", () => "Hello World!");
+            app.MapGet("/", () => "OrderNotificationService is running!");
 
             app.Run();
         }

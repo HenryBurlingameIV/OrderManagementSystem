@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,6 +32,19 @@ namespace OrderNotificationService.Infrastructure.InfrastructureExtensions
 
             var kafkaConsumerConf = configuration.GetSection("Kafka:OrderStatusConsumer");
             services.AddConsumer<OrderStatusChangedMessage, OrderStatusChangedMessageHandler>(kafkaConsumerConf);
+        }
+
+        public static void RunDatabaseMigrations(this WebApplication app)
+        {
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<OrderNotificationDbContext>();
+                var pendingMigrations = db.Database.GetPendingMigrations().ToList();
+                if (pendingMigrations.Any())
+                {
+                    db.Database.Migrate();
+                }
+            }
         }
     }
 }
