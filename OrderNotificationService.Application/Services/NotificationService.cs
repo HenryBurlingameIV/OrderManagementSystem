@@ -35,7 +35,7 @@ namespace OrderNotificationService.Application.Services
                 throw new NotFoundException($"Template with Id {request.OrderStatus} not found.");
 
             var text = template.TemplateText;
-            var message = _messageTemplateRenderer.Render(text, request);
+            var message = _messageTemplateRenderer.Render(text, request.OrderId.ToString());
 
 
             await _sender.SendAsync(message, request.Email);
