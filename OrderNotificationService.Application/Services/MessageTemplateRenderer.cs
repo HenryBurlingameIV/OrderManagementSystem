@@ -10,26 +10,13 @@ namespace OrderNotificationService.Application.Services
 {
     public class MessageTemplateRenderer : IMessageTemplateRenderer
     {
-        public string Render(string template, params string[] values)
+        public string Render(string template, Dictionary<string, string> values)
         {
-            var result = new StringBuilder();
-            var valIndex = 0;
-            var position = 0;
-            while(valIndex < values.Length && position < template.Length)
+            foreach(var value in values)
             {
-                var placeholderStart = template.IndexOf('{', position);
-                if (placeholderStart == -1) break;
-
-                var placeholderEnd = template.IndexOf('}', placeholderStart);
-                if (placeholderEnd == -1) break;
-
-                result.Append(template.Substring(position, placeholderStart - position));
-                result.Append(values[valIndex++] ?? "");
-                position = placeholderEnd + 1;
+                template = template.Replace($"{{{value.Key}}}", value.Value);
             }
-
-            result.Append(template.Substring(position));
-            return result.ToString();  
+            return template;
         }
     }
 }

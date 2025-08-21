@@ -8,6 +8,6 @@ namespace OrderNotificationService.Application.Contracts
 {
     public interface IMessageTemplateRenderer
     {
-        string Render(string template, params string[] values);
+        string Render(string template, Dictionary<string, string> values);
     }
 }
