@@ -1,6 +1,8 @@
 ﻿using Castle.Core.Logging;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging;
 using Moq;
+using OrderManagementSystem.Shared.Exceptions;
 using OrderNotificationService.Application.Contracts;
 using OrderNotificationService.Application.DTO;
 using OrderNotificationService.Application.Services;
@@ -74,6 +76,22 @@ namespace OrderNotificationService.Tests.UnitTests
             _mockRepository.VerifyAll();
             _mockEmailMessageSender.VerifyAll();
             _mockMessageTemplateRenderer.VerifyAll();               
+        }
+
+        [Fact]
+        public async Task Should_ThrowNotFoundException_WhenTemplateNotFound()
+        {
+            //Arrange
+            var orderId = Guid.NewGuid();
+            var email = "test@gmail.com";
+            var orderStatus = 10;
+            var request = new NotificationRequest(orderId, orderStatus, email);
+
+            //Act && Assert
+            await Assert.ThrowsAsync<NotFoundException>(() => _notificationService.NotifyAsync(request, CancellationToken.None));
+            _mockRepository.Verify(repo => repo.GetNotificationTemplateByIdAsync(orderStatus, It.IsAny<CancellationToken>()), Times.Once());
+            _mockEmailMessageSender.Verify(sender => sender.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never());
+            _mockMessageTemplateRenderer.Verify(renderer => renderer.Render(It.IsAny<string>(), It.IsAny<Dictionary<string, string>>()), Times.Never());
         }
     }
 }
