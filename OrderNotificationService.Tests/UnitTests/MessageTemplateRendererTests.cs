@@ -55,7 +55,23 @@ namespace OrderNotificationService.Tests.UnitTests
             Assert.Equal(expectedTemplate, actualTemplate);
         }
 
+        [Fact]
+        public void Should_KeepPlaceholders_WhenValuesNotFound()
+        {
+            //Arrange
+            var template = "Заказ {OrderId} {Status}.";
+            var values = new Dictionary<string, string>()
+            {
+                { "Status", "доставлен" }
+            };
 
+            var expectedTemplate = "Заказ {OrderId} доставлен.";
 
+            //Act
+            var actualTemplate = _messageTemapleteRenderer.Render(template, values);
+
+            //Assert
+            Assert.Equal(expectedTemplate, actualTemplate);
+        }
     }
 }
