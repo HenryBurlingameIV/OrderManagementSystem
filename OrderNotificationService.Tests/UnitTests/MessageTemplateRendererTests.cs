@@ -36,6 +36,26 @@ namespace OrderNotificationService.Tests.UnitTests
             Assert.Equal(expectedTemplate, actualTemplate);
         }
 
+        [Theory]
+        [InlineData("Заказ {OrderId} {Status}.", "123", "готов", "Заказ 123 готов.")]
+        [InlineData("{Status}. Заказ: {OrderId}.", "123", "Доставка завершена", "Доставка завершена. Заказ: 123.")]
+        public void Should_ReplaceMultiplePlaceholders(string template, string orderId, string status, string expectedTemplate)
+        {
+            //Arrange
+            var values = new Dictionary<string, string>()
+            {
+                {"OrderId", orderId},
+                {"Status", status}
+            };
+
+            //Act
+            var actualTemplate = _messageTemapleteRenderer.Render(template, values);
+
+            //Assert
+            Assert.Equal(expectedTemplate, actualTemplate);
+        }
+
+
 
     }
 }
