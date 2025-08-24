@@ -8,6 +8,6 @@ namespace OrderNotificationService.Application.Contracts
 {
     public interface IEmailMessageSender
     {
-        Task SendAsync(string message, string recipientEmail);
+        Task SendAsync(string message, string recipientEmail, CancellationToken ct);
     }
 }

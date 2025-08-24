@@ -15,7 +15,7 @@ namespace OrderNotificationService.Infrastructure.Senders
 {
     public class SmptEmailSender : IEmailMessageSender
     {
-        public async Task SendAsync(string message, string recipientEmail)
+        public async Task SendAsync(string message, string recipientEmail, CancellationToken ct)
         {
             var mimeMessage = new MimeMessage();
             mimeMessage.From.Add(new MailboxAddress("OrderService", "mr.ivliev@gmail.com"));
@@ -27,10 +27,10 @@ namespace OrderNotificationService.Infrastructure.Senders
             mimeMessage.Body = bodyBuilder.ToMessageBody();
 
             using var client = new SmtpClient();
-            await client.ConnectAsync("smtp.sendgrid.net", 587, SecureSocketOptions.StartTls);
-            await client.AuthenticateAsync("apikey", "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");
-            await client.SendAsync(mimeMessage);
-            await client.DisconnectAsync(true);
+            await client.ConnectAsync("smtp.sendgrid.net", 587, SecureSocketOptions.StartTls, ct);
+            await client.AuthenticateAsync("apikey", "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", ct);
+            await client.SendAsync(mimeMessage, ct);
+            await client.DisconnectAsync(true, ct);
         }
     }
 }

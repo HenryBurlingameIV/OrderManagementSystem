@@ -43,7 +43,7 @@ namespace OrderNotificationService.Application.Services
             var message = _messageTemplateRenderer.Render(text, values);
 
 
-            await _sender.SendAsync(message, request.Email);
+            await _sender.SendAsync(message, request.Email, ct);
             _logger.LogInformation("Notification sent successfully for order {OrderId} to {Email}.", request.OrderId, request.Email);
         }
     }
