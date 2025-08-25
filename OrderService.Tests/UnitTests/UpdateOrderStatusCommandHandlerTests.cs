@@ -23,6 +23,7 @@ namespace OrderService.Tests.UnitTests
         private IValidator<OrderStatusValidationModel> _validator;
         private Mock<IRepository<Order>> _mockOrderRepository;
         private Mock<ICatalogServiceApi> _mockCatalogServiceApi;
+        private readonly Mock<IKafkaProducer<OrderStatusEvent>> _mockOrderStatusProducer;
         private UpdateOrderStatusCommandHandler _handler;
 
 
@@ -31,7 +32,17 @@ namespace OrderService.Tests.UnitTests
             _validator = new OrderStatusTransitionValidator();
             _mockOrderRepository = new Mock<IRepository<Order>>();
             _mockCatalogServiceApi = new Mock<ICatalogServiceApi>();
-            _handler = new UpdateOrderStatusCommandHandler(_mockOrderRepository.Object, _validator, _mockCatalogServiceApi.Object);
+            _mockOrderStatusProducer = new Mock<IKafkaProducer<OrderStatusEvent>>();
+            _handler = new UpdateOrderStatusCommandHandler(
+                _mockOrderRepository.Object,
+                _validator, 
+                _mockCatalogServiceApi.Object,
+                _mockOrderStatusProducer.Object);
+        }
+
+        private static bool IsValidGuid(string id)
+        {
+            return Guid.TryParse(id, out _);
         }
 
         [Theory]
@@ -63,11 +74,19 @@ namespace OrderService.Tests.UnitTests
                     It.IsAny<CancellationToken>()))
                 .Verifiable();
 
+            _mockOrderStatusProducer
+                .Setup(producer => producer.ProduceAsync(
+                    It.Is<string>(id => IsValidGuid(id)),
+                    It.Is<OrderStatusEvent>(e => e.OrderStatus == (int)to && e.Email == order.Email),
+                    It.IsAny<CancellationToken>()))
+                .Verifiable();
+
             //Act
             await _handler.Handle(command, CancellationToken.None);
 
             //Assert
             _mockOrderRepository.VerifyAll();
+            _mockOrderStatusProducer.VerifyAll();
             Assert.Equal(to, order.Status);
             Assert.True(order.UpdatedAtUtc > initialUpdatedAt);
             Assert.Equal(initialTotalPrice, order.TotalPrice);

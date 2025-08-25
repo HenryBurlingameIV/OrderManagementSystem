@@ -42,7 +42,8 @@ namespace OrderService.Tests.OrderFixture
                         Items = fixture
                             .CreateMany<OrderItem>(fixture.Create<int>() % 10 + 1)
                             .ToList(),
-                        Status = OrderStatus.New
+                        Status = OrderStatus.New,
+                        Email = "test@gmail.com"
                     };
 
                     order.TotalPrice = order.Items.Sum(oi => oi.Price * oi.Quantity);

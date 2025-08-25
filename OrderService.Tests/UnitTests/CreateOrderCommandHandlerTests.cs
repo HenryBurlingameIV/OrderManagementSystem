@@ -23,8 +23,10 @@ namespace OrderService.Tests.UnitTests
         private Fixture _autoFixture;
         private IValidator<CreateOrderCommand> _validator;
         private Mock<IRepository<Order>> _mockRepository;
-        private Mock<IKafkaProducer<OrderEvent>> _mockKafkaProducer;
+        private Mock<IKafkaProducer<OrderEvent>> _mockOrderProducer;
         private Mock<ICatalogServiceApi> _mockCatalogServiceApi;
+        private Mock<IKafkaProducer<OrderStatusEvent>> _mockOrderStatusProducer;
+
         public CreateOrderCommandHandlerTests() 
         {
             _autoFixture = new Fixture();
@@ -33,13 +35,15 @@ namespace OrderService.Tests.UnitTests
             );
             _validator = new CreateOrderCommandValidator();
             _mockRepository = new Mock<IRepository<Order>>();
-            _mockKafkaProducer = new Mock<IKafkaProducer<OrderEvent>>();
+            _mockOrderProducer = new Mock<IKafkaProducer<OrderEvent>>();
+            _mockOrderStatusProducer  = new Mock<IKafkaProducer<OrderStatusEvent>>();
             _mockCatalogServiceApi = new Mock<ICatalogServiceApi>();
             _handler = new CreateOrderCommandHandler(
                 _mockRepository.Object, 
                 _mockCatalogServiceApi.Object, 
                 _validator, 
-                _mockKafkaProducer.Object);
+                _mockOrderProducer.Object,
+                _mockOrderStatusProducer.Object);
         }
 
 
@@ -61,7 +65,8 @@ namespace OrderService.Tests.UnitTests
             //Arrange
             var command = new CreateOrderCommand()
             {
-                OrderItems = _autoFixture.CreateMany<OrderItemRequest>(5).ToList()
+                OrderItems = _autoFixture.CreateMany<OrderItemRequest>(5).ToList(),
+                Email = "test@gmail.com"
             };
 
             var expectedTotalPrice = command.OrderItems.Sum(i => i.Quantity * 100m);
@@ -86,20 +91,29 @@ namespace OrderService.Tests.UnitTests
                     order.Id);
 
 
-            _mockKafkaProducer
+            _mockOrderProducer
                 .Setup(producer => producer.ProduceAsync(
                     It.Is<string>(id => IsValidGuid(id)),
                     It.Is<OrderEvent>(e => e.Status == "New" && e.TotalPrice == expectedTotalPrice),
                     It.IsAny<CancellationToken>()))
                 .Verifiable();
 
+            _mockOrderStatusProducer
+                .Setup(producer => producer.ProduceAsync(
+                    It.Is<string>(id => IsValidGuid(id)),
+                    It.Is<OrderStatusEvent>(e => e.OrderStatus == (int)OrderStatus.New),
+                    It.IsAny<CancellationToken>()))
+                .Verifiable();
+
+
             //Act
             await _handler.Handle(command, CancellationToken.None);
 
             //Assert
             _mockCatalogServiceApi.VerifyAll();
-            _mockKafkaProducer.VerifyAll();
+            _mockOrderProducer.VerifyAll();
             _mockRepository.VerifyAll();
+            _mockOrderStatusProducer.VerifyAll();
         }
 
 
@@ -109,7 +123,8 @@ namespace OrderService.Tests.UnitTests
             //Arange
             var command = new CreateOrderCommand()
             {
-                OrderItems = _autoFixture.CreateMany<OrderItemRequest>(3).ToList()
+                OrderItems = _autoFixture.CreateMany<OrderItemRequest>(3).ToList(),
+                Email = "test@gmail.com"
             };
             command.OrderItems.Add(new OrderItemRequest(Guid.NewGuid(), 1001));
 
@@ -124,7 +139,8 @@ namespace OrderService.Tests.UnitTests
             //Arrange
             var command = new CreateOrderCommand()
             {
-                OrderItems = new List<OrderItemRequest>()
+                OrderItems = new List<OrderItemRequest>(),
+                Email = "test@gmail.com"
             };
 
             //Act && Assert
@@ -137,7 +153,8 @@ namespace OrderService.Tests.UnitTests
             //Arrange
             var command = new CreateOrderCommand()
             {
-                OrderItems = null
+                OrderItems = null,
+                Email = "test@gmail.com"
             };
 
             //Act && Assert
@@ -154,12 +171,27 @@ namespace OrderService.Tests.UnitTests
             {
                 OrderItems = new()
                 {
-                    new OrderItemRequest(Guid.NewGuid(), invalidQuantity)
-                }
+                    new OrderItemRequest(Guid.NewGuid(), invalidQuantity),
+                },
+                Email = "test@gmail.com"
             };
 
             //Act & Assert
             await AssertValidationException(command, "'Quantity' must be greater than '0'", 1);
+        }
+
+        [Fact]
+        public async Task Should_ThrowValidationException_WhenEmailFormatIsInvalid()
+        {
+            //Arrange
+            var command = new CreateOrderCommand()
+            {
+                OrderItems = _autoFixture.CreateMany<OrderItemRequest>(3).ToList(),
+                Email = "not_email"
+            };
+
+            //Act && Assert
+            await AssertValidationException(command, "Invalid email format.", 1);
         }
     }
 }
