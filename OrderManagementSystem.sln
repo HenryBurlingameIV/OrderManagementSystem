@@ -49,6 +49,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderNotificationService.Do
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderNotificationService.Infrastructure", "OrderNotificationService.Infrasrtucture\OrderNotificationService.Infrastructure.csproj", "{B53E974E-4DA1-496E-9E53-CBC1B1BEE87B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderNotificationService.Tests", "OrderNotificationService.Tests\OrderNotificationService.Tests.csproj", "{C0BF59A2-E2CB-4FF1-9DD5-99CEC6D8DE9A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -135,6 +137,10 @@ Global
 		{B53E974E-4DA1-496E-9E53-CBC1B1BEE87B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B53E974E-4DA1-496E-9E53-CBC1B1BEE87B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B53E974E-4DA1-496E-9E53-CBC1B1BEE87B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C0BF59A2-E2CB-4FF1-9DD5-99CEC6D8DE9A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0BF59A2-E2CB-4FF1-9DD5-99CEC6D8DE9A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0BF59A2-E2CB-4FF1-9DD5-99CEC6D8DE9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0BF59A2-E2CB-4FF1-9DD5-99CEC6D8DE9A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
