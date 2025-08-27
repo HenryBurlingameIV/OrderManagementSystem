@@ -51,6 +51,24 @@ services:
         condition: service_healthy
     restart: unless-stopped
     container_name: ops_api_container
+  
+  order_notification_service:
+    build:
+        context: .
+        dockerfile: OrderNotificationService.Api/Dockerfile
+    ports:
+      - "8083:8083"
+    environment: 
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=onsdb;Username=postgres;Password=qazQWESZ178
+      - Kafka__BootstrapServers=kafka:9092
+    depends_on:
+        db:
+            condition: service_healthy
+        kafka:
+            condition: service_healthy
+    restart: unless-stopped
+    container_name: ons_api_container
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
@@ -91,7 +109,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: qazQWESZ178
-      POSTGRES_MULTIPLE_DATABASES: catalogdb,orderdb,opsdb
+      POSTGRES_MULTIPLE_DATABASES: catalogdb,orderdb,opsdb,onsdb
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
