@@ -1,6 +1,17 @@
 ﻿version: '3.8'
 
 services:
+  gateway_api:
+    build:
+        context: .
+        dockerfile: OrderManagementSystem.Gateway/Dockerfile
+    ports: 
+      - "8089:8089"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+    restart: unless-stopped
+    container_name: catalog_service_api_container
+
   catalog_service_api:
     build:
       context: .
