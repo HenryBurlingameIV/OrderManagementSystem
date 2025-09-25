@@ -9,7 +9,6 @@ namespace OrderManagementSystem.Gateway
                 .LoadFromConfig(builder.Configuration.GetSection("YARP"));
             var app = builder.Build();
 
-            app.MapGet("/", () => "Hello World!");
             app.MapReverseProxy();
 
             app.Run();
