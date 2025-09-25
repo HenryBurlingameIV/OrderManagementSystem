@@ -6,7 +6,7 @@ services:
         context: .
         dockerfile: OrderManagementSystem.Gateway/Dockerfile
     ports: 
-      - "8089:8089"
+      - "8088:8088"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
     restart: unless-stopped

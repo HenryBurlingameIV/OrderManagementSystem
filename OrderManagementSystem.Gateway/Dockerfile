@@ -18,7 +18,7 @@ RUN dotnet publish "OrderManagementSystem.Gateway.csproj" -c $BUILD_CONFIGURATIO
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
-EXPOSE 8089
+EXPOSE 8088
 
 COPY --from=publish /app/publish .
 
