@@ -1,7 +1,7 @@
 ﻿version: '3.8'
 
 services:
-  gateway_api:
+  gateway:
     build:
         context: .
         dockerfile: OrderManagementSystem.Gateway/Dockerfile
@@ -9,8 +9,13 @@ services:
       - "8088:8088"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+    depends_on:
+       - catalog_service_api
+       - order_service_api
+       - order_processing_service_api
+       - order_notification_service           
     restart: unless-stopped
-    container_name: catalog_service_api_container
+    container_name: gateway_container
 
   catalog_service_api:
     build:
