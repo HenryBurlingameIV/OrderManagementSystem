@@ -22,11 +22,13 @@ namespace OrderProcessingService.Api
         public static void ConfigurePipeline(this WebApplication app)
         {
             app.UseMiddleware<ExceptionHandlerMiddleware>();
-            app.UseSwagger();
-            app.UseSwaggerUI();
+            if(app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
             app.UseRouting();
             app.MapControllers();
-            app.MapGet("/", () => "OrderProcessingService is running!");
             app.UseHangfireDashboard("/hangfire");
         }
 
