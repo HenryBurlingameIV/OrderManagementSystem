@@ -9,6 +9,7 @@ services:
       - "8088:8088"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8088
     depends_on:
        - catalog_service_api
        - order_service_api
@@ -21,10 +22,9 @@ services:
     build:
       context: .
       dockerfile: CatalogService.Api/Dockerfile
-    ports:
-      - "8080:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=catalogdb;Username=postgres;Password=qazQWESZ178
     depends_on:
       db:
@@ -36,10 +36,9 @@ services:
     build:
       context: .
       dockerfile: OrderService.Api/Dockerfile
-    ports:
-      - "8081:8081"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8081
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=orderdb;Username=postgres;Password=qazQWESZ178
       - Kafka__BootstrapServers=kafka:9092
     depends_on:
@@ -54,10 +53,9 @@ services:
     build:
         context: .
         dockerfile: OrderProcessingService.Api/Dockerfile
-    ports:
-      - "8082:8082"
     environment: 
       - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8082
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=opsdb;Username=postgres;Password=qazQWESZ178
       - Kafka__BootstrapServers=kafka:9092
     depends_on:
@@ -72,10 +70,9 @@ services:
     build:
         context: .
         dockerfile: OrderNotificationService.Api/Dockerfile
-    ports:
-      - "8083:8083"
     environment: 
       - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8083
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=onsdb;Username=postgres;Password=qazQWESZ178
       - Kafka__BootstrapServers=kafka:9092
     depends_on:
