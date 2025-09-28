@@ -26,11 +26,14 @@ namespace OrderService.Api
         public static void ConfigurePipeline(this WebApplication app)
         {
             app.UseMiddleware<ExceptionHandlerMiddleware>();
-            app.UseSwagger();
-            app.UseSwaggerUI();
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
             app.UseRouting();
             app.MapControllers();
-            app.MapGet("/", () => "OrderService is running!");
+
         }
 
         public static void ConfigureSerilog(this WebApplicationBuilder builder)

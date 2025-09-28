@@ -24,9 +24,11 @@ namespace CatalogService.Api
         {
             app.UseMiddleware<ExceptionHandlerMiddleware>();
             app.UseSerilogRequestLogging();
-            app.UseSwagger();
-            app.UseSwaggerUI();
-            app.MapGet("/", () => "CatalogService is running!");
+            if(app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
             app.UseRouting();
             app.MapControllers();
         }
