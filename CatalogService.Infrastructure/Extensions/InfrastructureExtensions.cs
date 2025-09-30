@@ -1,11 +1,11 @@
 ﻿using CatalogService.Domain;
-using CatalogService.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OrderManagementSystem.Shared.Contracts;
+using OrderManagementSystem.Shared.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +20,11 @@ namespace CatalogService.Infrastructure.Extensions
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, string dbConnection)
         {
             services.AddDbContext<CatalogDbContext>(options => options.UseNpgsql(dbConnection));
-            services.AddScoped<IRepository<Product>, ProductRepository>();
+            services.AddScoped<IRepository<Product>>(provider =>
+            {
+                var dbContext = provider.GetRequiredService<CatalogDbContext>();
+                return new Repository<Product>(dbContext);
+            });
 
             return services;
         }
