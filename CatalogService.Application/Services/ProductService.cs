@@ -8,6 +8,7 @@ using CatalogService.Application.Contracts;
 using CatalogService.Application.DTO;
 using CatalogService.Domain;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 using OrderManagementSystem.Shared.Contracts;
 using OrderManagementSystem.Shared.Exceptions;
 using Serilog;
@@ -22,26 +23,26 @@ namespace CatalogService.Application.Services
         private IValidator<ProductCreateRequest> _createValidator;
         private IValidator<ProductUpdateRequest> _updateValidator;
         private IValidator<ProductUpdateQuantityRequest> _quantityValidator;
+        private readonly ILogger<ProductService> _logger;
 
-
-        public ProductService(IRepository<Product> productRepository,
-                    IValidator<ProductCreateRequest> createValidator,
+        public ProductService(
+            IRepository<Product> productRepository,
+            IValidator<ProductCreateRequest> createValidator,
             IValidator<ProductUpdateRequest> updateValidator,
-            IValidator<ProductUpdateQuantityRequest> quantityValidator)
+            IValidator<ProductUpdateQuantityRequest> quantityValidator,
+            ILogger<ProductService> logger)
         {
             _productRepository = productRepository;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
             _quantityValidator = quantityValidator;
+            _logger = logger;
         }
 
         public async Task<Guid> CreateProductAsync(ProductCreateRequest request, CancellationToken cancellationToken)
         {
-            var validationResult = await _createValidator.ValidateAsync(request, cancellationToken);
-            if (!validationResult.IsValid)
-            {
-                throw new ValidationException(validationResult.Errors);
-            }
+            await _createValidator.ValidateAndThrowAsync(request, cancellationToken);
+
             var nameIsUnique = await IsProductNameUnique(request.Name, null, cancellationToken);
             if (!nameIsUnique)
             {
@@ -52,6 +53,7 @@ namespace CatalogService.Application.Services
           
             var id = (await _productRepository.InsertAsync(product!, cancellationToken)).Id;
             await _productRepository.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("Product with ID {@ProductId} created and saved in database", product.Id);
             return id;
         }
 
@@ -62,17 +64,13 @@ namespace CatalogService.Application.Services
             {
                 throw new NotFoundException($"Product with ID {productId} not found.");
             }
-            Log.Information("Product with ID {@productId} successfully found", productId);
+            _logger.LogInformation("Product with ID {@productId} successfully found", productId);
             return CreateProductViewModel(product);
         }
 
         public async Task<Guid> UpdateProductAsync(Guid productId, ProductUpdateRequest request, CancellationToken cancellationToken)
         {
-            var validationResult = await _updateValidator.ValidateAsync(request, cancellationToken);
-            if (!validationResult.IsValid)
-            {
-                throw new ValidationException(validationResult.Errors);
-            }
+            await _updateValidator.ValidateAndThrowAsync(request, cancellationToken);
 
             var product = await _productRepository.FindAsync(new object []{ productId }, cancellationToken);
             if (product == null)
@@ -92,23 +90,19 @@ namespace CatalogService.Application.Services
             UpdateProductFromRequest(request, product);
             await _productRepository.SaveChangesAsync(cancellationToken);
 
-            Log.Information("Product with ID {@productId} successfully updated", productId);
+            _logger.LogInformation("Product with ID {@ProductId} successfully updated", productId);
             return productId;
         }
         public async Task<ProductViewModel> UpdateProductQuantityAsync(Guid productId, ProductUpdateQuantityRequest request, CancellationToken cancellationToken)
         {
-            var validationResult = await _quantityValidator.ValidateAsync(request);
-            if (!validationResult.IsValid)
-            {
-                throw new ValidationException(validationResult.Errors);
-            }
+            await _quantityValidator.ValidateAndThrowAsync(request);
 
             var product = await _productRepository.FindAsync(new object[] { productId }, cancellationToken);
             if (product == null)
             {
                 throw new NotFoundException($"Product with ID {productId} not found.");
             }
-            Log.Information("Product with ID {@productId} successfully found", productId);
+            _logger.LogInformation("Product with ID {@ProductId} successfully found", productId);
 
             if (product.Quantity + request.DeltaQuantity < 0)
             {
@@ -117,7 +111,7 @@ namespace CatalogService.Application.Services
             product.Quantity += request.DeltaQuantity;
             product.UpdatedDateUtc = DateTime.UtcNow;
             await _productRepository.SaveChangesAsync(cancellationToken);
-            Log.Information("{@Product} quantity successfully updated", product);
+            _logger.LogInformation("{@Product} quantity successfully updated", product);
             return CreateProductViewModel(product);
 
         }
@@ -128,13 +122,14 @@ namespace CatalogService.Application.Services
             {
                 throw new NotFoundException($"Product with ID {productId} not found.");
             }
-            Log.Information("Product with ID {@productId} successfully found", productId);
+            _logger.LogInformation("Product with ID {@ProductId} successfully found", productId);
             _productRepository.Delete(product, cancellationToken);
             await _productRepository.SaveChangesAsync(cancellationToken);
         }
 
         public Product CreateProductFromRequest(ProductCreateRequest request)
-        {  
+        {
+            var createdAt = DateTime.UtcNow;
             return new Product()
             {
                 Id = Guid.NewGuid(),
@@ -143,8 +138,8 @@ namespace CatalogService.Application.Services
                 Quantity = request.Quantity,
                 Price = request.Price,
                 Category = request.Category,
-                CreatedDateUtc = DateTime.UtcNow,
-                UpdatedDateUtc = DateTime.UtcNow
+                CreatedDateUtc = createdAt,
+                UpdatedDateUtc = createdAt
             };
         }
 
