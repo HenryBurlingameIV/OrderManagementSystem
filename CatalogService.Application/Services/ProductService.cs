@@ -46,12 +46,14 @@ namespace CatalogService.Application.Services
             var product = CreateProductFromRequest(request);
 
            
-            return await _productRepository.CreateAsync(product!, cancellationToken);
+            var id = (await _productRepository.InsertAsync(product!, cancellationToken)).Id;
+            await _productRepository.SaveChangesAsync();
+            return id;
         }
 
         public async Task<ProductViewModel> GetProductByIdAsync(Guid productId, CancellationToken cancellationToken)
         {
-            var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
+            var product = await _productRepository.FindAsync(new object[] {productId }, cancellationToken);
             if (product == null)
             {
                 throw new NotFoundException($"Product with ID {productId} not found.");
@@ -68,14 +70,15 @@ namespace CatalogService.Application.Services
                 throw new ValidationException(validationResult.Errors);
             }
 
-            var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
+            var product = await _productRepository.FindAsync(new object []{ productId }, cancellationToken);
             if (product == null)
             {
                 throw new NotFoundException($"Product with ID {productId} not found.");
             }
 
             UpdateProductFromRequest(request, product);
-            await _productRepository.UpdateAsync(product, cancellationToken);
+            await _productRepository.SaveChangesAsync();
+
             Log.Information("Product with ID {@productId} successfully updated", productId);
             return productId;
         }
@@ -87,7 +90,7 @@ namespace CatalogService.Application.Services
                 throw new ValidationException(validationResult.Errors);
             }
 
-            var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
+            var product = await _productRepository.FindAsync(new object[] { productId }, cancellationToken);
             if (product == null)
             {
                 throw new NotFoundException($"Product with ID {productId} not found.");
@@ -100,20 +103,20 @@ namespace CatalogService.Application.Services
             }
             product.Quantity += request.DeltaQuantity;
             product.UpdatedDateUtc = DateTime.UtcNow;
-            await _productRepository.UpdateAsync(product, cancellationToken);
+            await _productRepository.SaveChangesAsync();
             Log.Information("{@Product} quantity successfully updated", product);
             return CreateProductViewModel(product);
 
         }
         public async Task DeleteProductAsync(Guid productId, CancellationToken cancellationToken)
         {
-            var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
+            var product = await _productRepository.FindAsync(new object[] {productId}, cancellationToken);
             if (product == null)
             {
                 throw new NotFoundException($"Product with ID {productId} not found.");
             }
             Log.Information("Product with ID {@productId} successfully found", productId);
-            await _productRepository.DeleteAsync(product, cancellationToken);
+            _productRepository.Delete(product, cancellationToken);
         }
 
         public Product CreateProductFromRequest(ProductCreateRequest request)

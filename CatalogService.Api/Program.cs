@@ -6,7 +6,6 @@ using CatalogService.Application.Validators;
 using CatalogService.Domain;
 using CatalogService.Infrastructure;
 using CatalogService.Infrastructure.Extensions;
-using CatalogService.Infrastructure.Repositories;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
