@@ -14,16 +14,16 @@ namespace CatalogService.Tests.IntegrationTests
 {
     public class ProductRepositoryFixture : IAsyncLifetime
     {
-        public CatalogDBContext Context { get; private set; }
+        public CatalogDbContext Context { get; private set; }
         public IRepository<Product> ProductRepository { get; private set; }
 
         public async Task InitializeAsync()
         {
-            var options = new DbContextOptionsBuilder<CatalogDBContext>()
+            var options = new DbContextOptionsBuilder<CatalogDbContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
                 .Options;
 
-            Context = new CatalogDBContext(options);
+            Context = new CatalogDbContext(options);
             ProductRepository = new ProductRepository(Context, new ProductValidator(Context)); 
             await Context.Database.EnsureCreatedAsync();
         }

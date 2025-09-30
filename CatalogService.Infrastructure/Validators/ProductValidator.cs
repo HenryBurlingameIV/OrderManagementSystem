@@ -13,8 +13,8 @@ namespace CatalogService.Infrastructure.Validators
 {
     public class ProductValidator : AbstractValidator<Product>
     {
-        private CatalogDBContext _dbContext;
-        public ProductValidator(CatalogDBContext dbContext) 
+        private CatalogDbContext _dbContext;
+        public ProductValidator(CatalogDbContext dbContext) 
         {
            _dbContext = dbContext;
             RuleFor(product => product).MustAsync(async (product, token) =>

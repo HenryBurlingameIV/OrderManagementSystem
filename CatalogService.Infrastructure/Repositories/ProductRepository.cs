@@ -16,10 +16,10 @@ namespace CatalogService.Infrastructure.Repositories
 {
     public class ProductRepository : IRepository<Product>
     {
-        private CatalogDBContext _dbContext;
+        private CatalogDbContext _dbContext;
         private IValidator<Product> _productValidator;
 
-        public ProductRepository(CatalogDBContext dbContext, IValidator<Product> productValidator)
+        public ProductRepository(CatalogDbContext dbContext, IValidator<Product> productValidator)
         {
             _dbContext = dbContext;
             _productValidator = productValidator;

@@ -19,7 +19,7 @@ namespace CatalogService.Infrastructure.Extensions
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, string dbConnection)
         {
-            services.AddDbContext<CatalogDBContext>(options => options.UseNpgsql(dbConnection));
+            services.AddDbContext<CatalogDbContext>(options => options.UseNpgsql(dbConnection));
             services.AddScoped<IRepository<Product>, ProductRepository>();
 
             return services;
@@ -29,7 +29,7 @@ namespace CatalogService.Infrastructure.Extensions
         {
             using (var scope = app.Services.CreateScope())
             {
-                var db = scope.ServiceProvider.GetRequiredService<CatalogDBContext>();
+                var db = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
                 var pendingMigrations = db.Database.GetPendingMigrations().ToList();
                 if (pendingMigrations.Any())
                 {
