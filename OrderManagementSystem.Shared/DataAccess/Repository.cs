@@ -38,8 +38,8 @@ namespace OrderManagementSystem.Shared.DataAccess
                 ? await _dbSet.AnyAsync()
                 : await _dbSet.AnyAsync(predicate, ct);
 
-        public async Task<int> SaveChangesAsync() =>
-            await _dbContext.SaveChangesAsync();
+        public async Task<int> SaveChangesAsync(CancellationToken ct) =>
+            await _dbContext.SaveChangesAsync(ct);
 
     }
 }

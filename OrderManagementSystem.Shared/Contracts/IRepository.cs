@@ -14,7 +14,7 @@ namespace OrderManagementSystem.Shared.Contracts
         Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken ct);
         Task<TEntity?> FindAsync(object[] keyValues, CancellationToken ct);
         Task<TEntity> InsertAsync(TEntity entity, CancellationToken ct);
-        Task<int> SaveChangesAsync();
+        Task<int> SaveChangesAsync(CancellationToken ct);
 
     }
 }

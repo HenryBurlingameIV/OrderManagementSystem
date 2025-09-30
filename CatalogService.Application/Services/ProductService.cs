@@ -42,12 +42,16 @@ namespace CatalogService.Application.Services
             {
                 throw new ValidationException(validationResult.Errors);
             }
+            var nameIsUnique = await IsProductNameUnique(request.Name, null, cancellationToken);
+            if (!nameIsUnique)
+            {
+                throw new ValidationException($"Product with name {request.Name} already exists");
+            }
 
             var product = CreateProductFromRequest(request);
-
-           
+          
             var id = (await _productRepository.InsertAsync(product!, cancellationToken)).Id;
-            await _productRepository.SaveChangesAsync();
+            await _productRepository.SaveChangesAsync(cancellationToken);
             return id;
         }
 
@@ -76,8 +80,17 @@ namespace CatalogService.Application.Services
                 throw new NotFoundException($"Product with ID {productId} not found.");
             }
 
+            if(request.Name != product.Name)
+            {
+                var nameIsUnique = await IsProductNameUnique(request.Name!, productId, cancellationToken);
+                if (!nameIsUnique)
+                {
+                    throw new ValidationException($"Product with name {request.Name} already exists");
+                }
+            }
+
             UpdateProductFromRequest(request, product);
-            await _productRepository.SaveChangesAsync();
+            await _productRepository.SaveChangesAsync(cancellationToken);
 
             Log.Information("Product with ID {@productId} successfully updated", productId);
             return productId;
@@ -103,7 +116,7 @@ namespace CatalogService.Application.Services
             }
             product.Quantity += request.DeltaQuantity;
             product.UpdatedDateUtc = DateTime.UtcNow;
-            await _productRepository.SaveChangesAsync();
+            await _productRepository.SaveChangesAsync(cancellationToken);
             Log.Information("{@Product} quantity successfully updated", product);
             return CreateProductViewModel(product);
 
@@ -117,6 +130,7 @@ namespace CatalogService.Application.Services
             }
             Log.Information("Product with ID {@productId} successfully found", productId);
             _productRepository.Delete(product, cancellationToken);
+            await _productRepository.SaveChangesAsync(cancellationToken);
         }
 
         public Product CreateProductFromRequest(ProductCreateRequest request)
@@ -147,17 +161,22 @@ namespace CatalogService.Application.Services
 
         public ProductViewModel CreateProductViewModel(Product product)
         {
-            return new ProductViewModel()
-            {
-                Id = product.Id,
-                Name = product.Name,
-                Description = product.Description,
-                Quantity = product.Quantity,
-                Price = product.Price,
-                Category = product.Category,
-                CreatedDateUtc = product.CreatedDateUtc,
-                UpdatedDateUtc = product.UpdatedDateUtc
-            };
+            return new ProductViewModel(
+                product.Id, 
+                product.Name, 
+                product.Description, 
+                product.Category, 
+                product.Price, 
+                product.Quantity);
+
+        }
+
+        public async Task<bool> IsProductNameUnique(string name, Guid? excludedProduct = null, CancellationToken ct = default)
+        {
+            var normailizedName = name.ToLower().Trim();
+            return !await _productRepository.ExistsAsync(p => 
+                p.Name.ToLower().Trim() == normailizedName && (excludedProduct == null || p.Id != excludedProduct.Value), 
+                ct);
         }
 
     }
