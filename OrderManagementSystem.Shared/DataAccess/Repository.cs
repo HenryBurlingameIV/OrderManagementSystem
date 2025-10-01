@@ -46,18 +46,12 @@ namespace OrderManagementSystem.Shared.DataAccess
         public async Task<PaginatedResult<TResult>> GetPaginated<TResult>(
             PaginationRequest request,
             Expression<Func<TEntity, TResult>> selector,
-            Expression <Func<TEntity, bool>> filter = null,
+            Expression <Func<TEntity, bool>>? filter = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
             bool asNoTracking = true,
             CancellationToken ct = default) where TResult : class
         {
             var query = asNoTracking ? _dbSet.AsNoTracking() : _dbSet.AsQueryable();
-
-            if(include != null)
-            {
-                query = include(query);
-            }
 
             if(filter != null)
             {
@@ -87,7 +81,36 @@ namespace OrderManagementSystem.Shared.DataAccess
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
             bool asNoTracking = true,
-            CancellationToken ct = default) => await GetPaginated<TEntity>(request, (e) => e, filter, orderBy, include, asNoTracking, ct);
+            CancellationToken ct = default)
+        {
+            var query = asNoTracking ? _dbSet.AsNoTracking() : _dbSet.AsQueryable();
+
+            if (include != null)
+            {
+                query = include(query);
+            }
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            var totalCount = await query.CountAsync(ct);
+
+            if (orderBy != null)
+            {
+                query = orderBy(query);
+            }
+
+            var items = await query
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync(ct);
+
+            return new PaginatedResult<TEntity>(
+                items, totalCount, request.PageNumber, request.PageSize);
+
+        }
 
     }
 }
