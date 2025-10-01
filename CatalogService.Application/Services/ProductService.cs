@@ -25,6 +25,7 @@ namespace CatalogService.Application.Services
         private IValidator<ProductCreateRequest> _createValidator;
         private IValidator<ProductUpdateRequest> _updateValidator;
         private IValidator<ProductUpdateQuantityRequest> _quantityValidator;
+        private readonly IValidator<GetPagedProductsRequest> _paginationValidator;
         private readonly ILogger<ProductService> _logger;
 
         public ProductService(
@@ -32,12 +33,14 @@ namespace CatalogService.Application.Services
             IValidator<ProductCreateRequest> createValidator,
             IValidator<ProductUpdateRequest> updateValidator,
             IValidator<ProductUpdateQuantityRequest> quantityValidator,
+            IValidator<GetPagedProductsRequest> paginationValidator,
             ILogger<ProductService> logger)
         {
             _productRepository = productRepository;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
             _quantityValidator = quantityValidator;
+            _paginationValidator = paginationValidator;
             _logger = logger;
         }
 
@@ -72,6 +75,7 @@ namespace CatalogService.Application.Services
 
         public async Task<PaginatedResult<ProductViewModel>> GetPagedProductsAsync(GetPagedProductsRequest request, CancellationToken cancellationToken)
         {
+            await _paginationValidator.ValidateAndThrowAsync(request, cancellationToken);
             var pagination = new PaginationRequest()
             {
                 PageSize = request.PageSize,
