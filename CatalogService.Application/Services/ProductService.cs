@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using CatalogService.Application.Contracts;
@@ -10,6 +11,7 @@ using CatalogService.Domain;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 using OrderManagementSystem.Shared.Contracts;
+using OrderManagementSystem.Shared.DataAccess.Pagination;
 using OrderManagementSystem.Shared.Exceptions;
 using Serilog;
 using ValidationException = FluentValidation.ValidationException;
@@ -66,6 +68,45 @@ namespace CatalogService.Application.Services
             }
             _logger.LogInformation("Product with ID {@productId} successfully found", productId);
             return CreateProductViewModel(product);
+        }
+
+        public async Task<PaginatedResult<ProductViewModel>> GetPagedProductsAsync(GetProductsRequest request, CancellationToken cancellationToken)
+        {
+            var pagination = new PaginationRequest()
+            {
+                PageSize = request.PageSize,
+                PageNumber = request.PageNumber,
+            };
+
+            Expression<Func<Product, bool>>? filter = string.IsNullOrEmpty(request.Search)
+                ? null
+                : (p) => p.Name.Contains(request.Search.ToLower()) 
+                || p.Description.Contains(request.Search.ToLower()) 
+                || p.Category.Contains(request.Search.ToLower());
+
+            Func<IQueryable<Product>, IOrderedQueryable<Product>>? orderBy = request.SortBy?.ToLower() switch
+            {
+                "name" => q => q.OrderBy(p => p.Name),
+                "category" => q => q.OrderBy(p => p.Category),
+                "price" => q => q.OrderBy(p => p.Price),
+                "created" => q => q.OrderBy(p => p.CreatedDateUtc),
+                _ => null
+            };
+
+            return await _productRepository
+                .GetPaginated(
+                    request: pagination,
+                    orderBy: orderBy,
+                    filter: filter,
+                    selector: (p) => new ProductViewModel(
+                        p.Id,
+                        p.Name,
+                        p.Description,
+                        p.Category,
+                        p.Price,
+                        p.Quantity),                       
+                    ct: cancellationToken
+                );
         }
 
         public async Task<Guid> UpdateProductAsync(Guid productId, ProductUpdateRequest request, CancellationToken cancellationToken)
