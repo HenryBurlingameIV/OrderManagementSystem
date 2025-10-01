@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using OrderManagementSystem.Shared.Contracts;
+using OrderManagementSystem.Shared.DataAccess.Pagination;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,5 +43,43 @@ namespace OrderManagementSystem.Shared.DataAccess
         public async Task<int> SaveChangesAsync(CancellationToken ct) =>
             await _dbContext.SaveChangesAsync(ct);
 
+        public async Task<PaginatedResult<TResult>> GetPaginated<TResult>(
+            PaginationRequest request,
+            Expression<Func<TEntity, TResult>> selector,
+            Expression <Func<TEntity, bool>> filter = null,
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
+            bool asNoTracking = true,
+            CancellationToken ct = default) where TResult : class
+        {
+            var query = asNoTracking ? _dbSet.AsNoTracking() : _dbSet.AsQueryable();
+
+            if(include != null)
+            {
+                query = include(query);
+            }
+
+            if(filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            var totalCount = await query.CountAsync(ct);
+
+            if (orderBy != null)
+            {
+                query = orderBy(query);
+            }
+
+            var items = await query
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .Select(selector)
+                .ToListAsync(ct);
+
+            return new PaginatedResult<TResult>(
+                items, totalCount, request.PageNumber, request.PageSize);           
+        }        
+            
     }
 }
