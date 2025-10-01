@@ -38,6 +38,18 @@ namespace CatalogService.Api.Controllers
             return Ok(result);
         }
 
+        [HttpGet]
+        public async Task<ActionResult<ProductViewModel>> GetPagedProductsAsync(
+            [FromQuery] GetPagedProductsRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await _productService.GetPagedProductsAsync(
+                request,
+                cancellationToken);
+            return Ok(result);
+        }
+            
+
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<Guid>> UpdateProductAsync(
             [FromRoute] Guid id, 

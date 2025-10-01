@@ -70,7 +70,7 @@ namespace CatalogService.Application.Services
             return CreateProductViewModel(product);
         }
 
-        public async Task<PaginatedResult<ProductViewModel>> GetPagedProductsAsync(GetProductsRequest request, CancellationToken cancellationToken)
+        public async Task<PaginatedResult<ProductViewModel>> GetPagedProductsAsync(GetPagedProductsRequest request, CancellationToken cancellationToken)
         {
             var pagination = new PaginationRequest()
             {
@@ -80,9 +80,9 @@ namespace CatalogService.Application.Services
 
             Expression<Func<Product, bool>>? filter = string.IsNullOrEmpty(request.Search)
                 ? null
-                : (p) => p.Name.Contains(request.Search.ToLower()) 
-                || p.Description.Contains(request.Search.ToLower()) 
-                || p.Category.Contains(request.Search.ToLower());
+                : (p) => p.Name.ToLower().Contains(request.Search.ToLower()) 
+                || p.Description.ToLower().Contains(request.Search.ToLower())
+                || p.Category.ToLower().Contains(request.Search.ToLower());
 
             Func<IQueryable<Product>, IOrderedQueryable<Product>>? orderBy = request.SortBy?.ToLower() switch
             {
