@@ -79,7 +79,15 @@ namespace OrderManagementSystem.Shared.DataAccess
 
             return new PaginatedResult<TResult>(
                 items, totalCount, request.PageNumber, request.PageSize);           
-        }        
-            
+        }
+
+        public async Task<PaginatedResult<TEntity>> GetPaginated(
+            PaginationRequest request,
+            Expression<Func<TEntity, bool>> filter = null,
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
+            bool asNoTracking = true,
+            CancellationToken ct = default) => await GetPaginated<TEntity>(request, (e) => e, filter, orderBy, include, asNoTracking, ct);
+
     }
 }
