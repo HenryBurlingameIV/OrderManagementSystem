@@ -37,6 +37,14 @@ namespace OrderManagementSystem.Shared.Contracts
         Task<TEntity?> GetFirstOrDefaultAsync(
             Expression<Func<TEntity, bool>>? filter = null,
             Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+            bool asNoTraсking = true,
+            CancellationToken ct = default);
+
+        Task<TResult?> GetFirstOrDefaultAsync<TResult>(
+            Expression<Func<TEntity, TResult>> selector,
+            Expression<Func<TEntity, bool>>? filter = null,
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             bool asNoTraсking = true,
             CancellationToken ct = default);
 

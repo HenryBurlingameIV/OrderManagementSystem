@@ -114,6 +114,7 @@ namespace OrderManagementSystem.Shared.DataAccess
         public async Task<TEntity?> GetFirstOrDefaultAsync(
             Expression<Func<TEntity, bool>>? filter = null,
             Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             bool asNoTraсking = true,
             CancellationToken ct = default)
         {
@@ -124,9 +125,32 @@ namespace OrderManagementSystem.Shared.DataAccess
                 query = include(query);
             }
 
-            return filter is null 
-                ? await query.FirstOrDefaultAsync(ct)
-                : await query.FirstOrDefaultAsync(filter, ct);
+            if (filter != null)
+                query = query.Where(filter);
+
+            if (orderBy != null)
+                query = orderBy(query);
+
+            return await query.FirstOrDefaultAsync(ct);
+
+        }
+
+        public async Task<TResult?> GetFirstOrDefaultAsync<TResult>(
+            Expression<Func<TEntity, TResult>> selector,
+            Expression<Func<TEntity, bool>>? filter = null,
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+            bool asNoTraсking = true,
+            CancellationToken ct = default)
+        {
+            var query = asNoTraсking ? _dbSet.AsNoTracking() : _dbSet.AsQueryable();
+
+            if (filter != null)
+                query = query.Where(filter);
+
+            if (orderBy != null)
+                query = orderBy(query);
+
+            return await query.Select(selector).FirstOrDefaultAsync(ct);
         }
     }
 }
