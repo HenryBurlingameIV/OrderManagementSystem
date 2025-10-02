@@ -7,8 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using CatalogService.Infrastructure.Repositories;
-using CatalogService.Infrastructure.Validators;
+
+using OrderManagementSystem.Shared.DataAccess;
 
 namespace CatalogService.Tests.IntegrationTests
 {
@@ -24,7 +24,7 @@ namespace CatalogService.Tests.IntegrationTests
                 .Options;
 
             Context = new CatalogDbContext(options);
-            ProductRepository = new ProductRepository(Context, new ProductValidator(Context)); 
+            ProductRepository = new Repository<Product>(Context); 
             await Context.Database.EnsureCreatedAsync();
         }
 
