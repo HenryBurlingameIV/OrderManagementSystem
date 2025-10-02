@@ -109,8 +109,24 @@ namespace OrderManagementSystem.Shared.DataAccess
 
             return new PaginatedResult<TEntity>(
                 items, totalCount, request.PageNumber, request.PageSize);
-
         }
 
+        public async Task<TEntity?> GetFirstOrDefaultAsync(
+            Expression<Func<TEntity, bool>>? filter = null,
+            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
+            bool asNoTraсking = true,
+            CancellationToken ct = default)
+        {
+            var query = asNoTraсking ? _dbSet.AsNoTracking() : _dbSet.AsQueryable();
+
+            if (include != null)
+            {
+                query = include(query);
+            }
+
+            return filter is null 
+                ? await query.FirstOrDefaultAsync(ct)
+                : await query.FirstOrDefaultAsync(filter, ct);
+        }
     }
 }

@@ -34,5 +34,11 @@ namespace OrderManagementSystem.Shared.Contracts
             bool asNoTracking = true,
             CancellationToken ct = default);
 
+        Task<TEntity?> GetFirstOrDefaultAsync(
+            Expression<Func<TEntity, bool>>? filter = null,
+            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
+            bool asNoTraсking = true,
+            CancellationToken ct = default);
+
     }
 }
