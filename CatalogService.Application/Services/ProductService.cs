@@ -168,7 +168,7 @@ namespace CatalogService.Application.Services
                 throw new NotFoundException($"Product with ID {productId} not found.");
             }
             _logger.LogInformation("Product with ID {@ProductId} successfully found", productId);
-            _productRepository.Delete(product, cancellationToken);
+            _productRepository.Delete(product);
             await _productRepository.SaveChangesAsync(cancellationToken);
         }
 

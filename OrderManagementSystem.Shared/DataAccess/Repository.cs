@@ -32,7 +32,7 @@ namespace OrderManagementSystem.Shared.DataAccess
             return (await _dbSet.AddAsync(entity, ct)).Entity;
         }
 
-        public void Delete(TEntity entity, CancellationToken ct) =>
+        public void Delete(TEntity entity) =>
             _dbSet.Remove(entity);
 
         public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken ct) =>

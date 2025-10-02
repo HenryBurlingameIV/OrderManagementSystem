@@ -12,7 +12,7 @@ namespace OrderManagementSystem.Shared.Contracts
 {
     public interface IRepository<TEntity> where TEntity : class
     {
-        void Delete(TEntity entity, CancellationToken ct);
+        void Delete(TEntity entity);
         Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken ct);
         Task<TEntity?> FindAsync(object[] keyValues, CancellationToken ct);
         Task<TEntity> InsertAsync(TEntity entity, CancellationToken ct);
@@ -21,7 +21,7 @@ namespace OrderManagementSystem.Shared.Contracts
         Task<PaginatedResult<TResult>> GetPaginated<TResult>(
             PaginationRequest request,
             Expression<Func<TEntity, TResult>> selector,
-            Expression<Func<TEntity, bool>> filter = null,
+            Expression<Func<TEntity, bool>>? filter = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             bool asNoTracking = true,
             CancellationToken ct = default) where TResult : class;
