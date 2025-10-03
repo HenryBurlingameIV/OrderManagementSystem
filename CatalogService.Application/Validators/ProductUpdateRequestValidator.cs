@@ -13,12 +13,8 @@ namespace CatalogService.Application.Validators
 {
     public class ProductUpdateRequestValidator : AbstractValidator<ProductUpdateRequest>
     {
-        private readonly IRepository<Product> _repository;
-
-        public ProductUpdateRequestValidator(IRepository<Product> repository) 
+        public ProductUpdateRequestValidator() 
         {
-            _repository = repository;
-
             RuleFor(p => p.Name)
                 .NotEmpty().When(p => p.Name != null);
             RuleFor(p => p.Description).MaximumLength(200).When(p =>p.Description != null);
