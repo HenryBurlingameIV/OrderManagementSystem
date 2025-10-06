@@ -15,7 +15,7 @@ namespace CatalogService.Tests.IntegrationTests
     public class ProductRepositoryFixture : IAsyncLifetime
     {
         public CatalogDbContext Context { get; private set; }
-        public IRepository<Product> ProductRepository { get; private set; }
+        public IEFRepository<Product, Guid> ProductRepository { get; private set; }
 
         public async Task InitializeAsync()
         {
@@ -24,7 +24,7 @@ namespace CatalogService.Tests.IntegrationTests
                 .Options;
 
             Context = new CatalogDbContext(options);
-            ProductRepository = new Repository<Product>(Context); 
+            ProductRepository = new Repository<Product, Guid>(Context); 
             await Context.Database.EnsureCreatedAsync();
         }
 

@@ -89,7 +89,7 @@ namespace CatalogService.Tests.IntegrationTests
         public async Task Should_ReturnProduct_WhenProductExists(Product product)
         {
             //Arrange
-            await _fixture.Context.Products.AddRangeAsync(product);
+            await _fixture.Context.Products.AddAsync(product);
             await _fixture.Context.SaveChangesAsync();
 
 
@@ -115,6 +115,22 @@ namespace CatalogService.Tests.IntegrationTests
         }
 
         [Theory, AutoProductData]
+        public async Task Should_GetProductById_WhenExists(Product product)
+        {
+            //Arrange
+            await _fixture.Context.Products.AddAsync(product);
+            await _fixture.Context.SaveChangesAsync();
+
+
+            //Act
+            var foundProduct = await _fixture.ProductRepository!.GetByIdAsync(product.Id, CancellationToken.None);
+
+            //Assert
+            Assert.NotNull(foundProduct);
+            Assert.Equivalent(product, foundProduct);
+        }
+
+        [Theory, AutoProductData]
         public async Task Should_PersistChanges_WhenProductIsModifiedAndSaved(Product product)
         {
             //Arrange
@@ -125,7 +141,7 @@ namespace CatalogService.Tests.IntegrationTests
 
 
             //Act
-            var productToUpdate = await _fixture.ProductRepository.FindAsync(new object[] {product.Id}, CancellationToken.None);
+            var productToUpdate = await _fixture.ProductRepository.FindAsync(new object[] { product.Id }, CancellationToken.None);
             productToUpdate!.Name = newProductName;
             productToUpdate!.Price = newProductPrice;
             productToUpdate.UpdatedDateUtc = DateTime.UtcNow;
@@ -198,6 +214,7 @@ namespace CatalogService.Tests.IntegrationTests
             Assert.Equal(expectedIds, actualIds);
         }
 
+
         [Theory, AutoProductData]
         public async Task Should_GetEmptyPagedProductList_WhenRequestingPageBeyondTotalPages(List<Product> products)
         {
@@ -249,7 +266,7 @@ namespace CatalogService.Tests.IntegrationTests
             //Act
             var pagedList = await _fixture.ProductRepository.GetPaginated(
                 request: request,
-                filter: (p) =>  p.Name == searchName,
+                filter: (p) => p.Name == searchName,
                 ct: CancellationToken.None);
 
             //Assert
@@ -257,6 +274,7 @@ namespace CatalogService.Tests.IntegrationTests
             Assert.Single(pagedList.Items, (p) => p.Name == searchName);
             Assert.Equal(productWithSearchName.Id, pagedList.Items[0].Id);
         }
+
 
         [Theory, AutoProductData]
         public async Task Should_ReturnPagedSortedNames_WhenUsingProjectionWithOrderBy(List<Product> products)
@@ -301,6 +319,8 @@ namespace CatalogService.Tests.IntegrationTests
             Assert.NotNull(first);
             Assert.Equal(product.Id, first.Id);
         }
+
+
 
         public async Task InitializeAsync()
         {

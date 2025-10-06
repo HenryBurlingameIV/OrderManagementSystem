@@ -20,10 +20,10 @@ namespace CatalogService.Infrastructure.Extensions
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, string dbConnection)
         {
             services.AddDbContext<CatalogDbContext>(options => options.UseNpgsql(dbConnection));
-            services.AddScoped<IRepository<Product>>(provider =>
+            services.AddScoped<IEFRepository<Product, Guid>>(provider =>
             {
                 var dbContext = provider.GetRequiredService<CatalogDbContext>();
-                return new Repository<Product>(dbContext);
+                return new Repository<Product, Guid>(dbContext);
             });
 
             return services;
