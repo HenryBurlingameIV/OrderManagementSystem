@@ -31,7 +31,7 @@ namespace OrderProcessingService.Infrastructure.Extensions
             {
                 options.UseNpgsql(dbconnection);
             });
-            services.AddScoped<IRepository<ProcessingOrder>, ProcessingOrderRepository>();
+            services.AddScoped<IEFRepository<ProcessingOrder>, ProcessingOrderRepository>();
             services.AddScoped<IProcessingOrderRepository, ProcessingOrderRepository>();
             var kafkaConf = configuration.GetSection("Kafka:Order");
             services.AddConsumer<OrderCreatedMessage, OrderCreatedMessageHandler>(kafkaConf);

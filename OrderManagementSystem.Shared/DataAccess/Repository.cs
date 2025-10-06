@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace OrderManagementSystem.Shared.DataAccess
 {
-    public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
+    public class Repository<TEntity, TKey> : IEFRepository<TEntity, TKey> where TEntity : class
     {
         private readonly DbContext _dbContext;
         private readonly DbSet<TEntity> _dbSet;
@@ -22,26 +22,33 @@ namespace OrderManagementSystem.Shared.DataAccess
             _dbSet = dbContext.Set<TEntity>();
         }
 
-        public async Task<TEntity?> FindAsync(object[] keyValues, CancellationToken ct)
-        {
-            return await _dbSet.FindAsync(keyValues, ct);
-        }
+        public async Task<TEntity?> GetByIdAsync(TKey id, CancellationToken cancellationToken) =>
+            await _dbSet.FindAsync(new object[]{id}, cancellationToken);
+
+
+        public void Update(TEntity item) => 
+            _dbSet.Update(item);
+
+        public void Delete(TEntity entity) =>
+            _dbSet.Remove(entity);
 
         public async Task<TEntity> InsertAsync(TEntity entity, CancellationToken ct)
         {
             return (await _dbSet.AddAsync(entity, ct)).Entity;
         }
 
-        public void Delete(TEntity entity) =>
-            _dbSet.Remove(entity);
+        public async Task<int> SaveChangesAsync(CancellationToken ct) =>
+            await _dbContext.SaveChangesAsync(ct);
+
 
         public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken ct) =>
              predicate is null
                 ? await _dbSet.AnyAsync()
                 : await _dbSet.AnyAsync(predicate, ct);
-
-        public async Task<int> SaveChangesAsync(CancellationToken ct) =>
-            await _dbContext.SaveChangesAsync(ct);
+        public async Task<TEntity?> FindAsync(object[] keyValues, CancellationToken ct)
+        {
+            return await _dbSet.FindAsync(keyValues, ct);
+        }
 
         public async Task<PaginatedResult<TResult>> GetPaginated<TResult>(
             PaginationRequest request,
@@ -152,5 +159,8 @@ namespace OrderManagementSystem.Shared.DataAccess
 
             return await query.Select(selector).FirstOrDefaultAsync(ct);
         }
+
+
+
     }
 }
