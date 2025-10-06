@@ -73,7 +73,7 @@ namespace CatalogService.Application.Services
             return CreateProductViewModel(product);
         }
 
-        public async Task<PaginatedResult<ProductViewModel>> GetPagedProductsAsync(GetPagedProductsRequest request, CancellationToken cancellationToken)
+        public async Task<PaginatedResult<ProductViewModel>> GetProductsPaginatedAsync(GetPagedProductsRequest request, CancellationToken cancellationToken)
         {
             await _paginationValidator.ValidateAndThrowAsync(request, cancellationToken);
             var pagination = new PaginationRequest()
