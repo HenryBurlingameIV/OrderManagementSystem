@@ -123,7 +123,7 @@ namespace CatalogService.Application.Services
                 throw new NotFoundException($"Product with ID {productId} not found.");
             }
 
-            if(request.Name != product.Name)
+            if(request.Name != product.Name && request.Name != null)
             {
                 var nameIsUnique = await IsProductNameUnique(request.Name!, productId, cancellationToken);
                 if (!nameIsUnique)
