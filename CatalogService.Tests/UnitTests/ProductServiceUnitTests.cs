@@ -28,7 +28,7 @@ namespace CatalogService.Tests.UnitTests
         private IValidator<ProductUpdateRequest> _productUpdateRequestValidator;
         private IValidator<ProductUpdateQuantityRequest> _productUpdateQuantityRequestValidator;
         private IValidator<GetPagedProductsRequest> _paginationValidator;
-        private Mock<IRepository<Product>> _mockRepository;
+        private Mock<IEFRepository<Product, Guid>> _mockRepository;
         private Mock<ILogger<ProductService>> _mockLogger;
         private IProductService _productService;
 
@@ -38,7 +38,7 @@ namespace CatalogService.Tests.UnitTests
             _productUpdateRequestValidator = new ProductUpdateRequestValidator();
             _productUpdateQuantityRequestValidator = new ProductUpdateQuantityValidator();
             _paginationValidator = new GetPagedProductsRequestValidator();
-            _mockRepository = new Mock<IRepository<Product>>();
+            _mockRepository = new Mock<IEFRepository<Product, Guid>>();
             _mockLogger = new Mock<ILogger<ProductService>>();
             _productService = new ProductService(
                 _mockRepository.Object,
@@ -101,8 +101,8 @@ namespace CatalogService.Tests.UnitTests
             //Arrange
             var id = product.Id;
             _mockRepository
-                .Setup(repo => repo.FindAsync(
-                    It.Is<object[]>(keys => keys.Length == 1 && (Guid)keys[0] == id), 
+                .Setup(repo => repo.GetByIdAsync(
+                    It.Is<Guid>(key => key == id), 
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(product);
 
@@ -130,213 +130,192 @@ namespace CatalogService.Tests.UnitTests
             var exception = await Assert.ThrowsAsync<NotFoundException>(async () => await _productService.GetProductByIdAsync(id, CancellationToken.None));
             Assert.Contains($"Product with ID {id} not found.", exception.Message);
             _mockRepository
-                .Verify(repo => repo.FindAsync(
-                    It.Is<object[]>(keys => keys.Length == 1 && (Guid)keys[0] == id), 
+                .Verify(repo => repo.GetByIdAsync(
+                    It.Is<Guid>(key => key == id), 
                     CancellationToken.None), 
                 Times.Once());
         }
 
-        //[Theory, AutoProductData]
-        //public async Task Should_UpdateAllProperties_WhenRequestContainsAllProperties(Product product, ProductUpdateRequest request)
-        //{
-        //    //Arrange
-        //    var initialUpdatedDate = product.UpdatedDateUtc;
-        //    var id = product.Id;
+        [Theory, AutoProductData]
+        public async Task Should_UpdateAllProperties_WhenRequestContainsAllProperties(Product product, ProductUpdateRequest request)
+        {
+            //Arrange
+            var initialUpdatedDate = product.UpdatedDateUtc;
+            var id = product.Id;
 
-        //    _mockRepository
-        //        .Setup(repo => repo.GetByIdAsync(id, CancellationToken.None))
-        //        .ReturnsAsync((Guid id, CancellationToken token) => product);
+            _mockRepository
+                .Setup(repo => repo.GetByIdAsync(id, CancellationToken.None))
+                .ReturnsAsync((Guid id, CancellationToken token) => product);
 
-        //    _mockRepository
-        //        .Setup(repo => repo.UpdateAsync(
-        //            It.Is<Product>(p =>
-        //                p.Name == request.Name &&
-        //                p.Description == request.Description &&
-        //                p.Category == request.Category &&
-        //                p.Price == request.Price &&
-        //                p.Quantity == request.Quantity), 
-        //            It.IsAny<CancellationToken>()))
-        //        .ReturnsAsync((Product p, CancellationToken token) => p.Id);
+            _mockRepository
+                .Setup(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
 
-        //    //Act
-        //    var actual = await _productService.UpdateProductAsync(id, request, CancellationToken.None);
+            //Act
+            var actual = await _productService.UpdateProductAsync(id, request, CancellationToken.None);
 
-        //    //Assert
-        //    Assert.Equal(id, actual);
-        //    Assert.Equal(request.Name, product.Name);
-        //    Assert.Equal(request.Description, product.Description);
-        //    Assert.Equal(request.Category, product.Category);
-        //    Assert.Equal(request.Price, product.Price);
-        //    Assert.Equal(request.Quantity, product.Quantity);
-        //    Assert.True(product.UpdatedDateUtc > initialUpdatedDate);
-        //    _mockRepository.VerifyAll();
-        //}
+            //Assert
+            Assert.Equal(id, actual);
+            Assert.Equal(request.Name, product.Name);
+            Assert.Equal(request.Description, product.Description);
+            Assert.Equal(request.Category, product.Category);
+            Assert.Equal(request.Price, product.Price);
+            Assert.Equal(request.Quantity, product.Quantity);
+            Assert.True(product.UpdatedDateUtc > initialUpdatedDate);
+            _mockRepository.VerifyAll();
+        }
 
 
-        //[Theory, AutoProductData]
-        //public async Task Should_UpdateOnlyNonNullProperties_WhenUpdateWithPartialRequest(ProductUpdateRequest request, Product product)
-        //{
-        //    //Arrange
-        //    product.Name = "OriginalName";
-        //    product.Description = "OriginalDescription";
-        //    product.Price = 100;
-        //    product.Quantity = 5;
+        [Theory, AutoProductData]
+        public async Task Should_UpdateOnlyNonNullProperties_WhenUpdateWithPartialRequest(ProductUpdateRequest request, Product product)
+        {
+            //Arrange
+            product.Name = "OriginalName";
+            product.Description = "OriginalDescription";
+            product.Price = 100;
+            product.Quantity = 5;
+            var id = product.Id;
+            string newDescription = "UpdatedDescription";
 
-        //    request.Name = null;
-        //    request.Category = null;
-        //    request.Price = null;
-        //    request.Quantity = null;
-        //    request.Description = "UpdatedDescription"; // Единственное изменяемое поле
-        //    var id = product.Id;
+            request = request with { Name = null, Description = newDescription, Price = null, Quantity = null, Category = null };
 
-        //    _mockRepository.Setup(repo => repo.GetByIdAsync(id, It.IsAny<CancellationToken>()))
-        //        .ReturnsAsync((Guid id, CancellationToken token) => product);
-        //    _mockRepository.Setup(repo => repo.UpdateAsync(
-        //        It.Is<Product>(p =>
-        //            p.Name == product.Name &&
-        //            p.Description == request.Description &&
-        //            p.Price == product.Price), 
-        //        It.IsAny<CancellationToken>()))
-        //        .ReturnsAsync((Product p, CancellationToken token) => p.Id);
+            _mockRepository.Setup(repo => repo.GetByIdAsync(id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Guid id, CancellationToken token) => product);
 
+            _mockRepository
+                .Setup(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
 
-        //    //Act
-        //    var actual = await _productService.UpdateProductAsync(id, request, CancellationToken.None);
+            //Act
+            var actual = await _productService.UpdateProductAsync(id, request, CancellationToken.None);
 
-        //    //Assert
-        //    Assert.Equal(id, actual);
-        //    Assert.Equal(request.Description, product.Description);
-        //    Assert.Equal("UpdatedDescription", product.Description);
-        //    Assert.Equal("OriginalName", product.Name); 
-        //    Assert.Equal(100, product.Price);
-        //    Assert.Equal(5, product.Quantity);
-        //    _mockRepository.VerifyAll();       
-        //}
+            //Assert
+            Assert.Equal(id, actual);
+            Assert.Equal(request.Description, product.Description);
+            Assert.Equal(newDescription, product.Description);
+            Assert.Equal("OriginalName", product.Name);
+            Assert.Equal(100, product.Price);
+            Assert.Equal(5, product.Quantity);
+            _mockRepository.VerifyAll();
+        }
 
-        //[Theory, AutoProductData]
-        //public async Task Should_ThrowValidationException_WhenQuantityIsNegative(ProductUpdateRequest request, Product product) 
-        //{
-        //    //Arrange
-        //    request.Quantity = -10;
-        //    var id = product.Id;
+        [Theory, AutoProductData]
+        public async Task Should_ThrowValidationException_WhenQuantityIsNegative(ProductUpdateRequest request, Product product)
+        {
+            //Arrange
+            request = request with { Quantity = -10 };
+            var id = product.Id;
 
 
-        //    //Act & Assert
-        //    var exception = await Assert.ThrowsAsync<ValidationException>(async () => await _productService.UpdateProductAsync(id, request, CancellationToken.None));
-        //    Assert.Contains("'Quantity' must be greater than or equal to '0'", exception.Message);
-        //    _mockRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()), Times.Never);
-        //}
+            //Act & Assert
+            var exception = await Assert.ThrowsAsync<ValidationException>(async () => await _productService.UpdateProductAsync(id, request, CancellationToken.None));
+            Assert.Contains("'Quantity' must be greater than or equal to '0'", exception.Message);
+            _mockRepository.Verify(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        }
 
-        //[Theory, AutoProductData] 
-        //public async Task Should_ThrowNotFoundException_WhenProductToUpdateDoesNotExist(ProductUpdateRequest request)
-        //{
-        //    //Arrange
-        //    var id = Guid.NewGuid();
-        //    _mockRepository
-        //        .Setup(repo => repo.GetByIdAsync(id, It.IsAny<CancellationToken>()))
-        //        .ReturnsAsync((Product)null);
+        [Theory, AutoProductData]
+        public async Task Should_ThrowNotFoundException_WhenProductToUpdateDoesNotExist(ProductUpdateRequest request)
+        {
+            //Arrange
+            var id = Guid.NewGuid();
+            _mockRepository
+                .Setup(repo => repo.GetByIdAsync(id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Product)null);
 
-        //    //Act & Assert
-        //    var exception = await Assert.ThrowsAsync<NotFoundException>(async () => await _productService.UpdateProductAsync(id, request, CancellationToken.None));
-        //    Assert.Contains($"Product with ID {id} not found.", exception.Message);
-        //    _mockRepository.VerifyAll();
-        //    _mockRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()), Times.Never);
-        //}
+            //Act & Assert
+            var exception = await Assert.ThrowsAsync<NotFoundException>(async () => await _productService.UpdateProductAsync(id, request, CancellationToken.None));
+            Assert.Contains($"Product with ID {id} not found.", exception.Message);
+            _mockRepository.VerifyAll();
+            _mockRepository.Verify(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        }
 
-        //[Theory, AutoProductData]
-        //public async Task Should_UpdateQuantity_WhenRequestContainsValidData(Product product)
-        //{
-        //    var updateRequest = new ProductUpdateQuantityRequest()
-        //    {
-        //        DeltaQuantity = -1
-        //    };
-
-        //    var initialQuantity = product.Quantity;
-        //    var id = product.Id;
-        //    var expectedQuantity = initialQuantity + updateRequest.DeltaQuantity;
-
-        //    _mockRepository
-        //        .Setup(repo => repo.GetByIdAsync(id, It.IsAny<CancellationToken>()))
-        //        .ReturnsAsync((Guid id, CancellationToken token) => product);
-
-        //    _mockRepository
-        //        .Setup(repo => repo.UpdateAsync(
-        //            It.Is<Product>(p=> 
-        //                p.Name == product.Name &&
-        //                p.Quantity == expectedQuantity), 
-        //            It.IsAny<CancellationToken>()))
-        //        .ReturnsAsync((Product p, CancellationToken token) => p.Id);
+        [Theory, AutoProductData]
+        public async Task Should_UpdateQuantity_WhenRequestContainsValidData(Product product)
+        {
+            var updateRequest = new ProductUpdateQuantityRequest(-1);
 
 
-        //    //Act
-        //    await _productService.UpdateProductQuantityAsync(id, updateRequest, CancellationToken.None);
+            var initialQuantity = product.Quantity;
+            var id = product.Id;
+            var expectedQuantity = initialQuantity + updateRequest.DeltaQuantity;
 
-        //    //Assert
-        //    Assert.Equal(expectedQuantity, product.Quantity);
-        //    _mockRepository.VerifyAll();
-        //}
+            _mockRepository
+                .Setup(repo => repo.GetByIdAsync(id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Guid id, CancellationToken token) => product);
 
-        //[Theory, AutoProductData]
-        //public async Task Should_ThrowValidationException_WhenRequestedQuantityExceedsAvailable(Product product)
-        //{
-        //    var updateRequest = new ProductUpdateQuantityRequest()
-        //    {
-        //        DeltaQuantity = -(product.Quantity + 1)
-        //    };
-
-        //    var initialQuantity = product.Quantity;
-        //    var id = product.Id;
-
-        //    _mockRepository
-        //        .Setup(repo => repo.GetByIdAsync(id, It.IsAny<CancellationToken>()))
-        //        .ReturnsAsync((Guid id, CancellationToken token) => product);
-
-        //    //Act & Assert
-        //    var exception = await Assert.ThrowsAsync<ValidationException>(async() => await _productService.UpdateProductQuantityAsync(id, updateRequest, CancellationToken.None));
-        //    Assert.Contains($"Product '{product.Name}' does not have enough quantity available. Requested: {Math.Abs(updateRequest.DeltaQuantity)}, Available: {product.Quantity}.", exception.Message);
-        //    _mockRepository.VerifyAll();
-        //    _mockRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()), Times.Never);
-
-        //}
+            _mockRepository
+                .Setup(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
 
 
-        //[Theory, AutoProductData]
-        //public async Task Should_RemoveProduct_WhenProductExists(Product product)
-        //{
-        //    //Arrange
-        //    var id = product.Id;
-        //    Product deletedProduct = null;
-        //    _mockRepository
-        //        .Setup(repo => repo.GetByIdAsync(id, It.IsAny<CancellationToken>()))
-        //        .ReturnsAsync((Guid id, CancellationToken token) => product);
-        //    _mockRepository
-        //        .Setup(repo => repo.DeleteAsync(It.Is<Product>(p => p.Id == id), It.IsAny<CancellationToken>()))
-        //        .Callback<Product, CancellationToken>((p, _) => deletedProduct = p)
-        //        .Returns(Task.CompletedTask);
 
-        //    //Act
-        //    await _productService.DeleteProductAsync(id, CancellationToken.None);
+            //Act
+            await _productService.UpdateProductQuantityAsync(id, updateRequest, CancellationToken.None);
 
-        //    //Assert
-        //    Assert.Same(product, deletedProduct);
-        //    _mockRepository.VerifyAll();
-        //}
+            //Assert
+            Assert.Equal(expectedQuantity, product.Quantity);
+            _mockRepository.VerifyAll();
+        }
 
-        //[Fact]
-        //public async Task Should_ThrowNotFoundException_WhenProductToDeleteNotFound()
-        //{
-        //    //Arrange
-        //    var id = Guid.NewGuid();
-        //    _mockRepository
-        //        .Setup(repo => repo.GetByIdAsync(id, It.IsAny<CancellationToken>()))
-        //        .ReturnsAsync((Guid id, CancellationToken token) => (Product)null);
+        [Theory, AutoProductData]
+        public async Task Should_ThrowValidationException_WhenRequestedQuantityExceedsAvailable(Product product)
+        {
+            var updateRequest = new ProductUpdateQuantityRequest(-(product.Quantity + 1));
 
-        //    //Act & Assert
-        //    var exception = await Assert.ThrowsAsync<NotFoundException>(async () => await _productService.DeleteProductAsync(id, CancellationToken.None));
-        //    Assert.Contains($"Product with ID {id} not found.", exception.Message);
-        //    _mockRepository.VerifyAll();
 
-        //}
+            var initialQuantity = product.Quantity;
+            var id = product.Id;
+
+            _mockRepository
+                .Setup(repo => repo.GetByIdAsync(id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Guid id, CancellationToken token) => product);
+
+            //Act & Assert
+            var exception = await Assert.ThrowsAsync<ValidationException>(async () => await _productService.UpdateProductQuantityAsync(id, updateRequest, CancellationToken.None));
+            Assert.Contains($"Product '{product.Name}' does not have enough quantity available. Requested: {Math.Abs(updateRequest.DeltaQuantity)}, Available: {product.Quantity}.", exception.Message);
+            _mockRepository.VerifyAll();
+            _mockRepository.Verify(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+
+        }
+
+
+        [Theory, AutoProductData]
+        public async Task Should_RemoveProduct_WhenProductExists(Product product)
+        {
+            //Arrange
+            var id = product.Id;
+            Product deletedProduct = null;
+            _mockRepository
+                .Setup(repo => repo.GetByIdAsync(id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Guid id, CancellationToken token) => product);
+            _mockRepository
+                .Setup(repo => repo.Delete(It.Is<Product>(p => p.Id == id)))
+                .Callback<Product>((p) => deletedProduct = p);
+
+
+            //Act
+            await _productService.DeleteProductAsync(id, CancellationToken.None);
+
+            //Assert
+            Assert.Same(product, deletedProduct);
+            _mockRepository.VerifyAll();
+        }
+
+        [Fact]
+        public async Task Should_ThrowNotFoundException_WhenProductToDeleteNotFound()
+        {
+            //Arrange
+            var id = Guid.NewGuid();
+            _mockRepository
+                .Setup(repo => repo.GetByIdAsync(id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Guid id, CancellationToken token) => (Product)null);
+
+            //Act & Assert
+            var exception = await Assert.ThrowsAsync<NotFoundException>(async () => await _productService.DeleteProductAsync(id, CancellationToken.None));
+            Assert.Contains($"Product with ID {id} not found.", exception.Message);
+            _mockRepository.VerifyAll();
+
+        }
     }
 
 }
