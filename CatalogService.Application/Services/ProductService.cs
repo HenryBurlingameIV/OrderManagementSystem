@@ -21,7 +21,7 @@ namespace CatalogService.Application.Services
 {
     public class ProductService : IProductService
     {
-        private IRepository<Product> _productRepository;
+        private IEFRepository<Product, Guid> _productRepository;
         private IValidator<ProductCreateRequest> _createValidator;
         private IValidator<ProductUpdateRequest> _updateValidator;
         private IValidator<ProductUpdateQuantityRequest> _quantityValidator;
@@ -29,7 +29,7 @@ namespace CatalogService.Application.Services
         private readonly ILogger<ProductService> _logger;
 
         public ProductService(
-            IRepository<Product> productRepository,
+            IEFRepository<Product, Guid> productRepository,
             IValidator<ProductCreateRequest> createValidator,
             IValidator<ProductUpdateRequest> updateValidator,
             IValidator<ProductUpdateQuantityRequest> quantityValidator,
@@ -64,7 +64,7 @@ namespace CatalogService.Application.Services
 
         public async Task<ProductViewModel> GetProductByIdAsync(Guid productId, CancellationToken cancellationToken)
         {
-            var product = await _productRepository.FindAsync(new object[] {productId }, cancellationToken);
+            var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
             if (product == null)
             {
                 throw new NotFoundException($"Product with ID {productId} not found.");
@@ -117,7 +117,7 @@ namespace CatalogService.Application.Services
         {
             await _updateValidator.ValidateAndThrowAsync(request, cancellationToken);
 
-            var product = await _productRepository.FindAsync(new object []{ productId }, cancellationToken);
+            var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
             if (product == null)
             {
                 throw new NotFoundException($"Product with ID {productId} not found.");
@@ -142,7 +142,7 @@ namespace CatalogService.Application.Services
         {
             await _quantityValidator.ValidateAndThrowAsync(request);
 
-            var product = await _productRepository.FindAsync(new object[] { productId }, cancellationToken);
+            var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
             if (product == null)
             {
                 throw new NotFoundException($"Product with ID {productId} not found.");
@@ -162,7 +162,7 @@ namespace CatalogService.Application.Services
         }
         public async Task DeleteProductAsync(Guid productId, CancellationToken cancellationToken)
         {
-            var product = await _productRepository.FindAsync(new object[] {productId}, cancellationToken);
+            var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
             if (product == null)
             {
                 throw new NotFoundException($"Product with ID {productId} not found.");
