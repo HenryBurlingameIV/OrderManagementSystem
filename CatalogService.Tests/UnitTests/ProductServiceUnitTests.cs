@@ -20,6 +20,7 @@ using CatalogService.Tests.ProductFixture;
 using FluentAssertions;
 using Castle.Core.Logging;
 using Microsoft.Extensions.Logging;
+using OrderManagementSystem.Shared.DataAccess.Pagination;
 namespace CatalogService.Tests.UnitTests
 {
     public class ProductServiceUnitTests
@@ -315,6 +316,110 @@ namespace CatalogService.Tests.UnitTests
             Assert.Contains($"Product with ID {id} not found.", exception.Message);
             _mockRepository.VerifyAll();
 
+        }
+
+        [Theory, AutoProductData]
+        public async Task Should_GetValidPagedProductList_WhenRequested(List<Product> products)
+        {
+            //Arrange
+            var pageNumber = 1;
+            var pageSize = 3;
+            var request = new GetPagedProductsRequest(
+                pageNumber, pageSize, null, null);
+            var expectedResult = new PaginatedResult<ProductViewModel>(
+                products.Select(p => new ProductViewModel(p.Id, p.Name, p.Description, p.Category, p.Price, p.Quantity)),
+                products.Count(),
+                pageNumber,
+                pageSize);
+
+            _mockRepository
+                .Setup(repo => repo.GetPaginated(
+                    It.Is<PaginationRequest>(r => r.PageNumber == pageNumber && r.PageSize == pageSize),
+                    It.IsAny<Expression<Func<Product, ProductViewModel>>>(),
+                    It.IsAny<Expression<Func<Product, bool>>>(),
+                    It.IsAny<Func<IQueryable<Product>, IOrderedQueryable<Product>>>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<CancellationToken>()
+                    ))
+                .ReturnsAsync(expectedResult);
+
+            //Act
+            var actualResult = await _productService.GetProductsPaginatedAsync(request, CancellationToken.None);
+
+            //Assert
+            Assert.NotNull(actualResult);
+            Assert.NotNull(actualResult.Items);
+            Assert.Equal(expectedResult.TotalCount, actualResult.TotalCount);
+            _mockRepository.VerifyAll();
+        }
+
+        [Fact]
+        public async Task Should_ThrowValidationException_WhenPageSizeIsZero()
+        {
+            // Arrange
+            var invalidRequest = new GetPagedProductsRequest(
+                0, 2, null, null);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<ValidationException>(() =>
+                _productService.GetProductsPaginatedAsync(invalidRequest, CancellationToken.None));
+            Assert.Contains("PageNumber", exception.Message);
+            Assert.Contains("must be greater than '0'", exception.Message);
+        }
+
+        [Theory]
+        [InlineData("name", "Name")]
+        [InlineData("price", "Price")]
+        [InlineData("category", "Category")]
+        [InlineData("created", "CreatedDateUtc")]
+        public async Task Should_ApplyCorrectOrderBy_WhenValidSortByProvided(string sortBy, string expectedProperty)
+        {
+            // Arrange
+            var request = new GetPagedProductsRequest(1, 10, null, sortBy);
+
+            Func<IQueryable<Product>, IOrderedQueryable<Product>> capturedOrderBy = null;
+
+            var returnsTask = new PaginatedResult<ProductViewModel>(
+                new List<ProductViewModel>(), 0, 1, 10);
+
+            _mockRepository
+                .Setup(repo => repo.GetPaginated(
+                    It.IsAny<PaginationRequest>(),
+                    It.IsAny<Expression<Func<Product, ProductViewModel>>>(),
+                    It.IsAny<Expression<Func<Product, bool>>>(),
+                    It.IsAny<Func<IQueryable<Product>, IOrderedQueryable<Product>>>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<CancellationToken>()))
+                .Callback((PaginationRequest p,
+                       Expression<Func<Product, ProductViewModel>> s,
+                       Expression<Func<Product, bool>> f,
+                       Func<IQueryable<Product>, IOrderedQueryable<Product>> o,
+                       bool t, CancellationToken ct) =>
+                {
+                    capturedOrderBy = o;
+                })
+                .ReturnsAsync(returnsTask);
+
+            // Act
+            await _productService.GetProductsPaginatedAsync(request, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(capturedOrderBy);
+            _mockRepository.VerifyAll();
+        }
+
+        [Fact]
+        public async Task Should_ThrowValidationException_WhenInvalidSortByProvided()
+        {
+            // Arrange
+            var request = new GetPagedProductsRequest(1, 10, null, "invalid");
+            Func<IQueryable<Product>, IOrderedQueryable<Product>> capturedOrderBy = null;
+
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<ValidationException>(() =>
+               _productService.GetProductsPaginatedAsync(request, CancellationToken.None));
+            Assert.Contains("SortBy", exception.Message);
         }
     }
 
