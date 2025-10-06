@@ -21,6 +21,7 @@ namespace CatalogService.Application.Validators
 
             RuleFor(r => r.SortBy)
                 .Must(BeValidSortProperty)
+                .WithMessage("SortBy must be one of: name, category, price, created.")
                 .When(r => !string.IsNullOrEmpty(r.SortBy));
         }
 

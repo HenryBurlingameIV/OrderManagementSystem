@@ -69,6 +69,10 @@ namespace CatalogService.Tests.UnitTests
                 });
 
             _mockRepository
+                .Setup(repo => repo.ExistsAsync(It.IsAny<Expression<Func<Product, bool>>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+
+            _mockRepository
                 .Setup(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
 
@@ -94,6 +98,22 @@ namespace CatalogService.Tests.UnitTests
             //Act & Assert
             var exception = await Assert.ThrowsAsync<ValidationException>(async () => await _productService.CreateProductAsync(requestWithEmptyName, CancellationToken.None));
             Assert.Contains("'Name' must not be empty", exception.Message);
+        }
+
+        [Theory, AutoProductData]
+        public async Task Should_ThrowValidationException_WhenProductNameExists(ProductCreateRequest request)
+        {
+            // Arrange
+            _mockRepository
+                .Setup(repo => repo.ExistsAsync(It.IsAny<Expression<Func<Product, bool>>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<ValidationException>(() =>
+                _productService.CreateProductAsync(request, CancellationToken.None));
+            Assert.Contains("name", exception.Message);
+            Assert.Contains($"{request.Name}", exception.Message);
+            _mockLogger.VerifyAll();
         }
 
         [Theory, AutoProductData]
@@ -292,6 +312,10 @@ namespace CatalogService.Tests.UnitTests
             _mockRepository
                 .Setup(repo => repo.Delete(It.Is<Product>(p => p.Id == id)))
                 .Callback<Product>((p) => deletedProduct = p);
+
+            _mockRepository
+                .Setup(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
 
 
             //Act
