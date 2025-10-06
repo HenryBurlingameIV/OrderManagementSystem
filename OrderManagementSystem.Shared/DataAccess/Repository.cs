@@ -22,8 +22,8 @@ namespace OrderManagementSystem.Shared.DataAccess
             _dbSet = dbContext.Set<TEntity>();
         }
 
-        public async Task<TEntity?> GetByIdAsync(TKey id, CancellationToken cancellationToken) =>
-            await _dbSet.FindAsync(new object[]{id}, cancellationToken);
+        public async Task<TEntity?> GetByIdAsync(TKey id, CancellationToken ct) =>
+            await _dbSet.FindAsync(new object[]{id}, ct);
 
 
         public void Update(TEntity item) => 

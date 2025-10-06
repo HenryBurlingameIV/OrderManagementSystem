@@ -15,6 +15,8 @@ namespace OrderManagementSystem.Shared.Contracts
         Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken ct);
         Task<TEntity?> FindAsync(object[] keyValues, CancellationToken ct);
 
+        Task<int> SaveChangesAsync(CancellationToken ct);
+
         Task<PaginatedResult<TResult>> GetPaginated<TResult>(
             PaginationRequest request,
             Expression<Func<TEntity, TResult>> selector,
