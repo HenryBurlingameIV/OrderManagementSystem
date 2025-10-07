@@ -5,12 +5,12 @@ using OrderManagementSystem.Shared.Contracts;
 using OrderService.Domain.Entities;
 using OrderService.Application.Contracts;
 using OrderService.Infrastructure.HttpClients;
-using OrderService.Infrastructure.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using OrderManagementSystem.Shared.DataAccess;
 
 namespace OrderService.Infrastructure.Extensions
 {
@@ -23,14 +23,16 @@ namespace OrderService.Infrastructure.Extensions
                 options.UseNpgsql(dbConnection);
             });
 
+            services.AddScoped<IEFRepository<Order, Guid>>(provider =>
+            {
+                var context = provider.GetRequiredService<OrderDbContext>();
+                return new Repository<Order, Guid>(context);
+            });
+
             services.AddHttpClient<ICatalogServiceApi, CatalogServiceApi>(conf =>
             {
                 conf.BaseAddress = new Uri(catalogConnection);
             });
-
-
-
-            services.AddScoped<IRepository<Order>, OrderRepository>();
         }
 
         public static void RunDatabaseMigrations(this WebApplication app)

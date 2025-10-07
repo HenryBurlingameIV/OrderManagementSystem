@@ -7,7 +7,6 @@ using OrderService.Infrastructure;
 using OrderService.Application.Contracts;
 using OrderService.Infrastructure.Extensions;
 using OrderService.Infrastructure.HttpClients;
-using OrderService.Infrastructure.Repositories;
 using Serilog;
 
 namespace OrderService.Api

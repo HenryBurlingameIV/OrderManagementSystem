@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Logging;
 using OrderManagementSystem.Shared.Contracts;
 using OrderManagementSystem.Shared.Exceptions;
 using OrderService.Application.DTO;
@@ -14,7 +15,8 @@ using System.Threading.Tasks;
 namespace OrderService.Application.Queries.OrderQuery
 {
     public class GetOrderByIdQueryHandler(
-        IRepository<Order> orderRepository
+        IEFRepository<Order, Guid> orderRepository,
+        ILogger<GetOrderByIdQueryHandler> logger
         ) : IRequestHandler<GetOrderByIdQuery, OrderViewModel>
     {
         public async Task<OrderViewModel> Handle(GetOrderByIdQuery request, CancellationToken cancellationToken)
@@ -24,7 +26,8 @@ namespace OrderService.Application.Queries.OrderQuery
             {
                 throw new NotFoundException($"Order with ID {request.Id} not found.");
             }
-            Log.Information("Order with ID {@Id} successfully found", request.Id);
+
+            logger.LogInformation("Order with ID {@Id} successfully found", request.Id);
             return CreateOrderViewModel(order);
         }
 
