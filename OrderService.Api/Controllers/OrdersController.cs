@@ -28,7 +28,7 @@ namespace OrderService.Api.Controllers
         }
 
         [HttpGet("{id:Guid}", Name = "GetOrder")]
-        public async Task<ActionResult<OrderViewModel>> GetOrderByIdAsync(
+        public async Task<ActionResult<OrderViewModel>> GetOrderAsync(
             [FromRoute]
             Guid id,
             CancellationToken cancellationToken)

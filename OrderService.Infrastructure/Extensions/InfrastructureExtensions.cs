@@ -29,6 +29,13 @@ namespace OrderService.Infrastructure.Extensions
                 return new Repository<Order, Guid>(context);
             });
 
+
+            services.AddScoped<IRepositoryBase<Order, Guid>>(provider =>
+            {
+                var context = provider.GetRequiredService<OrderDbContext>();
+                return new Repository<Order, Guid>(context);
+            });
+
             services.AddHttpClient<ICatalogServiceApi, CatalogServiceApi>(conf =>
             {
                 conf.BaseAddress = new Uri(catalogConnection);

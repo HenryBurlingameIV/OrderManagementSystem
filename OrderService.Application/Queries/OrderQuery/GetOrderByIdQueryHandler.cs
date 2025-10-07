@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using OrderManagementSystem.Shared.Contracts;
 using OrderManagementSystem.Shared.Exceptions;
 using OrderService.Application.DTO;
+using OrderService.Application.Services;
 using OrderService.Domain.Entities;
 using Serilog;
 using System;
@@ -15,7 +16,7 @@ using System.Threading.Tasks;
 namespace OrderService.Application.Queries.OrderQuery
 {
     public class GetOrderByIdQueryHandler(
-        IEFRepository<Order, Guid> orderRepository,
+        IRepositoryBase<Order, Guid> orderRepository,
         ILogger<GetOrderByIdQueryHandler> logger
         ) : IRequestHandler<GetOrderByIdQuery, OrderViewModel>
     {
@@ -28,25 +29,7 @@ namespace OrderService.Application.Queries.OrderQuery
             }
 
             logger.LogInformation("Order with ID {@Id} successfully found", request.Id);
-            return CreateOrderViewModel(order);
+            return order.ToViewModel();
         }
-
-        public OrderViewModel CreateOrderViewModel(Order order)
-        {
-            return new OrderViewModel()
-            {
-                Id = order.Id,
-                Status = order.Status.ToString(),
-                CreatedAtUtc = order.CreatedAtUtc,
-                UpdatedAtUtc = order.UpdatedAtUtc,
-                TotalPrice = order.TotalPrice,
-                Email = order.Email,
-                Items = order.Items
-                    .Select(p => 
-                        new ProductDto(p.ProductId, p.Price, p.Quantity))
-                    .ToList(),
-            };
-        }
-
     }
 }

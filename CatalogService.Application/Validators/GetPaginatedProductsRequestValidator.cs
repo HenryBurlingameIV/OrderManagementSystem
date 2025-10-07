@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace CatalogService.Application.Validators
 {
-    public class GetPagedProductsRequestValidator : AbstractValidator<GetPagedProductsRequest>
+    public class GetPaginatedProductsRequestValidator : AbstractValidator<GetPagindatedProductsRequest>
     {
-        public GetPagedProductsRequestValidator()
+        public GetPaginatedProductsRequestValidator()
         {
             RuleFor(r => r.PageNumber).GreaterThan(0);
             RuleFor(r => r.PageSize).InclusiveBetween(1, 100);

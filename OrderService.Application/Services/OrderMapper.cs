@@ -25,19 +25,33 @@ namespace OrderService.Application.Services
             };
         }
 
+        public static OrderViewModel ToViewModel(this Order order)
+        {
+            return new OrderViewModel(
+                order.Id,
+                order.Items
+                    .Select(p =>
+                        new ProductDto(p.ProductId, p.Price, p.Quantity))
+                    .ToList(),
+                order.Status.ToString(),
+                order.TotalPrice,
+                order.CreatedAtUtc,
+                order.UpdatedAtUtc,
+                order.Email);               
+        }
+
         public static OrderEvent ToOrderEvent(this Order order)
         {
-            return new OrderEvent()
-            {
-                Id = order.Id,
-                Status = order.Status.ToString(),
-                CreatedAtUtc = order.CreatedAtUtc,
-                UpdatedAtUtc = order.UpdatedAtUtc,
-                TotalPrice = order.TotalPrice,
-                Items = order.Items
+            return new OrderEvent(
+                order.Id,
+                order.Items
                     .Select(item => new ProductEvent(item.ProductId, item.Price, item.Quantity))
                     .ToList(),
-            };
+                order.Status.ToString(),
+                order.TotalPrice,
+                order.CreatedAtUtc,
+                order.UpdatedAtUtc
+                );           
         }
 
         public static OrderStatusEvent ToOrderStatusEvent(this Order order)

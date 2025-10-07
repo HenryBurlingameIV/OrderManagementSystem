@@ -28,7 +28,7 @@ namespace CatalogService.Tests.UnitTests
         private IValidator<ProductCreateRequest> _productCreateRequestValidator;
         private IValidator<ProductUpdateRequest> _productUpdateRequestValidator;
         private IValidator<ProductUpdateQuantityRequest> _productUpdateQuantityRequestValidator;
-        private IValidator<GetPagedProductsRequest> _paginationValidator;
+        private IValidator<GetPagindatedProductsRequest> _paginationValidator;
         private Mock<IEFRepository<Product, Guid>> _mockRepository;
         private Mock<ILogger<ProductService>> _mockLogger;
         private IProductService _productService;
@@ -348,7 +348,7 @@ namespace CatalogService.Tests.UnitTests
             //Arrange
             var pageNumber = 1;
             var pageSize = 3;
-            var request = new GetPagedProductsRequest(
+            var request = new GetPagindatedProductsRequest(
                 pageNumber, pageSize, null, null);
             var expectedResult = new PaginatedResult<ProductViewModel>(
                 products.Select(p => new ProductViewModel(p.Id, p.Name, p.Description, p.Category, p.Price, p.Quantity)),
@@ -381,7 +381,7 @@ namespace CatalogService.Tests.UnitTests
         public async Task Should_ThrowValidationException_WhenPageSizeIsZero()
         {
             // Arrange
-            var invalidRequest = new GetPagedProductsRequest(
+            var invalidRequest = new GetPagindatedProductsRequest(
                 0, 2, null, null);
 
             // Act & Assert
@@ -399,7 +399,7 @@ namespace CatalogService.Tests.UnitTests
         public async Task Should_ApplyCorrectOrderBy_WhenValidSortByProvided(string sortBy, string expectedProperty)
         {
             // Arrange
-            var request = new GetPagedProductsRequest(1, 10, null, sortBy);
+            var request = new GetPagindatedProductsRequest(1, 10, null, sortBy);
 
             Func<IQueryable<Product>, IOrderedQueryable<Product>> capturedOrderBy = null;
 
@@ -436,7 +436,7 @@ namespace CatalogService.Tests.UnitTests
         public async Task Should_ThrowValidationException_WhenInvalidSortByProvided()
         {
             // Arrange
-            var request = new GetPagedProductsRequest(1, 10, null, "invalid");
+            var request = new GetPagindatedProductsRequest(1, 10, null, "invalid");
             Func<IQueryable<Product>, IOrderedQueryable<Product>> capturedOrderBy = null;
 
 
