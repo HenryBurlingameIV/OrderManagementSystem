@@ -54,8 +54,7 @@ namespace CatalogService.Application.Services
                 throw new ValidationException($"Product with name {request.Name} already exists");
             }
 
-            var product = CreateProductFromRequest(request);
-          
+            var product = request.ToEntity();         
             var id = (await _productRepository.InsertAsync(product!, cancellationToken)).Id;
             await _productRepository.SaveChangesAsync(cancellationToken);
             _logger.LogInformation("Product with ID {@ProductId} created and saved in database", product.Id);
@@ -69,8 +68,9 @@ namespace CatalogService.Application.Services
             {
                 throw new NotFoundException($"Product with ID {productId} not found.");
             }
+
             _logger.LogInformation("Product with ID {@productId} successfully found", productId);
-            return CreateProductViewModel(product);
+            return product.ToViewModel();
         }
 
         public async Task<PaginatedResult<ProductViewModel>> GetProductsPaginatedAsync(GetPagedProductsRequest request, CancellationToken cancellationToken)
@@ -102,13 +102,7 @@ namespace CatalogService.Application.Services
                     request: pagination,
                     orderBy: orderBy,
                     filter: filter,
-                    selector: (p) => new ProductViewModel(
-                        p.Id,
-                        p.Name,
-                        p.Description,
-                        p.Category,
-                        p.Price,
-                        p.Quantity),                       
+                    selector: (p) => p.ToViewModel(),                       
                     ct: cancellationToken
                 );
         }
@@ -132,7 +126,7 @@ namespace CatalogService.Application.Services
                 }
             }
 
-            UpdateProductFromRequest(request, product);
+            product.UpdateFromRequest(request);
             await _productRepository.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Product with ID {@ProductId} successfully updated", productId);
@@ -157,7 +151,7 @@ namespace CatalogService.Application.Services
             product.UpdatedDateUtc = DateTime.UtcNow;
             await _productRepository.SaveChangesAsync(cancellationToken);
             _logger.LogInformation("{@Product} quantity successfully updated", product);
-            return CreateProductViewModel(product);
+            return product.ToViewModel();
 
         }
         public async Task DeleteProductAsync(Guid productId, CancellationToken cancellationToken)
@@ -170,45 +164,6 @@ namespace CatalogService.Application.Services
             _logger.LogInformation("Product with ID {@ProductId} successfully found", productId);
             _productRepository.Delete(product);
             await _productRepository.SaveChangesAsync(cancellationToken);
-        }
-
-        public Product CreateProductFromRequest(ProductCreateRequest request)
-        {
-            var createdAt = DateTime.UtcNow;
-            return new Product()
-            {
-                Id = Guid.NewGuid(),
-                Name = request.Name,
-                Description = request.Description,
-                Quantity = request.Quantity,
-                Price = request.Price,
-                Category = request.Category,
-                CreatedDateUtc = createdAt,
-                UpdatedDateUtc = createdAt
-            };
-        }
-
-        public void UpdateProductFromRequest(ProductUpdateRequest request, Product productToUpdate)
-        {
-            productToUpdate.Name = request.Name ?? productToUpdate.Name;
-            productToUpdate.Description = request.Description ?? productToUpdate.Description;
-            productToUpdate.Category = request.Category ?? productToUpdate.Category;
-            productToUpdate.Price = request.Price ?? productToUpdate.Price;
-            productToUpdate.Quantity = request.Quantity ?? productToUpdate.Quantity;
-            productToUpdate.UpdatedDateUtc = DateTime.UtcNow;
-
-        }
-
-        public ProductViewModel CreateProductViewModel(Product product)
-        {
-            return new ProductViewModel(
-                product.Id, 
-                product.Name, 
-                product.Description, 
-                product.Category, 
-                product.Price, 
-                product.Quantity);
-
         }
 
         public async Task<bool> IsProductNameUnique(string name, Guid? excludedProduct = null, CancellationToken ct = default)
