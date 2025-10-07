@@ -5,6 +5,7 @@ using OrderService.Application.Commands.CreateOrderCommand;
 using OrderService.Application.Commands.UpdateOrderStatusCommand;
 using OrderService.Application.DTO;
 using OrderService.Application.Queries.OrderQuery;
+using OrderService.Application.Queries.OrdersPaginatedQuery;
 using OrderService.Domain.Entities;
 
 namespace OrderService.Api.Controllers
@@ -35,6 +36,17 @@ namespace OrderService.Api.Controllers
         {
             var result = await mediator.Send(
                 new GetOrderByIdQuery(id), 
+                cancellationToken);
+            return Ok(result);
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<OrderViewModel>> GetOrders(
+            [FromQuery]GetPaginatedOrdersRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(
+                new GetPaginatedOrdersQuery(request),
                 cancellationToken);
             return Ok(result);
         }
