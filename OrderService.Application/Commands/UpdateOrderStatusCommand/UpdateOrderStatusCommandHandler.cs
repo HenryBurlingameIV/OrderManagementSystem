@@ -6,6 +6,7 @@ using OrderManagementSystem.Shared.Enums;
 using OrderManagementSystem.Shared.Exceptions;
 using OrderService.Application.Contracts;
 using OrderService.Application.DTO;
+using OrderService.Application.Services;
 using OrderService.Domain.Entities;
 using Serilog;
 using System;
@@ -51,12 +52,8 @@ namespace OrderService.Application.Commands.UpdateOrderStatusCommand
             await orderRepository.SaveChangesAsync(cancellationToken);
             logger.LogInformation("Status of order with ID {@Id} successfully updated", command.Id);
             await kafkaNotificationProducer.ProduceAsync(
-                order.Id.ToString(), 
-                new OrderStatusEvent(
-                    order.Id,
-                    (int)order.Status,
-                    order.Email
-                ),
+                order.Id.ToString(),
+                order.ToOrderStatusEvent(),
                 cancellationToken);
 
             logger.LogInformation("Notification sent to Email: {email}.", order.Email);
