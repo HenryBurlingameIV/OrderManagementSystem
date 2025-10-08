@@ -38,7 +38,7 @@ namespace CatalogService.Tests.UnitTests
             _productCreateRequestValidator = new ProductCreateRequestValidator();
             _productUpdateRequestValidator = new ProductUpdateRequestValidator();
             _productUpdateQuantityRequestValidator = new ProductUpdateQuantityValidator();
-            _paginationValidator = new GetPagedProductsRequestValidator();
+            _paginationValidator = new GetPaginatedProductsRequestValidator();
             _mockRepository = new Mock<IEFRepository<Product, Guid>>();
             _mockLogger = new Mock<ILogger<ProductService>>();
             _productService = new ProductService(
@@ -378,7 +378,7 @@ namespace CatalogService.Tests.UnitTests
         }
 
         [Fact]
-        public async Task Should_ThrowValidationException_WhenPageSizeIsZero()
+        public async Task Should_ThrowValidationException_WhenPageNumberIsZero()
         {
             // Arrange
             var invalidRequest = new GetPagindatedProductsRequest(
@@ -437,7 +437,6 @@ namespace CatalogService.Tests.UnitTests
         {
             // Arrange
             var request = new GetPagindatedProductsRequest(1, 10, null, "invalid");
-            Func<IQueryable<Product>, IOrderedQueryable<Product>> capturedOrderBy = null;
 
 
             // Act & Assert
