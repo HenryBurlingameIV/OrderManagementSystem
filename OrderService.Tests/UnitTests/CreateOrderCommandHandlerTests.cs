@@ -1,11 +1,14 @@
 ﻿using AutoFixture;
+using Castle.Core.Logging;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 using Moq;
 using OrderManagementSystem.Shared.Contracts;
 using OrderManagementSystem.Shared.Enums;
 using OrderService.Application.Commands.CreateOrderCommand;
 using OrderService.Application.Contracts;
 using OrderService.Application.DTO;
+using OrderService.Application.Services;
 using OrderService.Application.Validators;
 using OrderService.Domain.Entities;
 using System;
@@ -22,28 +25,37 @@ namespace OrderService.Tests.UnitTests
         private CreateOrderCommandHandler _handler;
         private Fixture _autoFixture;
         private IValidator<CreateOrderCommand> _validator;
-        private Mock<IRepository<Order>> _mockRepository;
+        private Mock<IEFRepository<Order, Guid>> _mockRepository;
         private Mock<IKafkaProducer<OrderEvent>> _mockOrderProducer;
         private Mock<ICatalogServiceApi> _mockCatalogServiceApi;
+        private Mock<ILogger<CreateOrderCommandHandler>> _mockHandlerLogger;
+        private readonly Mock<ILogger<OrderItemFactory>> _mockFactoryLogger;
         private Mock<IKafkaProducer<OrderStatusEvent>> _mockOrderStatusProducer;
+        private readonly OrderItemFactory _orderItemFactory;
 
         public CreateOrderCommandHandlerTests() 
         {
             _autoFixture = new Fixture();
-            _autoFixture.Customize<OrderItemRequest>(composer => composer
-                .With(x => x.Quantity, () => new Random().Next(1, 1001))
-            );
             _validator = new CreateOrderCommandValidator();
-            _mockRepository = new Mock<IRepository<Order>>();
+            _mockRepository = new Mock<IEFRepository<Order, Guid>>();
             _mockOrderProducer = new Mock<IKafkaProducer<OrderEvent>>();
             _mockOrderStatusProducer  = new Mock<IKafkaProducer<OrderStatusEvent>>();
             _mockCatalogServiceApi = new Mock<ICatalogServiceApi>();
+            _mockHandlerLogger = new Mock<ILogger<CreateOrderCommandHandler>>();
+            _mockFactoryLogger = new Mock<ILogger<OrderItemFactory>>();
+
+            _autoFixture.Customize<OrderItemRequest>(composer => composer
+                .With(x => x.Quantity, () => new Random().Next(1, 1001))
+            );
+
+            _orderItemFactory = new OrderItemFactory(_mockCatalogServiceApi.Object, _mockFactoryLogger.Object);
             _handler = new CreateOrderCommandHandler(
-                _mockRepository.Object, 
-                _mockCatalogServiceApi.Object, 
+                _mockRepository.Object,
+                _orderItemFactory, 
                 _validator, 
                 _mockOrderProducer.Object,
-                _mockOrderStatusProducer.Object);
+                _mockOrderStatusProducer.Object,
+                _mockHandlerLogger.Object);
         }
 
 
@@ -81,14 +93,14 @@ namespace OrderService.Tests.UnitTests
                 });
 
             _mockRepository
-                .Setup(repo => repo.CreateAsync(
+                .Setup(repo => repo.InsertAsync(
                     It.Is<Order>(o => 
                         o.Items.Count == command.OrderItems.Count &&
                         o.Status == OrderStatus.New &&
                         o.TotalPrice == expectedTotalPrice),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Order order, CancellationToken cancellationToken) =>
-                    order.Id);
+                    order);
 
 
             _mockOrderProducer
