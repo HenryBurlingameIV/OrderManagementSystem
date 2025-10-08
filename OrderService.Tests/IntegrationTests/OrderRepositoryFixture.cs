@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using OrderManagementSystem.Shared.Contracts;
+using OrderManagementSystem.Shared.DataAccess;
+using OrderService.Domain.Entities;
 using OrderService.Infrastructure;
-using OrderService.Infrastructure.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +16,7 @@ namespace OrderService.Tests.IntegrationTests
     {
         public OrderDbContext DbContext { get; private set; }
 
-        public OrderRepository OrderRepository { get; private set; }
+        public IEFRepository<Order, Guid> OrderRepository { get; private set; }
 
         public async Task DisposeAsync()
         {
@@ -27,7 +29,7 @@ namespace OrderService.Tests.IntegrationTests
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
                 .Options;
             DbContext = new OrderDbContext(options);
-            OrderRepository = new OrderRepository(DbContext);
+            OrderRepository = new Repository<Order,Guid>(DbContext);
             await DbContext.Database.EnsureCreatedAsync();
         }
 

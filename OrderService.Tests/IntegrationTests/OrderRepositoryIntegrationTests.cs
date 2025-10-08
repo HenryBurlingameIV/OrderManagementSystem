@@ -37,10 +37,11 @@ namespace OrderService.Tests.IntegrationTests
             var expectedId = order.Id;
 
             //Act
-            var resultId = await _fixture.OrderRepository.CreateAsync(order, CancellationToken.None);
+            var result = await _fixture.OrderRepository.InsertAsync(order, CancellationToken.None);
+            await _fixture.OrderRepository.SaveChangesAsync(CancellationToken.None);
             
             //Assert
-            Assert.Equal(expectedId, resultId);
+            Assert.Equal(expectedId, result.Id);
             var savedOrder = await _fixture.DbContext.Orders.FindAsync(order.Id);
             Assert.NotNull(savedOrder);
             Assert.Equal(expectedId, savedOrder.Id);
@@ -92,12 +93,13 @@ namespace OrderService.Tests.IntegrationTests
             //Act
             order.Status = newStatus;
             order.UpdatedAtUtc = DateTime.UtcNow;
-            var resultId = await _fixture.OrderRepository.UpdateAsync(order, CancellationToken.None);
+            var affectedRows = await _fixture.OrderRepository.SaveChangesAsync(CancellationToken.None);
 
             //Assert
-            var updatedOrder = await _fixture.DbContext.Orders.FindAsync(resultId);
+            var updatedOrder = await _fixture.DbContext.Orders.FindAsync(order.Id);
+            Assert.Equal(1, affectedRows);
             Assert.NotNull(updatedOrder);
-            Assert.Equal(order.Id, resultId);
+            Assert.Equal(order.Id, updatedOrder.Id);
             Assert.Equal(newStatus, updatedOrder.Status);
             Assert.True(updatedOrder.UpdatedAtUtc > originalUpdatedAt);
             Assert.Equal(order.TotalPrice, updatedOrder.TotalPrice);
