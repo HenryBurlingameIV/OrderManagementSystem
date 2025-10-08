@@ -4,23 +4,26 @@ using Microsoft.Extensions.DependencyInjection;
 using OrderManagementSystem.Shared.Contracts;
 using OrderService.Domain.Entities;
 using OrderService.Application.Contracts;
-using OrderService.Infrastructure.HttpClients;
+using OrderService.Infrastructure.ExternalServices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using OrderManagementSystem.Shared.DataAccess;
+using Microsoft.Extensions.Configuration;
 
 namespace OrderService.Infrastructure.Extensions
 {
     public static class InfrastructureExtensions
     {
-        public static void AddInfrastructure(this IServiceCollection services, string dbConnection, string catalogConnection) 
+        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration) 
         {
+
             services.AddDbContext<OrderDbContext>(options =>
             {
-                options.UseNpgsql(dbConnection);
+                options.UseNpgsql(
+                    configuration.GetConnectionString("DefaultConnection"));
             });
 
             services.AddScoped<IEFRepository<Order, Guid>>(provider =>
@@ -38,8 +41,11 @@ namespace OrderService.Infrastructure.Extensions
 
             services.AddHttpClient<ICatalogServiceApi, CatalogServiceApi>(conf =>
             {
-                conf.BaseAddress = new Uri(catalogConnection);
+                conf.BaseAddress = new Uri(
+                    configuration["CatalogService:DefaultConnection"]!);
             });
+
+            return services;
         }
 
         public static void RunDatabaseMigrations(this WebApplication app)

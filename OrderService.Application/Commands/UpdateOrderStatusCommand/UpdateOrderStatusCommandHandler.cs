@@ -21,7 +21,7 @@ namespace OrderService.Application.Commands.UpdateOrderStatusCommand
         IEFRepository<Order, Guid> orderRepository,
         IValidator<OrderStatusValidationModel> validator,
         ICatalogServiceApi catalogServiceClient,
-        IKafkaProducer<OrderStatusEvent> kafkaNotificationProducer,
+        IKafkaProducer<OrderStatusEvent> kafkaOrderStatusProducer,
         ILogger<UpdateOrderStatusCommandHandler> logger
         ) : IRequestHandler<UpdateOrderStatusCommand>
     {
@@ -51,12 +51,12 @@ namespace OrderService.Application.Commands.UpdateOrderStatusCommand
             order.UpdatedAtUtc = DateTime.UtcNow;
             await orderRepository.SaveChangesAsync(cancellationToken);
             logger.LogInformation("Status of order with ID {@Id} successfully updated", command.Id);
-            await kafkaNotificationProducer.ProduceAsync(
+            await kafkaOrderStatusProducer.ProduceAsync(
                 order.Id.ToString(),
                 order.ToOrderStatusEvent(),
                 cancellationToken);
 
-            logger.LogInformation("Notification sent to Email: {email}.", order.Email);
+            logger.LogInformation("OrderStatus sent to Kafka. OrderId: {@OrderId}", order.Id);
 
         }
 

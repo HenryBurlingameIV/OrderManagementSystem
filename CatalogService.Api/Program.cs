@@ -16,7 +16,9 @@ namespace CatalogService.Api
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            builder.ConfigureServices();
+            builder.Services
+                .ConfigureServices(builder.Configuration);
+
             builder.ConfigureSerilog();
 
             var app = builder.Build();

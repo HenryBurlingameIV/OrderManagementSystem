@@ -21,7 +21,7 @@ namespace OrderService.Application.Commands.CreateOrderCommand
         OrderItemFactory orderItemFactory,
         IValidator<CreateOrderCommand> validator,
         IKafkaProducer<OrderEvent> kafkaOrderProducer,
-        IKafkaProducer<OrderStatusEvent> kafkaNotificationProducer,
+        IKafkaProducer<OrderStatusEvent> kafkaOrderStatusProducer,
         ILogger<CreateOrderCommandHandler> logger
         ) : IRequestHandler<CreateOrderCommand, Guid>
     {
@@ -40,7 +40,7 @@ namespace OrderService.Application.Commands.CreateOrderCommand
             logger.LogInformation("Order with Id {@orderId} was created and saved in database", order.Id);
             await kafkaOrderProducer.ProduceAsync(order.Id.ToString(), order.ToOrderEvent(), cancellationToken);
             logger.LogInformation("Order sent to Kafka. OrderId: {@OrderId}", order.Id);
-            await kafkaNotificationProducer.ProduceAsync(
+            await kafkaOrderStatusProducer.ProduceAsync(
                 order.Id.ToString(),
                 order.ToOrderStatusEvent(),
                 cancellationToken);

@@ -6,7 +6,7 @@ using OrderService.Domain.Entities;
 using OrderService.Infrastructure;
 using OrderService.Application.Contracts;
 using OrderService.Infrastructure.Extensions;
-using OrderService.Infrastructure.HttpClients;
+using OrderService.Infrastructure.ExternalServices;
 using Serilog;
 
 namespace OrderService.Api
@@ -17,7 +17,9 @@ namespace OrderService.Api
         {
             var builder = WebApplication.CreateBuilder(args);
             builder.ConfigureSerilog();
-            builder.ConfigureServices();
+            builder.Services
+                .ConfigureServices(builder.Configuration);
+
             var app = builder.Build();
             app.ConfigurePipeline();
 
