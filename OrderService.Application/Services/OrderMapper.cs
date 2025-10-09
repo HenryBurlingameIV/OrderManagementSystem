@@ -11,20 +11,6 @@ namespace OrderService.Application.Services
 {
     public static class OrderMapper
     {
-        public static Order ToEntity(List<OrderItem> orderItems, string email, DateTime createdTime)
-        {
-            return new Order()
-            {
-                Id = Guid.NewGuid(),
-                Items = orderItems,
-                TotalPrice = orderItems.Sum(i => i.Price * i.Quantity),
-                Status = OrderStatus.New,
-                CreatedAtUtc = createdTime,
-                UpdatedAtUtc = createdTime,
-                Email = email,
-            };
-        }
-
         public static OrderViewModel ToViewModel(this Order order)
         {
             return new OrderViewModel(

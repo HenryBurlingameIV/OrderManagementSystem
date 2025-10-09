@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
+using OrderManagementSystem.Shared.Enums;
 using OrderService.Application.Contracts;
 using OrderService.Application.DTO;
 using OrderService.Domain.Entities;
@@ -14,18 +15,34 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace OrderService.Application.Services
 {
-    public class OrderItemFactory
+    public class OrderFactory
     {
         private readonly ICatalogServiceApi _catalogServiceApi;
-        private readonly ILogger<OrderItemFactory> _logger;
+        private readonly ILogger<OrderFactory> _logger;
 
-        public OrderItemFactory(ICatalogServiceApi catalogServiceApi, ILogger<OrderItemFactory> logger)
+        public OrderFactory(ICatalogServiceApi catalogServiceApi, ILogger<OrderFactory> logger)
         {
             _catalogServiceApi = catalogServiceApi;
             _logger = logger;
         }
 
-        public async Task<OrderItem> CreateOrderItemAsync(OrderItemRequest request, CancellationToken ct)
+        public async Task<Order> CreateOrderAsync(CreateOrderRequest request, CancellationToken ct)
+        {
+            var orderItems = await CreateOrderItemsAsync(request.Items, ct);
+            var createdAt = DateTime.UtcNow;
+            return new Order()
+            {
+                Id = Guid.NewGuid(),
+                Items = orderItems,
+                TotalPrice = orderItems.Sum(i => i.Price * i.Quantity),
+                Status = OrderStatus.New,
+                CreatedAtUtc = createdAt,
+                UpdatedAtUtc = createdAt,
+                Email = request.Email
+            };
+        }
+
+        private async Task<OrderItem> CreateOrderItemAsync(OrderItemRequest request, CancellationToken ct)
         {
             var product = await _catalogServiceApi.ReserveProductAsync(request.Id, request.Quantity, ct);
             _logger.LogInformation("{Quantity} items of product with Id {@productId} was reserved", request.Quantity, request.Id);
@@ -37,7 +54,7 @@ namespace OrderService.Application.Services
             };
         }
 
-        public async Task<List<OrderItem>> CreateOrderItemsAsync(IEnumerable<OrderItemRequest> requests, CancellationToken ct)
+        private async Task<List<OrderItem>> CreateOrderItemsAsync(IEnumerable<OrderItemRequest> requests, CancellationToken ct)
         {
             var orderItemsTasks = requests
                 .Select(item => CreateOrderItemAsync(item, ct))

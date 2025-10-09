@@ -18,8 +18,8 @@ namespace OrderService.Application.Commands.CreateOrderCommand
 {
     public class CreateOrderCommandHandler(
         IEFRepository<Order, Guid> orderRepository, 
-        OrderItemFactory orderItemFactory,
-        IValidator<CreateOrderCommand> validator,
+        OrderFactory orderFactory,
+        IValidator<CreateOrderRequest> validator,
         IKafkaProducer<OrderEvent> kafkaOrderProducer,
         IKafkaProducer<OrderStatusEvent> kafkaOrderStatusProducer,
         ILogger<CreateOrderCommandHandler> logger
@@ -27,14 +27,13 @@ namespace OrderService.Application.Commands.CreateOrderCommand
     {
         public async Task<Guid> Handle(CreateOrderCommand command, CancellationToken cancellationToken)
         {
-            var validationResult = await validator.ValidateAsync(command, cancellationToken);
+            var validationResult = await validator.ValidateAsync(command.Request, cancellationToken);
             if (!validationResult.IsValid)
             {
                 throw new ValidationException(validationResult.Errors);
             }
 
-            var orderItems = await orderItemFactory.CreateOrderItemsAsync(command.OrderItems, cancellationToken);
-            var order = OrderMapper.ToEntity(orderItems, command.Email, DateTime.UtcNow);
+            var order = await orderFactory.CreateOrderAsync(command.Request, cancellationToken);
             await orderRepository.InsertAsync(order, cancellationToken);
             await orderRepository.SaveChangesAsync(cancellationToken);
             logger.LogInformation("Order with Id {@orderId} was created and saved in database", order.Id);

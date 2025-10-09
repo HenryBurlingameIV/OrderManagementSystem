@@ -1,26 +1,27 @@
 ﻿using FluentValidation;
 using OrderService.Application.Commands.CreateOrderCommand;
-using System.Text.RegularExpressions;
+using OrderService.Application.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace OrderService.Application.Validators
 {
-    public class CreateOrderCommandValidator : AbstractValidator<CreateOrderCommand>
+    public class CreateOrderRequestValidator : AbstractValidator<CreateOrderRequest>
     {
-        public CreateOrderCommandValidator()
+        public CreateOrderRequestValidator()
         {
-            RuleFor(command => command.OrderItems)
+            RuleFor(command => command.Items)
                 .NotNull()
                 .DependentRules(() =>
                 {
-                    RuleFor(command => command.OrderItems)
+                    RuleFor(command => command.Items)
                         .NotEmpty()
                         .Must(items => items.Count < 100);                       
-                    RuleForEach(command => command.OrderItems)
+                    RuleForEach(command => command.Items)
                         .SetValidator(new OrderItemRequestValidator());
                 });
 

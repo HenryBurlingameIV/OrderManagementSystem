@@ -22,10 +22,10 @@ namespace OrderService.Application.Extensions
                 conf.RegisterServicesFromAssembly(typeof(CreateOrderCommand).Assembly);
             });
 
-            services.AddScoped<IValidator<CreateOrderCommand>, CreateOrderCommandValidator>();
+            services.AddScoped<IValidator<CreateOrderRequest>, CreateOrderRequestValidator>();
             services.AddScoped<IValidator<OrderStatusValidationModel>, OrderStatusTransitionValidator>();
             services.AddScoped<IValidator<GetPaginatedOrdersRequest>, GetPaginatedOrdersRequestValidator>();
-            services.AddScoped<OrderItemFactory>();
+            services.AddScoped<OrderFactory>();
             return services;
         }
     }
