@@ -1,10 +1,12 @@
 ﻿using Hangfire;
 using Hangfire.Client;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OrderManagementSystem.Shared.Contracts;
 using OrderProcessingService.Application.Contracts;
 using OrderProcessingService.Application.DTO;
 using OrderProcessingService.Domain.Entities;
+using OrderProcessingService.Infrastructure.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,19 +18,22 @@ namespace OrderProcessingService.Infrastructure.BackgroundWorkers
     public class AssemblyWorker : IOrderBackgroundWorker<StartAssemblyCommand>
     {
         private readonly IBackgroundJobClient _hangfire;
-        private readonly IProcessingOrderRepository _repository;
+        private readonly IEFRepository<ProcessingOrder,Guid> _processingOrdersRepository;
+        private readonly IEFRepository<OrderItem, Guid> _orderItemsRepository;
         private readonly IOrderServiceApi _orderServiceApi;
         private readonly ILogger<AssemblyWorker> _logger;
 
         public AssemblyWorker(
             IBackgroundJobClient hangfire,
-            IProcessingOrderRepository repository,
+            IEFRepository<ProcessingOrder, Guid> processingOrdersRepository,
+            IEFRepository<OrderItem, Guid> orderItemsRepository,
             IOrderServiceApi orderServiceApi,
             ILogger<AssemblyWorker> logger
             )
         {
             _hangfire = hangfire;
-            _repository = repository;
+            _processingOrdersRepository = processingOrdersRepository;
+            _orderItemsRepository = orderItemsRepository;
             _orderServiceApi = orderServiceApi;
             _logger = logger;
         }
@@ -42,7 +47,12 @@ namespace OrderProcessingService.Infrastructure.BackgroundWorkers
         {
             try
             {
-                var processingOrder = await _repository.GetByIdAsync(id, cancellationToken);
+                var processingOrder = await _processingOrdersRepository.GetFirstOrDefaultAsync(
+                    filter: po => po.Id == id,
+                    include: (po) => po.Include(po => po.Items),
+                    asNoTraсking: false,
+                    ct: cancellationToken);
+
                 if (processingOrder == null)
                 {
                     _logger.LogError("Processing order with ID {Id} not found", id);
@@ -55,12 +65,21 @@ namespace OrderProcessingService.Infrastructure.BackgroundWorkers
                     await Task.Delay(TimeSpan.FromSeconds(30));
                     _logger.LogInformation("Order item with ID {id} is ready", item.ProductId);
                 }
-                await _repository.UpdateItemsAssemblyStatusAsync(id, ItemAssemblyStatus.Ready, cancellationToken);
+
+                //await _processingOrdersRepository.UpdateItemsAssemblyStatusAsync(id, ItemAssemblyStatus.Ready, cancellationToken);
+                await _orderItemsRepository.ExecuteUpdateAsync(
+                    setPropertyCalls: calls => calls.SetProperty(item => item.Status, ItemAssemblyStatus.Ready),
+                    filter: item => item.ProcessingOrderId == id,
+                    cancellationToken: cancellationToken
+                    );
+
+                _logger.LogInformation("Updated {Count} items to Ready status", processingOrder.Items.Count);
+
                 await _orderServiceApi.UpdateStatus(processingOrder.OrderId, "Ready", cancellationToken);
                 processingOrder.Status = ProcessingStatus.Completed;
                 processingOrder.UpdatedAt = DateTime.UtcNow;
-                await _repository.UpdateAsync(processingOrder, cancellationToken);
-                _logger.LogInformation("Assembly processing with ID {id} completed. Order ID is {OrderId}", processingOrder.Id, processingOrder.OrderId);
+                await _processingOrdersRepository.SaveChangesAsync(cancellationToken);
+                _logger.LogInformation("Assembly processing with ID {@ProcessingOrderId} completed. Order ID is {@OrderId}", processingOrder.Id, processingOrder.OrderId);
             }
             catch (Exception ex)
             {
