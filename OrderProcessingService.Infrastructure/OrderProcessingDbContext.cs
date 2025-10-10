@@ -17,8 +17,10 @@ namespace OrderProcessingService.Infrastructure
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new ProcessingOrderConfiguration());
+            modelBuilder.ApplyConfiguration(new OrderItemConfiguration());
         }
 
-        public DbSet<ProcessingOrder> ProcessingOrders { get; set; }       
+        public DbSet<ProcessingOrder> ProcessingOrders { get; set; }   
+        public DbSet<OrderItem> OrderItems { get; set; }
     }
 }
