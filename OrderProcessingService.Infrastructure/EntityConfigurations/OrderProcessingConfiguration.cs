@@ -23,14 +23,10 @@ namespace OrderProcessingService.Infrastructure.EntityConfigurations
                 .IsUnique();
 
             builder
-                .OwnsMany(po => po.Items, item =>
-                {
-                    item.ToTable("OrderItems");
-                    item.Property(item => item.ProductId).IsRequired();
-                    item.Property(item => item.Quantity).IsRequired();
-                    item.Property(item => item.Status).HasConversion<int>().IsRequired();
-                    item.HasIndex(po => po.Status);
-                });
+                .HasMany(po => po.Items)
+                .WithOne()
+                .HasForeignKey(item => item.ProcessingOrderId)
+                .IsRequired();
 
             builder
                 .Property (po => po.Stage)
