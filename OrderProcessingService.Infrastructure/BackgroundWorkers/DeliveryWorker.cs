@@ -18,13 +18,13 @@ namespace OrderProcessingService.Infrastructure.BackgroundWorkers
     public class DeliveryWorker : IOrderBackgroundWorker<StartDeliveryCommand>
     {
         private readonly IBackgroundJobClient _hangfire;
-        private readonly IProcessingOrderRepository _repository;
+        private readonly IEFRepository<ProcessingOrder, Guid> _repository;
         private readonly IOrderServiceApi _orderServiceApi;
         private readonly ILogger<DeliveryWorker> _logger;
 
         public DeliveryWorker(
             IBackgroundJobClient hangfire,
-            IProcessingOrderRepository repository,
+            IEFRepository<ProcessingOrder, Guid> repository,
             IOrderServiceApi orderServiceApi,
             ILogger<DeliveryWorker> logger
             ) 
@@ -44,8 +44,16 @@ namespace OrderProcessingService.Infrastructure.BackgroundWorkers
         {
             try
             {
-                await _repository.AssignUniqueTrackingNumbersAsync(ids, cancellationToken);
-                var processingOrders = await _repository.GetByIdsAsync(ids, cancellationToken);
+                //await _repository.AssignUniqueTrackingNumbersAsync(ids, cancellationToken);
+                //await _repository.ExecuteUpdateAsync(
+                //    calls => calls.SetProperty(po => po.TrackingNumber, Guid.NewGuid().ToString()),
+                //    filter: po => ids.Contains(po.Id),
+                //    cancellationToken: cancellationToken);
+
+                var processingOrders = await _repository.GetAllAsync(
+                    filter: po => ids.Contains(po.Id),
+                    asNoTraсking: false,
+                    ct: cancellationToken);
        
                 _logger.LogInformation("Delivery process for {OrdersCount} orders started.", processingOrders.Count);
 
@@ -54,13 +62,13 @@ namespace OrderProcessingService.Infrastructure.BackgroundWorkers
                     await Task.Delay(TimeSpan.FromSeconds(30));
                     po.Status = ProcessingStatus.Completed;
                     po.UpdatedAt = DateTime.UtcNow;
-                    await _repository.UpdateAsync(po, cancellationToken);
+                    await _repository.SaveChangesAsync(cancellationToken);
                     await _orderServiceApi.UpdateStatus(po.OrderId, "Delivered", cancellationToken);                   
                     var address = GetRandomAddress();
                     _logger.LogInformation("Delivery with ID: {Id} completed. Order ID: {OrderId}. TrackingNumber: {TrackingNumber}. Address: {Address}", 
                         po.Id, po.OrderId, po.TrackingNumber, address);
                 }
-                _logger.LogInformation("Delivery successfully completed for all {OrdersCount} orders.", processingOrders.Count);
+                _logger.LogInformation("Delivery successfully completed for all {@OrdersCount} orders.", processingOrders.Count);
             }
             catch (Exception ex)
             {
