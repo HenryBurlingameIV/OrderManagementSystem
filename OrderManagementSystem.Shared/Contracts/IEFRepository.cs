@@ -47,5 +47,17 @@ namespace OrderManagementSystem.Shared.Contracts
             bool asNoTraсking = true,
             CancellationToken ct = default);
 
+        public Task<int> ExecuteUpdateAsync(
+            Expression<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>> setPropertyCalls,
+            Expression<Func<TEntity, bool>>? filter = null,
+            CancellationToken cancellationToken = default);
+
+        Task<IList<TEntity>> GetAllAsync(
+            Expression<Func<TEntity, bool>>? filter = null,
+            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+            bool asNoTraсking = true,
+            CancellationToken ct = default);
+
     }
 }
