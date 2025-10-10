@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OrderManagementSystem.Shared.Contracts;
+using OrderManagementSystem.Shared.DataAccess;
 using OrderManagementSystem.Shared.Kafka;
 using OrderProcessingService.Application.Contracts;
 using OrderProcessingService.Application.DTO;
@@ -31,8 +32,18 @@ namespace OrderProcessingService.Infrastructure.Extensions
             {
                 options.UseNpgsql(dbconnection);
             });
-            services.AddScoped<IEFRepository<ProcessingOrder>, ProcessingOrderRepository>();
-            services.AddScoped<IProcessingOrderRepository, ProcessingOrderRepository>();
+            services.AddScoped<IEFRepository<ProcessingOrder, Guid>>(provider =>
+            {
+                var context = provider.GetRequiredService<OrderProcessingDbContext>();
+                return new Repository<ProcessingOrder, Guid>(context);
+            }) ;
+
+            services.AddScoped<IRepositoryBase<ProcessingOrder, Guid>>(provider =>
+            {
+                var context = provider.GetRequiredService<OrderProcessingDbContext>();
+                return new Repository<ProcessingOrder,Guid>(context);
+            });
+
             var kafkaConf = configuration.GetSection("Kafka:Order");
             services.AddConsumer<OrderCreatedMessage, OrderCreatedMessageHandler>(kafkaConf);
             services.AddHttpClient<IOrderServiceApi, OrderServiceApi>(conf =>

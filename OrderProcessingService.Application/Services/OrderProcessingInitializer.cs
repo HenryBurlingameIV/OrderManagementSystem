@@ -11,12 +11,12 @@ using System.Threading.Tasks;
 
 namespace OrderProcessingService.Application.Services
 {
-    public class OrderProcessingInitializer(IRepository<ProcessingOrder> repository) : IOrderProcessingInitializer
+    public class OrderProcessingInitializer(IRepositoryBase<ProcessingOrder, Guid> repository) : IOrderProcessingInitializer
     {
         public async Task InitializeProcessingAsync(OrderDto dto, CancellationToken cancellationToken)
         {
             var processingOrder = CreateFromOrderDto(dto);
-            await repository.CreateAsync(processingOrder, cancellationToken);            
+            await repository.InsertAsync(processingOrder, cancellationToken);            
         }
 
         public ProcessingOrder CreateFromOrderDto(OrderDto dto)
