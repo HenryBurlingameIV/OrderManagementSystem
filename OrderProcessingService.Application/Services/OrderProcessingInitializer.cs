@@ -11,19 +11,22 @@ using System.Threading.Tasks;
 
 namespace OrderProcessingService.Application.Services
 {
-    public class OrderProcessingInitializer(IRepositoryBase<ProcessingOrder, Guid> repository) : IOrderProcessingInitializer
+    public class OrderProcessingInitializer(IEFRepository<ProcessingOrder, Guid> repository) : IOrderProcessingInitializer
     {
         public async Task InitializeProcessingAsync(OrderDto dto, CancellationToken cancellationToken)
         {
             var processingOrder = CreateFromOrderDto(dto);
-            await repository.InsertAsync(processingOrder, cancellationToken);            
+            await repository.InsertAsync(processingOrder, cancellationToken);
+            await repository.SaveChangesAsync(cancellationToken);
         }
 
         public ProcessingOrder CreateFromOrderDto(OrderDto dto)
         {
+            var ProcessinOrderId = Guid.NewGuid();
+
             return new ProcessingOrder()
             {
-                Id = Guid.NewGuid(),
+                Id = ProcessinOrderId,
                 OrderId = dto.Id,
                 CreatedAt = dto.CreatedAt,
                 UpdatedAt = dto.UpdatedAt,
@@ -33,6 +36,8 @@ namespace OrderProcessingService.Application.Services
                 Items = dto.Items
                     .Select(i => new OrderItem()
                     {
+                        Id = Guid.NewGuid(),
+                        ProcessingOrderId = ProcessinOrderId,
                         ProductId = i.ProductId,
                         Quantity = i.Quantity,
                         Status = ItemAssemblyStatus.Pending,
