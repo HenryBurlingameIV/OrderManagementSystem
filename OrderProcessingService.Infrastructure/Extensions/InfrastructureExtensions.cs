@@ -14,7 +14,6 @@ using OrderProcessingService.Infrastructure.BackgroundWorkers;
 using OrderProcessingService.Infrastructure.ExternalServices;
 using OrderProcessingService.Infrastructure.Messaging.Handlers;
 using OrderProcessingService.Infrastructure.Messaging.Messages;
-using OrderProcessingService.Infrastructure.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;

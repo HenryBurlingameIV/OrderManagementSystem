@@ -19,7 +19,7 @@ namespace OrderProcessingService.Application.Services
 {
     public class OrderProcessor : IOrderProcessor
     {
-        private readonly IEFRepository<ProcessingOrder, Guid> _processingOrdeRepository;
+        private readonly IEFRepository<ProcessingOrder, Guid> _processingOrdersRepository;
         private readonly IOrderBackgroundWorker<StartAssemblyCommand> _assemblyWorker;
         private readonly IOrderServiceApi _orderServiceApi;
         private readonly ILogger<OrderProcessor> _logger;
@@ -37,7 +37,7 @@ namespace OrderProcessingService.Application.Services
             IValidator<StartDeliveryStatus> deliveryStatusValidator
             )
         {
-            _processingOrdeRepository = processingOrdeRepository;
+            _processingOrdersRepository = processingOrdeRepository;
             _assemblyWorker = assemblyWorker;
             _orderServiceApi = orderServiceApi;
             _logger = logger;
@@ -47,7 +47,7 @@ namespace OrderProcessingService.Application.Services
         }
         public async Task BeginAssembly(Guid id, CancellationToken cancellationToken)
         {
-            var po = await _processingOrdeRepository.GetByIdAsync(id, cancellationToken);
+            var po = await _processingOrdersRepository.GetByIdAsync(id, cancellationToken);
             if(po is null)
             {
                 throw new NotFoundException($"Processing order with ID {id} not found.");
@@ -59,7 +59,7 @@ namespace OrderProcessingService.Application.Services
             await _orderServiceApi.UpdateStatus(po.OrderId, "Processing", cancellationToken);
             po.Status = ProcessingStatus.Processing;
             po.UpdatedAt = DateTime.UtcNow;
-            await _processingOrdeRepository.SaveChangesAsync(cancellationToken);
+            await _processingOrdersRepository.SaveChangesAsync(cancellationToken);
 
             await _assemblyWorker.ScheduleAsync(new StartAssemblyCommand(po.Id), cancellationToken);
             _logger.LogInformation("Assembly processing with ID {@Id} scheduled", id);
@@ -67,10 +67,11 @@ namespace OrderProcessingService.Application.Services
 
         public async Task BeginDelivery(List<Guid> ids, CancellationToken cancellationToken)
         {
-            var processingOrders = await _processingOrdeRepository.GetAllAsync(
+            var processingOrders = await _processingOrdersRepository.GetAllAsync(
                     filter: po => ids.Contains(po.Id),
                     asNoTraсking: false,
                     ct: cancellationToken);
+
             if (processingOrders.Count != ids.Count)
             {
                 var missingIds = ids.Except(processingOrders.Select(x => x.Id));
@@ -80,12 +81,7 @@ namespace OrderProcessingService.Application.Services
             foreach (var po in processingOrders)
                 await _deliveryStatusValidator.ValidateAndThrowAsync(new StartDeliveryStatus(po.Stage, po.Status), cancellationToken);
 
-            //await _processingOrdeRepository.BulkUpdateProcessingOrdersStatusAsync(ids, 
-            //    ProcessingStatus.Processing, 
-            //    Stage.Delivery, 
-            //    cancellationToken);
-
-            await _processingOrdeRepository.ExecuteUpdateAsync(
+            await _processingOrdersRepository.ExecuteUpdateAsync(
                   setPropertyCalls: calls => calls.SetProperty(po => po.Status, ProcessingStatus.Processing)
                     .SetProperty(po => po.Stage, Stage.Delivery)
                     .SetProperty(po => po.TrackingNumber, Guid.NewGuid().ToString())
@@ -97,7 +93,7 @@ namespace OrderProcessingService.Application.Services
                 await _orderServiceApi.UpdateStatus(po.OrderId, "Delivering", cancellationToken);
 
             await _deliveryWorker.ScheduleAsync(new StartDeliveryCommand(ids), cancellationToken);
-            _logger.LogInformation("Delivery processing for {OrdersCount} orders scheduled.", ids.Count);
+            _logger.LogInformation("Delivery processing for {@OrdersCount} orders scheduled.", ids.Count);
         }
     }
 }

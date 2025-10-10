@@ -6,7 +6,6 @@ using OrderManagementSystem.Shared.Contracts;
 using OrderProcessingService.Application.Contracts;
 using OrderProcessingService.Application.DTO;
 using OrderProcessingService.Domain.Entities;
-using OrderProcessingService.Infrastructure.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -55,18 +54,17 @@ namespace OrderProcessingService.Infrastructure.BackgroundWorkers
 
                 if (processingOrder == null)
                 {
-                    _logger.LogError("Processing order with ID {Id} not found", id);
+                    _logger.LogError("Processing order with ID {@ProcessingOrderId} not found", id);
                     return;
                 }
 
-                _logger.LogInformation("Starting assembly with ID {id}. Order ID is {OrderId}", processingOrder!.Id, processingOrder.OrderId);
+                _logger.LogInformation("Starting assembly with ID {@ProcessingOrderId}. Order ID is {OrderId}", processingOrder!.Id, processingOrder.OrderId);
                 foreach (var item in processingOrder.Items)
                 {
                     await Task.Delay(TimeSpan.FromSeconds(30));
                     _logger.LogInformation("Order item with ID {id} is ready", item.ProductId);
                 }
-
-                //await _processingOrdersRepository.UpdateItemsAssemblyStatusAsync(id, ItemAssemblyStatus.Ready, cancellationToken);
+               
                 await _orderItemsRepository.ExecuteUpdateAsync(
                     setPropertyCalls: calls => calls.SetProperty(item => item.Status, ItemAssemblyStatus.Ready),
                     filter: item => item.ProcessingOrderId == id,
