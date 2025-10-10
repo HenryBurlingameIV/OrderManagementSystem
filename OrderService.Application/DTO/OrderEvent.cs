@@ -8,7 +8,7 @@ namespace OrderService.Application.DTO
 {
     public record OrderEvent(
         Guid Id, 
-        List<ProductEvent> Item, 
+        List<ProductEvent> Items, 
         string Status, 
         decimal TotalPrice, 
         DateTime CreatedAtUtc, 
