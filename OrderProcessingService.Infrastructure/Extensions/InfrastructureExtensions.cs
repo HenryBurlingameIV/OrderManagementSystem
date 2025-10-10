@@ -44,6 +44,12 @@ namespace OrderProcessingService.Infrastructure.Extensions
                 return new Repository<ProcessingOrder,Guid>(context);
             });
 
+            services.AddScoped<IEFRepository<OrderItem, Guid>>(provider =>
+            {
+                var context = provider.GetRequiredService<OrderProcessingDbContext>();
+                return new Repository<OrderItem, Guid>(context);
+            });
+
             var kafkaConf = configuration.GetSection("Kafka:Order");
             services.AddConsumer<OrderCreatedMessage, OrderCreatedMessageHandler>(kafkaConf);
             services.AddHttpClient<IOrderServiceApi, OrderServiceApi>(conf =>
