@@ -38,7 +38,7 @@ namespace OrderService.Application.Services
                 Status = OrderStatus.New,
                 CreatedAtUtc = createdAt,
                 UpdatedAtUtc = createdAt,
-                Email = request.Email
+                Email = request.Email.Trim()
             };
         }
 

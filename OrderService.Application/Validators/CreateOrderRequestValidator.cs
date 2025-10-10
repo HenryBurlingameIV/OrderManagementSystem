@@ -35,7 +35,7 @@ namespace OrderService.Application.Validators
                         .Must(email =>
                         {
                             string pattern = @"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$";
-                            return Regex.IsMatch(email, pattern);
+                            return Regex.IsMatch(email.Trim(), pattern);
                         })
                         .WithMessage("Invalid email format.");
                 });
