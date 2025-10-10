@@ -17,10 +17,37 @@ namespace OrderProcessingService.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.6")
+                .HasAnnotation("ProductVersion", "9.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("OrderProcessingService.Domain.Entities.OrderItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProcessingOrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProcessingOrderId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("OrderItems");
+                });
 
             modelBuilder.Entity("OrderProcessingService.Domain.Entities.ProcessingOrder", b =>
                 {
@@ -59,38 +86,17 @@ namespace OrderProcessingService.Infrastructure.Migrations
                     b.ToTable("ProcessingOrders");
                 });
 
+            modelBuilder.Entity("OrderProcessingService.Domain.Entities.OrderItem", b =>
+                {
+                    b.HasOne("OrderProcessingService.Domain.Entities.ProcessingOrder", null)
+                        .WithMany("Items")
+                        .HasForeignKey("ProcessingOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("OrderProcessingService.Domain.Entities.ProcessingOrder", b =>
                 {
-                    b.OwnsMany("OrderProcessingService.Domain.Entities.OrderItem", "Items", b1 =>
-                        {
-                            b1.Property<Guid>("ProcessingOrderId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<int>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("integer");
-
-                            NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b1.Property<int>("Id"));
-
-                            b1.Property<Guid>("ProductId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<int>("Quantity")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("Status")
-                                .HasColumnType("integer");
-
-                            b1.HasKey("ProcessingOrderId", "Id");
-
-                            b1.HasIndex("Status");
-
-                            b1.ToTable("OrderItems", (string)null);
-
-                            b1.WithOwner()
-                                .HasForeignKey("ProcessingOrderId");
-                        });
-
                     b.Navigation("Items");
                 });
 #pragma warning restore 612, 618

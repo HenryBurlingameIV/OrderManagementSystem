@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -33,16 +32,15 @@ namespace OrderProcessingService.Infrastructure.Migrations
                 name: "OrderItems",
                 columns: table => new
                 {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     ProcessingOrderId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ProductId = table.Column<Guid>(type: "uuid", nullable: false),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_OrderItems", x => new { x.ProcessingOrderId, x.Id });
+                    table.PrimaryKey("PK_OrderItems", x => x.Id);
                     table.ForeignKey(
                         name: "FK_OrderItems_ProcessingOrders_ProcessingOrderId",
                         column: x => x.ProcessingOrderId,
@@ -52,9 +50,14 @@ namespace OrderProcessingService.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_OrderItems_Status",
+                name: "IX_OrderItems_ProcessingOrderId",
                 table: "OrderItems",
-                column: "Status");
+                column: "ProcessingOrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrderItems_ProductId",
+                table: "OrderItems",
+                column: "ProductId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProcessingOrders_OrderId",
