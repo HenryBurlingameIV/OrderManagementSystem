@@ -67,12 +67,13 @@ namespace OrderProcessingService.Application.Services
 
         public async Task BeginDelivery(List<Guid> ids, CancellationToken cancellationToken)
         {
+            var uniqueIds = ids.ToHashSet();
             var processingOrders = await _processingOrdersRepository.GetAllAsync(
-                    filter: po => ids.Contains(po.Id),
+                    filter: po => uniqueIds.Contains(po.Id),
                     asNoTraсking: false,
                     ct: cancellationToken);
 
-            if (processingOrders.Count != ids.Count)
+            if (processingOrders.Count != uniqueIds.Count)
             {
                 var missingIds = ids.Except(processingOrders.Select(x => x.Id));
                 throw new NotFoundException($"Processing orders not found. Missing IDs: {string.Join(", ", missingIds)}");
