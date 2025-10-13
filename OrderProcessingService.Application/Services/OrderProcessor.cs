@@ -70,7 +70,7 @@ namespace OrderProcessingService.Application.Services
             var uniqueIds = ids.ToHashSet();
             var processingOrders = await _processingOrdersRepository.GetAllAsync(
                     filter: po => uniqueIds.Contains(po.Id),
-                    asNoTraсking: false,
+                    asNoTraсking: true,
                     ct: cancellationToken);
 
             if (processingOrders.Count != uniqueIds.Count)
