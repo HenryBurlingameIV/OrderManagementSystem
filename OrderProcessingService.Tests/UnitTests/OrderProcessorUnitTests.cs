@@ -149,7 +149,7 @@ namespace OrderProcessingService.Tests.UnitTests
         }
 
         [Theory, AutoProcessingOrderData]
-        public async Task Should_BeginDeliveryAndUpdateOrder_WhenProcessingOrdersExist(List<ProcessingOrder> processingOrders)
+        public async Task Should_BeginDeliveryAndUpdateOrders_WhenProcessingOrdersExist(List<ProcessingOrder> processingOrders)
         {
             //Arrange
             foreach (var processingOrder in processingOrders)
