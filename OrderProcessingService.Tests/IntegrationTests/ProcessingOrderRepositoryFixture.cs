@@ -3,7 +3,6 @@ using OrderManagementSystem.Shared.Contracts;
 using OrderManagementSystem.Shared.DataAccess;
 using OrderProcessingService.Domain.Entities;
 using OrderProcessingService.Infrastructure;
-using OrderProcessingService.Infrastructure.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
