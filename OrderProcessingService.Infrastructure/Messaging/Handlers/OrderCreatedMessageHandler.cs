@@ -21,8 +21,7 @@ namespace OrderProcessingService.Infrastructure.Messaging.Handlers
         public async Task HandleAsync(OrderCreatedMessage message, CancellationToken cancellationToken)
         {
             var order = MapToOrderDto(message);            
-            await _processingInitializer.InitializeProcessingAsync(order, cancellationToken);
-            Log.Information($"Processing of order with ID {order.Id} initialized.");
+            await _processingInitializer.InitializeProcessingAsync(order, cancellationToken);           
         }
 
         private OrderDto MapToOrderDto(OrderCreatedMessage message)
