@@ -26,7 +26,7 @@ namespace OrderNotificationService.Tests.IntegrationTests
         public async Task Should_ReturnNotificationTemplate_WhenExists(OrderStatus status, string expectedTemplateText)
         {
             //Act
-            var actualTemplate = await _fixture.NotificationTemplatesRepository.GetNotificationTemplateByIdAsync((int)status, CancellationToken.None);
+            var actualTemplate = await _fixture.NotificationTemplatesRepository.GetByIdAsync((int)status, CancellationToken.None);
 
             //Assert
             Assert.NotNull(actualTemplate);
@@ -37,7 +37,7 @@ namespace OrderNotificationService.Tests.IntegrationTests
         public async Task Should_ReturnNull_WhenTemplateNotFound()
         {
             //Act
-            var actualTemplate = await _fixture.NotificationTemplatesRepository.GetNotificationTemplateByIdAsync(10, CancellationToken.None);
+            var actualTemplate = await _fixture.NotificationTemplatesRepository.GetByIdAsync(10, CancellationToken.None);
 
             //Assert
             Assert.Null(actualTemplate);
