@@ -14,8 +14,6 @@ namespace OrderNotificationService.Api
                 app.RunDatabaseMigrations();
             }
 
-            app.MapGet("/", () => "OrderNotificationService is running!");
-
             app.Run();
         }
     }
