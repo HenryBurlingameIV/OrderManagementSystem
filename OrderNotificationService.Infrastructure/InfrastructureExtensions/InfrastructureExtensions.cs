@@ -3,11 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OrderManagementSystem.Shared.Contracts;
+using OrderManagementSystem.Shared.DataAccess;
 using OrderManagementSystem.Shared.Kafka;
 using OrderNotificationService.Application.Contracts;
+using OrderNotificationService.Domain.Entities;
 using OrderNotificationService.Infrastructure.Messaging.Handlers;
 using OrderNotificationService.Infrastructure.Messaging.Messages;
-using OrderNotificationService.Infrastructure.Repositories;
 using OrderNotificationService.Infrastructure.Senders;
 using System;
 using System.Collections.Generic;
@@ -19,7 +21,7 @@ namespace OrderNotificationService.Infrastructure.InfrastructureExtensions
 {
     public static class InfrastructureExtensions
     {
-        public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             string? dbconnection = configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<OrderNotificationDbContext>(options =>
@@ -27,11 +29,17 @@ namespace OrderNotificationService.Infrastructure.InfrastructureExtensions
                 options.UseNpgsql(dbconnection);
             });
 
-            services.AddScoped<INotificationTemplatesRepository, NotificationTemplatesRepository>();
+            services.AddScoped<IRepositoryBase<NotificationTemplate, int>>(provider =>
+            {
+                var context = provider.GetRequiredService<OrderNotificationDbContext>();
+                return new Repository<NotificationTemplate, int>(context);
+            });
+            services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
             services.AddScoped<IEmailMessageSender, SmptEmailSender>();
 
             var kafkaConsumerConf = configuration.GetSection("Kafka:OrderStatusConsumer");
             services.AddConsumer<OrderStatusChangedMessage, OrderStatusChangedMessageHandler>(kafkaConsumerConf);
+            return services;
         }
 
         public static void RunDatabaseMigrations(this WebApplication app)
