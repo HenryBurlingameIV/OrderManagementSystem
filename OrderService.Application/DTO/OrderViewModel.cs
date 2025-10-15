@@ -9,7 +9,7 @@ namespace OrderService.Application.DTO
 {
     public record OrderViewModel(
         Guid Id,
-        List<ProductDto> Items,
+        List<ProductDto> OrderItems,
         string Status,
         decimal TotalPrice,
         DateTime CreatedAtUtc,
