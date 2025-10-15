@@ -26,7 +26,7 @@ namespace OrderProcessingService.Infrastructure.Extensions
     {
         public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            string? dbconnection = configuration.GetConnectionString("DefaultConnection");
+            string? dbconnection = configuration.GetConnectionString("OrderProcessingDbContext");
             services.AddDbContext<OrderProcessingDbContext>(options =>
             {
                 options.UseNpgsql(dbconnection);
@@ -55,7 +55,7 @@ namespace OrderProcessingService.Infrastructure.Extensions
             {
                 conf.BaseAddress = new Uri(configuration["OrderService:DefaultConnection"]!);
             });
-            string hangfireStorageConnection = configuration.GetConnectionString("HangfireConnection")!;
+            string hangfireStorageConnection = configuration.GetConnectionString("OrderProcessingDbContext")!;
             services.AddHangfire(conf => 
                 conf.UsePostgreSqlStorage(options => 
                     options.UseNpgsqlConnection(hangfireStorageConnection)));

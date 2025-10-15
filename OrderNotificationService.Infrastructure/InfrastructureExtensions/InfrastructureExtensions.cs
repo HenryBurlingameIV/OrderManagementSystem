@@ -23,7 +23,7 @@ namespace OrderNotificationService.Infrastructure.InfrastructureExtensions
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            string? dbconnection = configuration.GetConnectionString("DefaultConnection");
+            string? dbconnection = configuration.GetConnectionString("OrderNotificationDbContext");
             services.AddDbContext<OrderNotificationDbContext>(options =>
             {
                 options.UseNpgsql(dbconnection);

@@ -23,7 +23,7 @@ namespace OrderService.Infrastructure.Extensions
             services.AddDbContext<OrderDbContext>(options =>
             {
                 options.UseNpgsql(
-                    configuration.GetConnectionString("DefaultConnection"));
+                    configuration.GetConnectionString("OrderDbContext"));
             });
 
             services.AddScoped<IEFRepository<Order, Guid>>(provider =>

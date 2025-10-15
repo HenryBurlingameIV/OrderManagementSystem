@@ -20,7 +20,8 @@ namespace CatalogService.Infrastructure.Extensions
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddDbContext<CatalogDbContext>(options => options.UseNpgsql(
-                configuration.GetConnectionString("DefaultConnection")!));
+                configuration.GetConnectionString("CatalogDbContext")));
+
             services.AddScoped<IEFRepository<Product, Guid>>(provider =>
             {
                 var dbContext = provider.GetRequiredService<CatalogDbContext>();
