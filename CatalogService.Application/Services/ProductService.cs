@@ -88,14 +88,8 @@ namespace CatalogService.Application.Services
                 || p.Description.ToLower().Contains(request.Search.ToLower())
                 || p.Category.ToLower().Contains(request.Search.ToLower());
 
-            Func<IQueryable<Product>, IOrderedQueryable<Product>>? orderBy = request.SortBy?.ToLower() switch
-            {
-                "name" => q => q.OrderBy(p => p.Name),
-                "category" => q => q.OrderBy(p => p.Category),
-                "price" => q => q.OrderBy(p => p.Price),
-                "created" => q => q.OrderBy(p => p.CreatedDateUtc),
-                _ => null
-            };
+
+            Func<IQueryable<Product>, IOrderedQueryable<Product>> orderBy = BuildOrderByExpression(request.SortBy, request.Descending);
 
             return await _productRepository
                 .GetPaginated(
@@ -105,6 +99,32 @@ namespace CatalogService.Application.Services
                     selector: (p) => p.ToViewModel(),                       
                     ct: cancellationToken
                 );
+        }
+
+        private Func<IQueryable<Product>, IOrderedQueryable<Product>> BuildOrderByExpression(string? sortBy, bool descending)
+        {
+            if(string.IsNullOrEmpty(sortBy))
+            {
+                return (q) => q.OrderByDescending(p => p.CreatedDateUtc);
+            }
+            var normalizedSortBy = sortBy?.ToLower().Trim();
+
+            return normalizedSortBy switch
+            {
+                "name" => descending
+                    ? q => q.OrderByDescending(p => p.Name)
+                    : q => q.OrderBy(p => p.Name),
+                "category" => descending
+                    ? q => q.OrderByDescending(p => p.Category)
+                    : q => q.OrderBy(p => p.Category),
+                "price" => descending
+                    ? q => q.OrderByDescending(p => p.Price)
+                    : q => q.OrderBy(p => p.Price),
+                "created" => descending
+                    ? q => q.OrderByDescending(p => p.CreatedDateUtc)
+                    : q => q.OrderBy(p => p.CreatedDateUtc),
+                _ => (q) => q.OrderByDescending(p => p.CreatedDateUtc)
+            };
         }
 
         public async Task<Guid> UpdateProductAsync(Guid productId, ProductUpdateRequest request, CancellationToken cancellationToken)
