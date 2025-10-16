@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 namespace OrderService.Application.DTO
 {
-    public record class GetPaginatedOrdersRequest(int PageNumber, int PageSize, string? Search, string? SortBy);
+    public record class GetPaginatedOrdersRequest(int PageNumber, int PageSize, string? Search, string? SortBy, bool Descending = false);
 
 }
