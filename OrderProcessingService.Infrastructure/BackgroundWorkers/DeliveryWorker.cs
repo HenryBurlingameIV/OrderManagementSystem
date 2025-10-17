@@ -11,6 +11,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace OrderProcessingService.Infrastructure.BackgroundWorkers
 {
@@ -35,16 +36,16 @@ namespace OrderProcessingService.Infrastructure.BackgroundWorkers
         }
         public Task ScheduleAsync(StartDeliveryCommand command, CancellationToken cancellationToken)
         {
-            _hangfire.Schedule(() => ProcessAsync(command.ProcessingOrderIds, cancellationToken), TimeSpan.FromSeconds(60));
+            _hangfire.Schedule(() => ProcessAsync(command, cancellationToken), TimeSpan.FromSeconds(60));
             return Task.CompletedTask;
         }
 
-        public async Task ProcessAsync(List<Guid> ids, CancellationToken cancellationToken)
+        public async Task ProcessAsync(StartDeliveryCommand command, CancellationToken cancellationToken)
         {
             try
             {
                 var processingOrders = await _processingOrdersRepository.GetAllAsync(
-                    filter: po => ids.Contains(po.Id),
+                    filter: po => command.ProcessingOrderIds.Contains(po.Id),
                     asNoTraсking: false,
                     ct: cancellationToken);
        

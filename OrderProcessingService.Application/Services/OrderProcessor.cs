@@ -93,7 +93,7 @@ namespace OrderProcessingService.Application.Services
             foreach (var po in processingOrders)
                 await _orderServiceApi.UpdateStatus(po.OrderId, "Delivering", cancellationToken);
 
-            await _deliveryWorker.ScheduleAsync(new StartDeliveryCommand(uniqueIds.ToList()), cancellationToken);
+            await _deliveryWorker.ScheduleAsync(new StartDeliveryCommand(uniqueIds), cancellationToken);
             _logger.LogInformation("Delivery processing for {@OrdersCount} orders scheduled.", ids.Count);
         }
     }

@@ -38,23 +38,23 @@ namespace OrderProcessingService.Infrastructure.BackgroundWorkers
         }
         public Task ScheduleAsync(StartAssemblyCommand command, CancellationToken cancellationToken)
         {
-            _hangfire.Schedule(() => ProcessAsync(command.ProcessingOrderId, cancellationToken), TimeSpan.FromSeconds(60));
+            _hangfire.Schedule(() => ProcessAsync(command, cancellationToken), TimeSpan.FromSeconds(60));
             return Task.CompletedTask;
         }
 
-        public async Task ProcessAsync(Guid id, CancellationToken cancellationToken)
+        public async Task ProcessAsync(StartAssemblyCommand command, CancellationToken cancellationToken)
         {
             try
             {
                 var processingOrder = await _processingOrdersRepository.GetFirstOrDefaultAsync(
-                    filter: po => po.Id == id,
+                    filter: po => po.Id == command.ProcessingOrderId,
                     include: (po) => po.Include(po => po.Items),
                     asNoTraсking: false,
                     ct: cancellationToken);
 
                 if (processingOrder == null)
                 {
-                    _logger.LogError("Processing order with ID {@ProcessingOrderId} not found", id);
+                    _logger.LogError("Processing order with ID {@ProcessingOrderId} not found", command.ProcessingOrderId);
                     return;
                 }
 
@@ -67,7 +67,7 @@ namespace OrderProcessingService.Infrastructure.BackgroundWorkers
                
                 await _orderItemsRepository.ExecuteUpdateAsync(
                     setPropertyCalls: calls => calls.SetProperty(item => item.Status, ItemAssemblyStatus.Ready),
-                    filter: item => item.ProcessingOrderId == id,
+                    filter: item => item.ProcessingOrderId == command.ProcessingOrderId,
                     cancellationToken: cancellationToken
                     );
 
@@ -81,7 +81,7 @@ namespace OrderProcessingService.Infrastructure.BackgroundWorkers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Assembly processing with ID {id} failed.", id);
+                _logger.LogError(ex, "Assembly processing with ID {@ProcessingOrderId} failed.", command.ProcessingOrderId);
             }
 
         }
