@@ -12,7 +12,8 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace OrderManagementSystem.Shared.DataAccess
 {
-    public class Repository<TEntity, TKey> : IEFRepository<TEntity, TKey> where TEntity : class
+    public class Repository<TEntity, TKey> : IEFRepository<TEntity, TKey> 
+        where TEntity : class where TKey : notnull
     {
         private readonly DbContext _dbContext;
         private readonly DbSet<TEntity> _dbSet;
