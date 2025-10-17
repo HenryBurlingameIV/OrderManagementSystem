@@ -75,7 +75,7 @@ namespace OrderProcessingService.Application.Services
 
             if (processingOrders.Count != uniqueIds.Count)
             {
-                var missingIds = ids.Except(processingOrders.Select(x => x.Id));
+                var missingIds = uniqueIds.Except(processingOrders.Select(x => x.Id));
                 throw new NotFoundException($"Processing orders not found. Missing IDs: {string.Join(", ", missingIds)}");
             }
             
@@ -87,13 +87,13 @@ namespace OrderProcessingService.Application.Services
                     .SetProperty(po => po.Stage, Stage.Delivery)
                     .SetProperty(po => po.TrackingNumber, Guid.NewGuid().ToString())
                     .SetProperty(po => po.UpdatedAt, DateTime.UtcNow),
-                  filter: po => ids.Contains(po.Id),
+                  filter: po => uniqueIds.Contains(po.Id),
                   cancellationToken: cancellationToken);
 
             foreach (var po in processingOrders)
                 await _orderServiceApi.UpdateStatus(po.OrderId, "Delivering", cancellationToken);
 
-            await _deliveryWorker.ScheduleAsync(new StartDeliveryCommand(ids), cancellationToken);
+            await _deliveryWorker.ScheduleAsync(new StartDeliveryCommand(uniqueIds.ToList()), cancellationToken);
             _logger.LogInformation("Delivery processing for {@OrdersCount} orders scheduled.", ids.Count);
         }
     }
