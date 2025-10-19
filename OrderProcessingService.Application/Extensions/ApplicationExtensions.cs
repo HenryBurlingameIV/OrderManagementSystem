@@ -15,13 +15,15 @@ namespace OrderProcessingService.Application.Extensions
 {
     public static class ApplicationExtensions
     {
-        public static void AddApplication(this IServiceCollection services)
+        public static IServiceCollection AddApplication(this IServiceCollection services)
         {
             services.AddScoped<IOrderProcessingInitializer, OrderProcessingInitializer>();
             services.AddScoped<IOrderProcessor, OrderProcessor>();
+            services.AddScoped<IProcessingOrderQueryService, ProcessingOrderQueryService>();
             services.AddScoped<IValidator<StartAssemblyStatus>, StartAssemblyValidator>();
             services.AddScoped<IValidator<StartDeliveryStatus>, StartDeliveryValidator>();
-
+            services.AddScoped<IValidator<GetPaginatedProcessingOrdersRequest>, GetPaginatedProcessingOrderRequestValidator>();
+            return services;
         }
     }
 }
