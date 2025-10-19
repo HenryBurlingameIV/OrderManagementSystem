@@ -53,6 +53,7 @@ namespace OrderProcessingService.Tests.UnitTests
             //Arrange
             var stopWatch = new Stopwatch();
             var expectedTime = TimeSpan.FromSeconds(30 * processingOrder.Items.Count);
+            var command = new StartAssemblyCommand(processingOrder.Id);
             processingOrder.Status = ProcessingStatus.Processing;
             var initialUpdatedAt = processingOrder.UpdatedAt;
             _mockProcessingOrdersRepository
@@ -84,7 +85,7 @@ namespace OrderProcessingService.Tests.UnitTests
 
             //Act
             stopWatch.Start();
-            await _asseblyWorker.ProcessAsync(processingOrder.Id, CancellationToken.None);
+            await _asseblyWorker.ProcessAsync(command, CancellationToken.None);
             stopWatch.Stop();
 
             //Assert
@@ -105,7 +106,7 @@ namespace OrderProcessingService.Tests.UnitTests
             var nonExistentId = Guid.NewGuid();
 
             //Act
-            await _asseblyWorker.ProcessAsync(nonExistentId, CancellationToken.None);
+            await _asseblyWorker.ProcessAsync(new StartAssemblyCommand(nonExistentId), CancellationToken.None);
 
             //Assert
             _mockProcessingOrdersRepository

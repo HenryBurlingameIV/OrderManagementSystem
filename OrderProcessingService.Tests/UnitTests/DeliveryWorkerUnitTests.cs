@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using OrderManagementSystem.Shared.Contracts;
 using OrderProcessingService.Application.Contracts;
+using OrderProcessingService.Application.DTO;
 using OrderProcessingService.Domain.Entities;
 using OrderProcessingService.Infrastructure.BackgroundWorkers;
 using OrderProcessingService.Tests.ProcessingOrderFixture;
@@ -45,7 +46,7 @@ namespace OrderProcessingService.Tests.UnitTests
         {
             //Arrange
             var stopWatch = new Stopwatch();
-            var expectedTime = TimeSpan.FromSeconds(30 * processingOrders.Count);
+            var expectedTime = TimeSpan.FromSeconds(30 * processingOrders.Count);        
             processingOrders.ForEach(po =>
             {
                 po.Stage = Stage.Delivery;
@@ -53,6 +54,7 @@ namespace OrderProcessingService.Tests.UnitTests
             });
             var initialUpdatedAt = processingOrders.ToDictionary(po => po.Id, po => po.UpdatedAt);
             var searchIds = processingOrders.Select(po => po.Id).ToList();
+            var command = new StartDeliveryCommand(searchIds);
             _mockRepository
                 .Setup(repo => repo.GetAllAsync(
                     It.IsAny<Expression<Func<ProcessingOrder, bool>>>(),
@@ -64,7 +66,7 @@ namespace OrderProcessingService.Tests.UnitTests
 
             //Act
             stopWatch.Start();
-            await _deliveryWorker.ProcessAsync(searchIds, CancellationToken.None);
+            await _deliveryWorker.ProcessAsync(command, CancellationToken.None);
             stopWatch.Stop();
 
             //Assert

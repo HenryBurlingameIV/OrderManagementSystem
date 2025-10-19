@@ -1,4 +1,6 @@
-﻿using Moq;
+﻿using Castle.Core.Logging;
+using Microsoft.Extensions.Logging;
+using Moq;
 using OrderManagementSystem.Shared.Contracts;
 using OrderProcessingService.Application.DTO;
 using OrderProcessingService.Application.Services;
@@ -15,12 +17,14 @@ namespace OrderProcessingService.Tests.UnitTests
     public class OrderProcessingInitializerUnitTests
     {
         private readonly Mock<IEFRepository<ProcessingOrder, Guid>> _mockRepository;
+        private readonly Mock<ILogger<OrderProcessingInitializer>> _mockLogger;
         private readonly OrderProcessingInitializer _orderProcessingInitializer;
 
         public OrderProcessingInitializerUnitTests()
         {
             _mockRepository = new Mock<IEFRepository<ProcessingOrder, Guid>>();
-            _orderProcessingInitializer = new OrderProcessingInitializer(_mockRepository.Object);
+            _mockLogger = new Mock<ILogger<OrderProcessingInitializer>>();
+            _orderProcessingInitializer = new OrderProcessingInitializer(_mockRepository.Object, _mockLogger.Object);
         }
 
 
@@ -42,6 +46,9 @@ namespace OrderProcessingService.Tests.UnitTests
             await _orderProcessingInitializer.InitializeProcessingAsync(dto, CancellationToken.None);
 
             //Assert
+            Assert.Equal(dto.Id, capturedOrder?.OrderId);
+            Assert.Equal(dto.Items.Count, capturedOrder?.Items.Count);
+            Assert.Equal(dto.CreatedAt, capturedOrder?.CreatedAt);
             _mockRepository.Verify(repo => repo.InsertAsync(It.IsAny<ProcessingOrder>(), It.IsAny<CancellationToken>()), Times.Once);
             _mockRepository.Verify(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
