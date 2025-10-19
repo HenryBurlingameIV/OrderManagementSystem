@@ -20,36 +20,10 @@ namespace OrderProcessingService.Application.Services
     {
         public async Task InitializeProcessingAsync(OrderDto dto, CancellationToken cancellationToken)
         {
-            var processingOrder = CreateFromOrderDto(dto);
+            var processingOrder = dto.ToEntity();
             await repository.InsertAsync(processingOrder, cancellationToken);
             await repository.SaveChangesAsync(cancellationToken);
             logger.LogInformation("Processing with ID {@ProcessingOrderId} initialized. Order ID: {@OrderId}", processingOrder.Id, processingOrder.OrderId);
-        }
-
-        public ProcessingOrder CreateFromOrderDto(OrderDto dto)
-        {
-            var ProcessinOrderId = Guid.NewGuid();
-
-            return new ProcessingOrder()
-            {
-                Id = ProcessinOrderId,
-                OrderId = dto.Id,
-                CreatedAt = dto.CreatedAt,
-                UpdatedAt = dto.UpdatedAt,
-                Stage = Stage.Assembly,
-                Status = ProcessingStatus.New,
-                TrackingNumber = null,
-                Items = dto.Items
-                    .Select(i => new OrderItem()
-                    {
-                        Id = Guid.NewGuid(),
-                        ProcessingOrderId = ProcessinOrderId,
-                        ProductId = i.ProductId,
-                        Quantity = i.Quantity,
-                        Status = ItemAssemblyStatus.Pending,
-                    })
-                    .ToList(),
-            };
         }
     }
 }

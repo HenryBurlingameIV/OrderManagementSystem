@@ -62,7 +62,7 @@ namespace OrderProcessingService.Infrastructure.BackgroundWorkers
                 foreach (var item in processingOrder.Items)
                 {
                     await Task.Delay(TimeSpan.FromSeconds(30));
-                    _logger.LogInformation("Order item with ID {id} is ready", item.ProductId);
+                    _logger.LogInformation("Order item with ID {@Id} is ready. Product ID is {@ProductId}", item.Id, item.ProductId);
                 }
                
                 await _orderItemsRepository.ExecuteUpdateAsync(
