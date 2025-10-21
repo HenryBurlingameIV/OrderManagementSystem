@@ -1,9 +1,11 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using OrderManagementSystem.Shared.Enums;
 using OrderService.Application.Commands.CreateOrderCommand;
 using OrderService.Application.Commands.UpdateOrderStatusCommand;
 using OrderService.Application.DTO;
 using OrderService.Application.Queries.OrderQuery;
+using OrderService.Application.Queries.OrdersPaginatedQuery;
 using OrderService.Domain.Entities;
 
 namespace OrderService.Api.Controllers
@@ -17,19 +19,30 @@ namespace OrderService.Api.Controllers
             [FromBody] CreateOrderRequest request,
             CancellationToken cancellationToken)
         {
-            var command = new CreateOrderCommand() { OrderItems = request.Items };
+            var command = new CreateOrderCommand(request);
             var result = await mediator.Send(command, cancellationToken);
             return CreatedAtRoute("GetOrder", new { id = result }, result);
         }
 
         [HttpGet("{id:Guid}", Name = "GetOrder")]
-        public async Task<ActionResult<OrderViewModel>> GetOrderByIdAsync(
+        public async Task<ActionResult<OrderViewModel>> GetOrderAsync(
             [FromRoute]
             Guid id,
             CancellationToken cancellationToken)
         {
             var result = await mediator.Send(
                 new GetOrderByIdQuery(id), 
+                cancellationToken);
+            return Ok(result);
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<OrderViewModel>> GetOrders(
+            [FromQuery]GetPaginatedOrdersRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(
+                new GetPaginatedOrdersQuery(request),
                 cancellationToken);
             return Ok(result);
         }

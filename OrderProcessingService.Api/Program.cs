@@ -1,0 +1,22 @@
+using OrderProcessingService.Infrastructure.Extensions;
+
+namespace OrderProcessingService.Api
+{
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            var builder = WebApplication.CreateBuilder(args);
+            builder.ConfigureSerilog();
+            builder.ConfigureServices();
+            var app = builder.Build();
+            app.ConfigurePipeline();
+
+            if (!app.Environment.IsDevelopment())
+            {
+                app.RunDatabaseMigrations();
+            }
+            app.Run();
+        }
+    }
+}

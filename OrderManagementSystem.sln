@@ -16,7 +16,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{721A4E63-1FC4-40C5-A2C2-65A1123D29C5}"
 	ProjectSection(SolutionItems) = preProject
 		docker-compose.yml = docker-compose.yml
-		Dockerfile = Dockerfile
+		init-multiple-databases.sh = init-multiple-databases.sh
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderService.Api", "OrderService.Api\OrderService.Api.csproj", "{6A16EF14-8F74-4BC4-A77F-953E6FB91386}"
@@ -27,7 +27,31 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderService.Domain", "Orde
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderService.Infrastructure", "OrderService.Infrastructure\OrderService.Infrastructure.csproj", "{1E18CCFF-33F1-4CF4-9CA3-68900A2D5628}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderManagementSystem.Shared", "OrderManagementSystem.Shared\OrderManagementSystem.Shared.csproj", "{CEF79D4A-77E3-41A1-8976-656751709439}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderManagementSystem.Shared", "OrderManagementSystem.Shared\OrderManagementSystem.Shared.csproj", "{CEF79D4A-77E3-41A1-8976-656751709439}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderService.Tests", "OrderService.Tests\OrderService.Tests.csproj", "{408B23D6-8787-4F4D-ADB8-96EAAAF4EB98}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderProcessingService.Api", "OrderProcessingService.Api\OrderProcessingService.Api.csproj", "{D21A40C6-6A63-4875-9091-500D516C3847}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderProcessingService.Application", "OrderProcessingService.Application\OrderProcessingService.Application.csproj", "{38D98787-88C9-4A5A-ADE1-2D242EA3A0DC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderProcessingService.Domain", "OrderProcessingService.Domain\OrderProcessingService.Domain.csproj", "{76AF435C-7AFB-4D59-81BE-8B3C7AB57665}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderProcessingService.Infrastructure", "OrderProcessingService.Infrastructure\OrderProcessingService.Infrastructure.csproj", "{04113FEE-4867-4EB0-A6D8-03FBDD387DC3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderProcessingService.Tests", "OrderProcessingService.Tests\OrderProcessingService.Tests.csproj", "{9FF71F8F-B040-459E-A728-F797150B9BD7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderNotificationService.Api", "OrderNotificationService.Api\OrderNotificationService.Api.csproj", "{20FB100E-70B5-41A5-B708-B292E29378B4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderNotificationService.Application", "OrderNotificationService.Application\OrderNotificationService.Application.csproj", "{353929B0-0C0A-403F-9D99-FCC53C55077D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderNotificationService.Domain", "OrderNotificationService.Domain\OrderNotificationService.Domain.csproj", "{C2FD6933-3B70-4AB0-A77F-6B8712E6FD21}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderNotificationService.Infrastructure", "OrderNotificationService.Infrastructure\OrderNotificationService.Infrastructure.csproj", "{B53E974E-4DA1-496E-9E53-CBC1B1BEE87B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderNotificationService.Tests", "OrderNotificationService.Tests\OrderNotificationService.Tests.csproj", "{C0BF59A2-E2CB-4FF1-9DD5-99CEC6D8DE9A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderManagementSystem.Gateway", "OrderManagementSystem.Gateway\OrderManagementSystem.Gateway.csproj", "{AB2F3BB2-875F-4D1A-97D3-3B2A45C54F46}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -75,6 +99,54 @@ Global
 		{CEF79D4A-77E3-41A1-8976-656751709439}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CEF79D4A-77E3-41A1-8976-656751709439}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CEF79D4A-77E3-41A1-8976-656751709439}.Release|Any CPU.Build.0 = Release|Any CPU
+		{408B23D6-8787-4F4D-ADB8-96EAAAF4EB98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{408B23D6-8787-4F4D-ADB8-96EAAAF4EB98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{408B23D6-8787-4F4D-ADB8-96EAAAF4EB98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{408B23D6-8787-4F4D-ADB8-96EAAAF4EB98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D21A40C6-6A63-4875-9091-500D516C3847}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D21A40C6-6A63-4875-9091-500D516C3847}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D21A40C6-6A63-4875-9091-500D516C3847}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D21A40C6-6A63-4875-9091-500D516C3847}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38D98787-88C9-4A5A-ADE1-2D242EA3A0DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38D98787-88C9-4A5A-ADE1-2D242EA3A0DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38D98787-88C9-4A5A-ADE1-2D242EA3A0DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38D98787-88C9-4A5A-ADE1-2D242EA3A0DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76AF435C-7AFB-4D59-81BE-8B3C7AB57665}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76AF435C-7AFB-4D59-81BE-8B3C7AB57665}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76AF435C-7AFB-4D59-81BE-8B3C7AB57665}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76AF435C-7AFB-4D59-81BE-8B3C7AB57665}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04113FEE-4867-4EB0-A6D8-03FBDD387DC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04113FEE-4867-4EB0-A6D8-03FBDD387DC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04113FEE-4867-4EB0-A6D8-03FBDD387DC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04113FEE-4867-4EB0-A6D8-03FBDD387DC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9FF71F8F-B040-459E-A728-F797150B9BD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9FF71F8F-B040-459E-A728-F797150B9BD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9FF71F8F-B040-459E-A728-F797150B9BD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9FF71F8F-B040-459E-A728-F797150B9BD7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20FB100E-70B5-41A5-B708-B292E29378B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20FB100E-70B5-41A5-B708-B292E29378B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20FB100E-70B5-41A5-B708-B292E29378B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20FB100E-70B5-41A5-B708-B292E29378B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{353929B0-0C0A-403F-9D99-FCC53C55077D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{353929B0-0C0A-403F-9D99-FCC53C55077D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{353929B0-0C0A-403F-9D99-FCC53C55077D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{353929B0-0C0A-403F-9D99-FCC53C55077D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2FD6933-3B70-4AB0-A77F-6B8712E6FD21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2FD6933-3B70-4AB0-A77F-6B8712E6FD21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2FD6933-3B70-4AB0-A77F-6B8712E6FD21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2FD6933-3B70-4AB0-A77F-6B8712E6FD21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B53E974E-4DA1-496E-9E53-CBC1B1BEE87B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B53E974E-4DA1-496E-9E53-CBC1B1BEE87B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B53E974E-4DA1-496E-9E53-CBC1B1BEE87B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B53E974E-4DA1-496E-9E53-CBC1B1BEE87B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C0BF59A2-E2CB-4FF1-9DD5-99CEC6D8DE9A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0BF59A2-E2CB-4FF1-9DD5-99CEC6D8DE9A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0BF59A2-E2CB-4FF1-9DD5-99CEC6D8DE9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0BF59A2-E2CB-4FF1-9DD5-99CEC6D8DE9A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB2F3BB2-875F-4D1A-97D3-3B2A45C54F46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB2F3BB2-875F-4D1A-97D3-3B2A45C54F46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB2F3BB2-875F-4D1A-97D3-3B2A45C54F46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB2F3BB2-875F-4D1A-97D3-3B2A45C54F46}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

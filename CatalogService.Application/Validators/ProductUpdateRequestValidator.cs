@@ -1,6 +1,8 @@
 ﻿using CatalogService.Application.DTO;
+using CatalogService.Domain;
 using CatalogService.Infrastructure;
 using FluentValidation;
+using OrderManagementSystem.Shared.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +15,8 @@ namespace CatalogService.Application.Validators
     {
         public ProductUpdateRequestValidator() 
         {
-            RuleFor(p => p.Name).NotEmpty().When(p => p.Name != null);
+            RuleFor(p => p.Name)
+                .NotEmpty().When(p => p.Name != null);
             RuleFor(p => p.Description).MaximumLength(200).When(p =>p.Description != null);
             RuleFor(p => p.Category).NotEmpty().When(p => p.Category != null);
             RuleFor(p => p.Category).MaximumLength(100).When(p => p.Category != null);

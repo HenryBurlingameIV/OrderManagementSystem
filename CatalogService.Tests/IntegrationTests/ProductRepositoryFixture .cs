@@ -7,39 +7,35 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using CatalogService.Infrastructure.Repositories;
-using CatalogService.Infrastructure.Validators;
+
+using OrderManagementSystem.Shared.DataAccess;
 
 namespace CatalogService.Tests.IntegrationTests
 {
-    public class ProductRepositoryFixture : IDisposable
+    public class ProductRepositoryFixture : IAsyncLifetime
     {
-        public CatalogDBContext Context { get; set; }
-        public IRepository<Product> ProductRepository { get; set; }
+        public CatalogDbContext Context { get; private set; }
+        public IEFRepository<Product, Guid> ProductRepository { get; private set; }
 
-        public ProductRepositoryFixture()
+        public async Task InitializeAsync()
         {
-            ResetDatabase().Wait();
-        }
-
-        public async Task ResetDatabase()
-        {
-            if (Context != null)
-            {
-                await Context.DisposeAsync();
-            }
-
-            var options = new DbContextOptionsBuilder<CatalogDBContext>()
+            var options = new DbContextOptionsBuilder<CatalogDbContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
                 .Options;
 
-            Context = new CatalogDBContext(options);
-            ProductRepository = new ProductRepository(Context, new ProductValidator(Context));
+            Context = new CatalogDbContext(options);
+            ProductRepository = new Repository<Product, Guid>(Context); 
+            await Context.Database.EnsureCreatedAsync();
         }
 
-        public void Dispose()
+        public async Task DisposeAsync()
         {
-            Context?.Dispose();
+            await Context.DisposeAsync();
+        }
+        public async Task ResetDatabase()
+        {
+            await Context.Database.EnsureDeletedAsync();
+            Context.ChangeTracker.Clear();
         }
     }
 }

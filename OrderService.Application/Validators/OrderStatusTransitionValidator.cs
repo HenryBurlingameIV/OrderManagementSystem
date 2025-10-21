@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using OrderManagementSystem.Shared.Enums;
 using OrderService.Application.Commands.UpdateOrderStatusCommand;
 using OrderService.Application.DTO;
 using OrderService.Domain.Entities;

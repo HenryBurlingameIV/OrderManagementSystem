@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OrderService.Infrastructure.HttpClients
+namespace OrderService.Infrastructure.ExternalServices
 {
     public class CatalogServiceApi : ICatalogServiceApi
     {

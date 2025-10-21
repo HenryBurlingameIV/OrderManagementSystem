@@ -2,7 +2,6 @@
 using CatalogService.Domain;
 using CatalogService.Infrastructure;
 using OrderManagementSystem.Shared.Contracts;
-using CatalogService.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -11,105 +10,95 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using ValidationException = FluentValidation.ValidationException;
+using CatalogService.Tests.ProductFixture;
+using OrderManagementSystem.Shared.DataAccess.Pagination;
 
 namespace CatalogService.Tests.IntegrationTests
 {
-    public class ProductRepositoryIntegrationTests : IClassFixture<ProductRepositoryFixture>
+    public class ProductRepositoryIntegrationTests : IClassFixture<ProductRepositoryFixture>, IAsyncLifetime
     {
         private readonly ProductRepositoryFixture _fixture;
 
         public ProductRepositoryIntegrationTests(ProductRepositoryFixture fixture)
         {
             _fixture = fixture;
-            _fixture.ResetDatabase().Wait();
         }
 
-        private Product CreateTestProduct(int variantNumber)
+        [Theory, AutoProductData]
+        public async Task Should_ReturnTrue_WhenProductFound(Product product)
         {
-            return new Product()
-            {
-                Id = Guid.NewGuid(),
-                Name =$"test{variantNumber}",
-                Description = $"test{variantNumber}",
-                Category = $"test{variantNumber}",
-                Price = variantNumber*100,
-                Quantity = variantNumber*1,
-                UpdatedDateUtc = DateTime.UtcNow,
-                CreatedDateUtc = DateTime.UtcNow
-            };
-        }
-
-        private async Task<IEnumerable<Product>> AddTestProducts(int count)
-        {
-            List<Product> products = new List<Product>();
-            for (int i = 1; i <= count; i++)
-                products.Add(CreateTestProduct(i));
-
-            await _fixture.Context.AddRangeAsync(products);
+            //Arrange
+            await _fixture.Context.Products.AddAsync(product);
             await _fixture.Context.SaveChangesAsync();
-            return products;
-        }
-
-        private void AssertProductsEqual(Product expected, Product actual)
-        {
-            Assert.Equal(expected.Id, actual.Id);
-            Assert.Equal(expected.Name, actual.Name);
-            Assert.Equal(expected.Description, actual.Description);
-            Assert.Equal(expected.Category, actual.Category);
-            Assert.Equal(expected.Price, actual.Price);
-            Assert.Equal(expected.Quantity, actual.Quantity);
-            Assert.Equal(expected.CreatedDateUtc, actual.CreatedDateUtc);
-            Assert.Equal(expected.UpdatedDateUtc, actual.UpdatedDateUtc);
-        }
-
-        [Fact]
-        public async Task Should_ReturnIdAndPersistProduct_WhenCreateNewProduct()
-        {
-            //Arrange
-            var product = CreateTestProduct(1);
 
             //Act
-            var actualId = await _fixture.ProductRepository.CreateAsync(product, CancellationToken.None);
+            var exists = await _fixture.ProductRepository.ExistsAsync(
+                predicate: (p) => p.Id == product.Id,
+                ct: CancellationToken.None);
 
             //Assert
-            Assert.Equal(product.Id, actualId);
-            var savedProduct = await _fixture.Context.Products.FindAsync(product.Id);
-            Assert.NotNull(savedProduct);
-            AssertProductsEqual(product, savedProduct);
-
+            Assert.True(exists);
         }
 
         [Fact]
-        public async Task CreateProduct_ShouldThrowValidationException_WhenProductNameAlreadyExists()
+        public async Task Should_ReturnFalse_WhenProductNotFound()
         {
-            //Arrange
-            var product = CreateTestProduct(1);
-            var productWithSameName = CreateTestProduct(1);
+            // Arrange
+            var nonExistentId = Guid.NewGuid();
 
-            //Act && Assert
-            var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
-            {
-                await _fixture.ProductRepository.CreateAsync(product, CancellationToken.None);
-                await _fixture.ProductRepository.CreateAsync(productWithSameName, CancellationToken.None);
+            // Act
+            var exists = await _fixture.ProductRepository.ExistsAsync(
+                predicate: p => p.Id == nonExistentId,
+                ct: CancellationToken.None);
 
-            });
-            Assert.Contains("Product name must be unique", exception.Message);            
+            // Assert
+            Assert.False(exists);
         }
 
-        [Fact]
-        public async Task Should_ReturnProduct_WhenProductExists()
+        [Theory, AutoProductData]
+        public async Task Should_ReturnInsertedProduct_WhenInsertingNewProduct(Product product)
         {
             //Arrange
-            var addedProducts = await AddTestProducts(3);
-            var expectedProduct = addedProducts.First();
+            var expectedId = product.Id;
 
             //Act
-            var actualProduct = await _fixture.ProductRepository!.GetByIdAsync(expectedProduct.Id, CancellationToken.None);
+            var insertedProduct = await _fixture.ProductRepository.InsertAsync(product, CancellationToken.None);
 
             //Assert
-            Assert.NotNull(actualProduct);
-            AssertProductsEqual(expectedProduct, actualProduct);
+            Assert.Equal(expectedId, insertedProduct.Id);
+            Assert.Equivalent(product, insertedProduct);
+        }
 
+        [Theory, AutoProductData]
+        public async Task Should_FindInsertedProduct_WhenProductWasInserted(Product product)
+        {
+            //Arrange
+            var expectedId = product.Id;
+
+            //Act
+            await _fixture.ProductRepository.InsertAsync(product, CancellationToken.None);
+            await _fixture.ProductRepository.SaveChangesAsync(CancellationToken.None);
+
+            //Assert
+            var insertedProduct = await _fixture.Context.Products.FirstOrDefaultAsync(p => p.Id == expectedId);
+            Assert.NotNull(insertedProduct);
+            Assert.Equivalent(product, insertedProduct);
+        }
+
+        [Theory, AutoProductData]
+        public async Task Should_ReturnProduct_WhenProductExists(Product product)
+        {
+            //Arrange
+            await _fixture.Context.Products.AddAsync(product);
+            await _fixture.Context.SaveChangesAsync();
+
+
+            //Act
+            var foundProduct = await _fixture.ProductRepository!.FindAsync(new object[] { product.Id }, CancellationToken.None);
+
+            //Assert
+            Assert.NotNull(foundProduct);
+            Assert.Equivalent(product, foundProduct);
         }
 
         [Fact]
@@ -117,45 +106,72 @@ namespace CatalogService.Tests.IntegrationTests
         {
             //Arrange
             var nonExistingId = Guid.NewGuid();
+
             //Act
-            var actualProduct = await _fixture.ProductRepository!.GetByIdAsync(nonExistingId, CancellationToken.None);
+            var foundProduct = await _fixture.ProductRepository!.FindAsync(new object[] { nonExistingId }, CancellationToken.None);
 
             //Assert
-            Assert.Null(actualProduct);
+            Assert.Null(foundProduct);
         }
 
-        [Fact]
-        public async Task Should_SaveAllChanges_WhenProductIsUpdated()
+        [Theory, AutoProductData]
+        public async Task Should_GetProductById_WhenExists(Product product)
         {
             //Arrange
-            var product = CreateTestProduct(1);
             await _fixture.Context.Products.AddAsync(product);
             await _fixture.Context.SaveChangesAsync();
-            product.Name = "Updated Name";
-            product.UpdatedDateUtc = DateTime.UtcNow;
 
 
             //Act
-            await _fixture.ProductRepository!.UpdateAsync(product, CancellationToken.None);
+            var foundProduct = await _fixture.ProductRepository!.GetByIdAsync(product.Id, CancellationToken.None);
 
             //Assert
-            var dbProduct = await _fixture.Context.Products.FindAsync(product.Id);
-            Assert.NotNull(dbProduct);
-            Assert.Equal("Updated Name", dbProduct!.Name);
-            Assert.NotEqual(dbProduct.CreatedDateUtc, dbProduct.UpdatedDateUtc);            
+            Assert.NotNull(foundProduct);
+            Assert.Equivalent(product, foundProduct);
+        }
+
+        [Theory, AutoProductData]
+        public async Task Should_PersistChanges_WhenProductIsModifiedAndSaved(Product product)
+        {
+            //Arrange
+            await _fixture.Context.Products.AddAsync(product);
+            await _fixture.Context.SaveChangesAsync();
+            string newProductName = "Updated";
+            decimal newProductPrice = 99.9m;
+
+
+            //Act
+            var productToUpdate = await _fixture.ProductRepository.FindAsync(new object[] { product.Id }, CancellationToken.None);
+            productToUpdate!.Name = newProductName;
+            productToUpdate!.Price = newProductPrice;
+            productToUpdate.UpdatedDateUtc = DateTime.UtcNow;
+            var affectedRows = await _fixture.ProductRepository!.SaveChangesAsync(CancellationToken.None);
+
+            //Assert
+            Assert.Equal(1, affectedRows);
+            var updatedProduct = await _fixture.Context.Products
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == product.Id);
+
+            Assert.NotNull(updatedProduct);
+            Assert.Equal(newProductName, updatedProduct!.Name);
+            Assert.Equal(newProductPrice, updatedProduct!.Price);
+            Assert.NotEqual(updatedProduct.CreatedDateUtc, updatedProduct.UpdatedDateUtc);
 
         }
 
-        [Fact]
-        public async Task Should_RemoveProduct_WhenProductExists()
+        [Theory, AutoProductData]
+        public async Task Should_RemoveProduct_WhenProductExists(List<Product> initialProducts)
         {
             //Arrange
-            var initialProducts = await AddTestProducts(3);
+            await _fixture.Context.Products.AddRangeAsync(initialProducts);
+            await _fixture.Context.SaveChangesAsync();
             var productToDelete = initialProducts.First();
             var initialCount = await _fixture.Context.Products.CountAsync();
 
             //Act
-            await _fixture.ProductRepository!.DeleteAsync(productToDelete, CancellationToken.None);
+            _fixture.ProductRepository.Delete(productToDelete);
+            await _fixture.ProductRepository.SaveChangesAsync(CancellationToken.None);
 
             //Assert
             var deletedProduct = await _fixture.Context.Products
@@ -163,13 +179,157 @@ namespace CatalogService.Tests.IntegrationTests
                 .FirstOrDefaultAsync(p => p.Id == productToDelete.Id);
             Assert.Null(deletedProduct);
             Assert.Equal(initialCount - 1, await _fixture.Context.Products.CountAsync());
+        }
 
-            var remainingIds = initialProducts.Skip(1).Select(p => p.Id).ToList();
-            var remainingProducts = await _fixture.Context.Products
-                .Where(p => remainingIds.Contains(p.Id))
-                .CountAsync();
+        [Theory, AutoProductData]
+        public async Task Should_GetValidPagedProductList_WhenRequested(List<Product> products)
+        {
+            //Arrange
+            await _fixture.Context.Products.AddRangeAsync(products);
+            await _fixture.Context.SaveChangesAsync();
+            var totalCount = products.Count();
+            var pageSize = totalCount - 1;
+            var request = new PaginationRequest()
+            {
+                PageNumber = 1,
+                PageSize = pageSize
+            };
+            var expectedTotalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize);
+            var expectedIds = products.Take(pageSize).Select(p => p.Id).ToList();
 
-            Assert.Equal(2, remainingProducts);
+            //Act
+            var pagedList = await _fixture.ProductRepository.GetPaginated(
+                request: request,
+                ct: CancellationToken.None
+                );
+
+            //Assert
+            Assert.NotNull(pagedList);
+            Assert.NotNull(pagedList.Items);
+            Assert.Equal(pageSize, pagedList.Items.Count);
+            Assert.Equal(pageSize, pagedList.PageSize);
+            Assert.Equal(totalCount, pagedList.TotalCount);
+            Assert.Equal(expectedTotalPages, pagedList.TotalPages);
+            var actualIds = pagedList.Items.Select(p => p.Id).ToList();
+            Assert.Equal(expectedIds, actualIds);
+        }
+
+
+        [Theory, AutoProductData]
+        public async Task Should_GetEmptyPagedProductList_WhenRequestingPageBeyondTotalPages(List<Product> products)
+        {
+            //Arrange
+            await _fixture.Context.Products.AddRangeAsync(products);
+            await _fixture.Context.SaveChangesAsync();
+            var totalCount = products.Count();
+            var pageSize = 2;
+            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+            var pageBeyondTotal = totalPages + 1;
+            var request = new PaginationRequest()
+            {
+                PageNumber = pageBeyondTotal,
+                PageSize = pageSize
+            };
+
+            //Act
+            var pagedList = await _fixture.ProductRepository.GetPaginated(
+                request: request,
+                ct: CancellationToken.None
+                );
+
+            //Assert
+            Assert.NotNull(pagedList);
+            Assert.NotNull(pagedList.Items);
+            Assert.Empty(pagedList.Items);
+            Assert.Equal(pageSize, pagedList.PageSize);
+            Assert.Equal(totalCount, pagedList.TotalCount);
+            Assert.Equal(totalPages, pagedList.TotalPages);
+        }
+
+        [Theory, AutoProductData]
+        public async Task Should_GetValidFilteredPagedProductList_WhenRequested(List<Product> products)
+        {
+            //Arrange
+            var searchName = Guid.NewGuid().ToString();
+            var productWithSearchName = products.Last();
+            productWithSearchName.Name = searchName;
+            await _fixture.Context.Products.AddRangeAsync(products);
+            await _fixture.Context.SaveChangesAsync();
+            var totalCount = products.Count();
+            var pageSize = totalCount;
+            var request = new PaginationRequest()
+            {
+                PageNumber = 1,
+                PageSize = pageSize
+            };
+
+            //Act
+            var pagedList = await _fixture.ProductRepository.GetPaginated(
+                request: request,
+                filter: (p) => p.Name == searchName,
+                ct: CancellationToken.None);
+
+            //Assert
+            Assert.NotNull(pagedList.Items);
+            Assert.Single(pagedList.Items, (p) => p.Name == searchName);
+            Assert.Equal(productWithSearchName.Id, pagedList.Items[0].Id);
+        }
+
+
+        [Theory, AutoProductData]
+        public async Task Should_ReturnPagedSortedNames_WhenUsingProjectionWithOrderBy(List<Product> products)
+        {
+            //Arrange
+            await _fixture.Context.Products.AddRangeAsync(products);
+            await _fixture.Context.SaveChangesAsync();
+            var expectedNames = products.Select(p => p.Name).OrderBy(n => n).ToList();
+            var request = new PaginationRequest()
+            {
+                PageNumber = 1,
+                PageSize = products.Count()
+            };
+
+            //Act
+            var pagedList = await _fixture.ProductRepository.GetPaginated<string>(
+                selector: (p) => p.Name,
+                orderBy: q => q.OrderBy(p => p.Name),
+                request: request,
+                ct: CancellationToken.None);
+
+            //Assert
+            Assert.NotNull(pagedList.Items);
+            Assert.All(pagedList.Items, (n) => Assert.IsType<string>(n));
+            Assert.Equal(expectedNames, pagedList.Items);
+        }
+
+        [Theory, AutoProductData]
+        public async Task Should_ReturnProduct_WhenFilteringById(Product product)
+        {
+            //Arrange
+            await _fixture.Context.Products.AddAsync(product);
+            await _fixture.Context.SaveChangesAsync();
+
+            //Act
+            var first = await _fixture.ProductRepository.GetFirstOrDefaultAsync(
+                filter: (p) => p.Id == product.Id,
+                ct: CancellationToken.None
+                );
+
+            //
+            Assert.NotNull(first);
+            Assert.Equal(product.Id, first.Id);
+        }
+
+
+
+        public async Task InitializeAsync()
+        {
+            await _fixture.ResetDatabase();
+        }
+
+        public async Task DisposeAsync()
+        {
+            await Task.CompletedTask;
         }
     }    
 }

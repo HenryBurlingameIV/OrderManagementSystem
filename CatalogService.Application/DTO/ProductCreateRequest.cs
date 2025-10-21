@@ -6,12 +6,6 @@ using System.Threading.Tasks;
 
 namespace CatalogService.Application.DTO
 {
-    public class ProductCreateRequest
-    {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public string Category { get; set; }
-        public decimal Price { get; set; }
-        public int Quantity { get; set; }
-    }
+    public record ProductCreateRequest(string Name, string Description, string Category, decimal Price, int Quantity);
+
 }
