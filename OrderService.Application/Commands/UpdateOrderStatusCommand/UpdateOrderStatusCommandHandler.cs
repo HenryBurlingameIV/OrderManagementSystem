@@ -33,7 +33,7 @@ namespace OrderService.Application.Commands.UpdateOrderStatusCommand
                 throw new NotFoundException($"Order with ID {command.Id} not found.");
             }
 
-            logger.LogInformation("Order with ID {@Id} successfully found", command.Id);
+            logger.LogInformation("Order with ID {@OrderId} successfully found", command.Id);
 
             var validationResult = await validator.ValidateAsync(
                 new OrderStatusValidationModel(order.Status, command.NewOrderStatus), cancellationToken);
@@ -50,7 +50,7 @@ namespace OrderService.Application.Commands.UpdateOrderStatusCommand
             order.Status = command.NewOrderStatus;
             order.UpdatedAtUtc = DateTime.UtcNow;
             await orderRepository.SaveChangesAsync(cancellationToken);
-            logger.LogInformation("Status of order with ID {@Id} successfully updated", command.Id);
+            logger.LogInformation("Status of order with ID {@OrderId} successfully updated", command.Id);
             await kafkaOrderStatusProducer.ProduceAsync(
                 order.Id.ToString(),
                 order.ToOrderStatusEvent(),
@@ -65,7 +65,7 @@ namespace OrderService.Application.Commands.UpdateOrderStatusCommand
             foreach (var item in items)
             {
                 await catalogServiceClient.ReleaseProductAsync(item.ProductId, item.Quantity, cancellationToken);
-                logger.LogInformation("Product {ProductId} released. Quantity: {Quantity}", item.ProductId, item.Quantity);
+                logger.LogInformation("Product {@ProductId} released. Quantity: {@Quantity}", item.ProductId, item.Quantity);
             };
         }
     }

@@ -15,13 +15,6 @@ namespace OrderProcessingService.Application.Validators
         {
             RuleFor(r => r.PageNumber).GreaterThan(0);
             RuleFor(r => r.PageSize).InclusiveBetween(1, 100);
-            //RuleFor(r => r.Stage)
-            //    .Must(stage => Enum.TryParse<Stage>(stage, out _))
-            //    .When(r => !string.IsNullOrEmpty(r.Stage));
-
-            //RuleFor(r => r.Status)
-            //    .Must(status => Enum.TryParse<ProcessingStatus>(status, out _))
-            //    .When(r => !string.IsNullOrEmpty (r.Status));
         }
     }
 }

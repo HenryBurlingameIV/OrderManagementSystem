@@ -59,7 +59,7 @@ namespace OrderProcessingService.Infrastructure.BackgroundWorkers
                     await _processingOrdersRepository.SaveChangesAsync(cancellationToken);
                     await _orderServiceApi.UpdateStatus(po.OrderId, "Delivered", cancellationToken);                   
                     var address = GetRandomAddress();
-                    _logger.LogInformation("Delivery with ID: {Id} completed. Order ID: {OrderId}. TrackingNumber: {TrackingNumber}. Address: {Address}", 
+                    _logger.LogInformation("Delivery with ID: {@ProcessingOrderId} completed. Order ID: {@OrderId}. TrackingNumber: {TrackingNumber}. Address: {Address}", 
                         po.Id, po.OrderId, po.TrackingNumber, address);
                 }
                 _logger.LogInformation("Delivery successfully completed for all {@OrdersCount} orders.", processingOrders.Count);

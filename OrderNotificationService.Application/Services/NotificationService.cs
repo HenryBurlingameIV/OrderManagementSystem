@@ -46,7 +46,7 @@ namespace OrderNotificationService.Application.Services
 
 
             await _sender.SendAsync(message, request.Email, ct);
-            _logger.LogInformation("Notification sent successfully for order {OrderId} to {Email}.", request.OrderId, request.Email);
+            _logger.LogInformation("Notification sent successfully for order {@OrderId} to {@Email}.", request.OrderId, request.Email);
         }
     }
 }

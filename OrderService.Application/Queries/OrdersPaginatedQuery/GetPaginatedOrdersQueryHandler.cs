@@ -46,7 +46,7 @@ namespace OrderService.Application.Queries.OrdersPaginatedQuery
                 ct: cancellationToken);
 
             logger.LogInformation("Retrieved {Count} orders out of {Total}",
-            result.Items.Count, result.TotalCount);
+                result.Items.Count, result.TotalCount);
             return result;
         }
 

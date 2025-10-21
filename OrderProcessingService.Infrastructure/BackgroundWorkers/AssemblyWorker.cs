@@ -58,7 +58,7 @@ namespace OrderProcessingService.Infrastructure.BackgroundWorkers
                     return;
                 }
 
-                _logger.LogInformation("Starting assembly with ID {@ProcessingOrderId}. Order ID is {OrderId}", processingOrder!.Id, processingOrder.OrderId);
+                _logger.LogInformation("Starting assembly with ID {@ProcessingOrderId}. Order ID is {@OrderId}", processingOrder!.Id, processingOrder.OrderId);
                 foreach (var item in processingOrder.Items)
                 {
                     await Task.Delay(TimeSpan.FromSeconds(30));

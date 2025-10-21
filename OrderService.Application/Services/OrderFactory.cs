@@ -45,7 +45,7 @@ namespace OrderService.Application.Services
         private async Task<OrderItem> CreateOrderItemAsync(OrderItemRequest request, CancellationToken ct)
         {
             var product = await _catalogServiceApi.ReserveProductAsync(request.Id, request.Quantity, ct);
-            _logger.LogInformation("{Quantity} items of product with Id {@productId} was reserved", request.Quantity, request.Id);
+            _logger.LogInformation("{@Quantity} items of product with Id {@ProductId} was reserved", request.Quantity, request.Id);
             return new OrderItem()
             {
                 ProductId = request.Id,

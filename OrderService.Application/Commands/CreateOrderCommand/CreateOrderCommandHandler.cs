@@ -36,7 +36,7 @@ namespace OrderService.Application.Commands.CreateOrderCommand
             var order = await orderFactory.CreateOrderAsync(command.Request, cancellationToken);
             await orderRepository.InsertAsync(order, cancellationToken);
             await orderRepository.SaveChangesAsync(cancellationToken);
-            logger.LogInformation("Order with Id {@orderId} was created and saved in database", order.Id);
+            logger.LogInformation("Order with Id {@OrderId} was created and saved in database", order.Id);
             await kafkaOrderProducer.ProduceAsync(order.Id.ToString(), order.ToOrderEvent(), cancellationToken);
             logger.LogInformation("Order sent to Kafka. OrderId: {@OrderId}", order.Id);
             await kafkaOrderStatusProducer.ProduceAsync(
