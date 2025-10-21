@@ -1,20 +1,24 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using OrderManagementSystem.Shared.Exceptions;
+using Serilog;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Runtime.ExceptionServices;
-using FluentValidation;
 using ValidationException = FluentValidation.ValidationException;
-using Microsoft.AspNetCore.Http;
-using Serilog;
-using OrderManagementSystem.Shared.Exceptions;
 
 namespace OrderManagementSystem.Shared.Middlewares
 {
     public class ExceptionHandlerMiddleware
     {
         RequestDelegate _next;
-        public ExceptionHandlerMiddleware(RequestDelegate next) 
+        private readonly ILogger<ExceptionHandlerMiddleware> _logger;
+
+        public ExceptionHandlerMiddleware(RequestDelegate next, ILogger<ExceptionHandlerMiddleware> logger) 
         {
             _next = next;
+            _logger = logger;
         }
 
 
@@ -40,7 +44,7 @@ namespace OrderManagementSystem.Shared.Middlewares
                 _ => (HttpStatusCode.InternalServerError, ex.Message),
             };
 
-            Log.Error("Error {@exception} occured", ex);
+            _logger.LogError("Error {@exception} occured", ex);
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)statusCode;
             await context.Response.WriteAsJsonAsync(new { Message = message });

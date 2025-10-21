@@ -1,6 +1,7 @@
 ﻿using Confluent.Kafka;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OrderManagementSystem.Shared.Contracts;
 using Serilog;
@@ -17,8 +18,12 @@ namespace OrderManagementSystem.Shared.Kafka
         private readonly string _topic;
         private readonly IConsumer<string, TMessage> _consumer;
         private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<KafkaConsumer<TMessage>> _logger;
 
-        public KafkaConsumer(IOptions<KafkaConsumerSettings> settings, IServiceProvider serviceProvider)
+        public KafkaConsumer(
+            IOptions<KafkaConsumerSettings> settings, 
+            IServiceProvider serviceProvider,
+            ILogger<KafkaConsumer<TMessage>> logger)
         {
             var conf = new ConsumerConfig()
             {
@@ -35,6 +40,7 @@ namespace OrderManagementSystem.Shared.Kafka
                 .Build();
 
             _serviceProvider = serviceProvider;
+            _logger = logger;
 
         }
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -46,7 +52,7 @@ namespace OrderManagementSystem.Shared.Kafka
         private async Task ConsumeAsync(CancellationToken stoppingToken)
         {
             _consumer.Subscribe(_topic);
-            Log.Information($"Subscribed to topic: {_topic}");
+            _logger.LogInformation($"Subscribed to topic: {_topic}");
             try
             {
                 
@@ -56,7 +62,7 @@ namespace OrderManagementSystem.Shared.Kafka
                     {
                         var result = _consumer.Consume(TimeSpan.FromSeconds(10));
                         if (result == null) continue;
-                        Log.Information("Received message. Key: {MessageKey}, Offset: {Offset}",
+                        _logger.LogInformation("Received message. Key: {MessageKey}, Offset: {Offset}",
                             result.Message.Key, result.Offset);
                         using var scope = _serviceProvider.CreateScope();
                         var handler = scope.ServiceProvider.GetRequiredService<IMessageHandler<TMessage>>();
@@ -73,7 +79,7 @@ namespace OrderManagementSystem.Shared.Kafka
             }
             catch (OperationCanceledException)
             {
-                Log.Information("Consumer stopped");
+                _logger.LogWarning("Consumer stopped");
             }
             catch (Exception ex)
             {

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using OrderManagementSystem.Shared.DataAccess.Pagination;
 using OrderProcessingService.Application.Contracts;
 using OrderProcessingService.Application.DTO;
 
@@ -7,8 +8,27 @@ namespace OrderProcessingService.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProcessingOrdersController(IOrderProcessor orderProcessor): ControllerBase
+    public class ProcessingOrdersController(
+        IOrderProcessor orderProcessor,
+        IProcessingOrderQueryService queryService
+        ): ControllerBase
     {
+        [HttpGet("{id:Guid}")]
+        public async Task<ActionResult<ProcessingOrderViewModel>> GetProcessingOrderAsync(Guid id, CancellationToken cancellationToken)
+        {
+            var result = await queryService.GetProcesingOrderById(id, cancellationToken);
+            return Ok(result);
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<PaginatedResult<ProcessingOrderViewModel>>> GetProcessingOrdersAsync(
+            [FromQuery] GetPaginatedProcessingOrdersRequest query,
+            CancellationToken cancellationToken)
+        {
+            var result = await queryService.GetProcessingOrdersPaginatedAsync(query, cancellationToken);
+            return Ok(result);
+        }
+
         [HttpPatch("{id:Guid}/begin-assembly")]
         public async Task<ActionResult> BeginAssembly(Guid id, CancellationToken cancellationToken)
         {

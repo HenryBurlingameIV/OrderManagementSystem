@@ -1,4 +1,6 @@
-﻿using Moq;
+﻿using Castle.Core.Logging;
+using Microsoft.Extensions.Logging;
+using Moq;
 using OrderManagementSystem.Shared.Contracts;
 using OrderManagementSystem.Shared.Exceptions;
 using OrderService.Application.Commands.UpdateOrderStatusCommand;
@@ -16,13 +18,16 @@ namespace OrderService.Tests.UnitTests
 {
     public class GetOrderByIdQueryHandlerTests
     {
-        private Mock<IRepository<Order>> _mockOrderRepository;
+        private Mock<IRepositoryBase<Order, Guid>> _mockOrderRepository;
+        private Mock<ILogger<GetOrderByIdQueryHandler>> _mockLogger;
         private GetOrderByIdQueryHandler _handler;
 
         public GetOrderByIdQueryHandlerTests()
         {
-            _mockOrderRepository = new Mock<IRepository<Order>>();
-            _handler = new GetOrderByIdQueryHandler(_mockOrderRepository.Object);
+            _mockOrderRepository = new Mock<IRepositoryBase<Order, Guid>>();
+            _mockLogger = new Mock<ILogger<GetOrderByIdQueryHandler>>();
+            _handler = new GetOrderByIdQueryHandler(
+                _mockOrderRepository.Object, _mockLogger.Object);
         }
 
         [Theory, AutoOrderData]
@@ -44,7 +49,7 @@ namespace OrderService.Tests.UnitTests
             Assert.IsType<OrderViewModel>(result);
             Assert.Equal(orders[0].Id, result.Id);
             Assert.Equal(orders[0].Status.ToString(), result.Status);
-            Assert.Equal(orders[0].Items.Count(), result.Items.Count());
+            Assert.Equal(orders[0].Items.Count(), result.OrderItems.Count());
             Assert.Equal(orders[0].TotalPrice, result.TotalPrice);
             Assert.Equal(orders[0].CreatedAtUtc, result.CreatedAtUtc);
             Assert.Equal(orders[0].UpdatedAtUtc, result.UpdatedAtUtc);

@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using OrderManagementSystem.Shared.Contracts;
+using OrderManagementSystem.Shared.DataAccess;
 using OrderManagementSystem.Shared.Enums;
 using OrderNotificationService.Application.Contracts;
 using OrderNotificationService.Domain.Entities;
 using OrderNotificationService.Infrastructure;
-using OrderNotificationService.Infrastructure.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace OrderNotificationService.Tests.IntegrationTests
     public class NotificationTemplatesRepositoryFixture : IDisposable
     {
         public OrderNotificationDbContext OrderNotificationDbContext { get ; private set; }
-        public INotificationTemplatesRepository NotificationTemplatesRepository { get; private set; }
+        public IRepositoryBase<NotificationTemplate, int> NotificationTemplatesRepository { get; private set; }
 
         public NotificationTemplatesRepositoryFixture()
         {
@@ -23,7 +24,7 @@ namespace OrderNotificationService.Tests.IntegrationTests
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
                 .Options;
             OrderNotificationDbContext = new OrderNotificationDbContext(options);
-            NotificationTemplatesRepository = new NotificationTemplatesRepository(OrderNotificationDbContext);
+            NotificationTemplatesRepository = new Repository<NotificationTemplate, int>(OrderNotificationDbContext);
             var templates = new List<NotificationTemplate>()
             {
                  new NotificationTemplate()

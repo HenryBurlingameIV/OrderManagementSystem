@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using OrderManagementSystem.Shared.Contracts;
+using OrderManagementSystem.Shared.DataAccess;
+using OrderProcessingService.Domain.Entities;
 using OrderProcessingService.Infrastructure;
-using OrderProcessingService.Infrastructure.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +14,9 @@ namespace OrderProcessingService.Tests.IntegrationTests
     public class ProcessingOrderRepositoryFixture : IAsyncLifetime
     {
         public OrderProcessingDbContext DbContext { get; private set; }
-        public ProcessingOrderRepository ProcessingOrderRepository { get; private set; }
+        public IEFRepository<ProcessingOrder,Guid> ProcessingOrdersRepository { get; private set; }
+
+        public IEFRepository<OrderItem, Guid> OrderItemsRepository { get; private set; }
 
         public async Task InitializeAsync()
         {
@@ -22,7 +26,8 @@ namespace OrderProcessingService.Tests.IntegrationTests
 
             DbContext = new OrderProcessingDbContext(options);
 
-            ProcessingOrderRepository = new ProcessingOrderRepository(DbContext);
+            ProcessingOrdersRepository = new Repository<ProcessingOrder, Guid>(DbContext);
+            OrderItemsRepository = new Repository<OrderItem, Guid>(DbContext);
             await DbContext.Database.EnsureCreatedAsync();
         }
 

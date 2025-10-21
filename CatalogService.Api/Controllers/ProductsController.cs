@@ -29,7 +29,7 @@ namespace CatalogService.Api.Controllers
         }
 
         [HttpGet("{id:guid}", Name = "GetProduct")]
-        public async Task<ActionResult<ProductViewModel>> GetProductByIdAsync(
+        public async Task<ActionResult<ProductViewModel>> GetProductAsync(
             [FromRoute] Guid id,
             CancellationToken cancellationToken
             )
@@ -37,6 +37,18 @@ namespace CatalogService.Api.Controllers
             var result = await _productService.GetProductByIdAsync(id, cancellationToken);
             return Ok(result);
         }
+
+        [HttpGet]
+        public async Task<ActionResult<ProductViewModel>> GetProductsAsync(
+            [FromQuery] GetPagindatedProductsRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await _productService.GetProductsPaginatedAsync(
+                request,
+                cancellationToken);
+            return Ok(result);
+        }
+            
 
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<Guid>> UpdateProductAsync(

@@ -1,8 +1,10 @@
 ﻿using Castle.Core.Logging;
 using FluentAssertions;
 using Hangfire;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Logging;
 using Moq;
+using OrderManagementSystem.Shared.Contracts;
 using OrderProcessingService.Application.Contracts;
 using OrderProcessingService.Application.DTO;
 using OrderProcessingService.Domain.Entities;
@@ -13,28 +15,33 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using static Dapper.SqlMapper;
 
 namespace OrderProcessingService.Tests.UnitTests
 {
     public class AssemblyWorkerUnitTests
     {
-        private readonly Mock<IProcessingOrderRepository> _mockRepository;
+        private readonly Mock<IEFRepository<ProcessingOrder, Guid>> _mockProcessingOrdersRepository;
+        private readonly Mock<IEFRepository<OrderItem, Guid>> _mockOrderItemsRepository;
         private readonly Mock<IBackgroundJobClient> _mockBackgroundJobClient;
         private readonly Mock<IOrderServiceApi> _mockOrderServiceApi;
         private readonly Mock<ILogger<AssemblyWorker>> _mockLogger;
         private readonly AssemblyWorker _asseblyWorker;
 
-        public AssemblyWorkerUnitTests() 
+        public AssemblyWorkerUnitTests()
         {
-            _mockRepository = new Mock<IProcessingOrderRepository>();
+            _mockProcessingOrdersRepository = new Mock<IEFRepository<ProcessingOrder, Guid>>();
+            _mockOrderItemsRepository = new Mock<IEFRepository<OrderItem, Guid>>();
             _mockBackgroundJobClient = new Mock<IBackgroundJobClient>();
             _mockOrderServiceApi = new Mock<IOrderServiceApi>();
             _mockLogger = new Mock<ILogger<AssemblyWorker>>();
             _asseblyWorker = new AssemblyWorker(
                 _mockBackgroundJobClient.Object,
-                _mockRepository.Object,
+                _mockProcessingOrdersRepository.Object,
+                _mockOrderItemsRepository.Object,
                 _mockOrderServiceApi.Object,
                 _mockLogger.Object
                 );
@@ -46,28 +53,28 @@ namespace OrderProcessingService.Tests.UnitTests
             //Arrange
             var stopWatch = new Stopwatch();
             var expectedTime = TimeSpan.FromSeconds(30 * processingOrder.Items.Count);
+            var command = new StartAssemblyCommand(processingOrder.Id);
             processingOrder.Status = ProcessingStatus.Processing;
             var initialUpdatedAt = processingOrder.UpdatedAt;
-            _mockRepository
-                .Setup(repo => repo.GetByIdAsync(
-                    processingOrder.Id,
+            _mockProcessingOrdersRepository
+                .Setup(repo => repo.GetFirstOrDefaultAsync(
+                    It.IsAny<Expression<Func<ProcessingOrder, bool>>>(),
+                    It.IsAny<Func<IQueryable<ProcessingOrder>, IIncludableQueryable<ProcessingOrder, object>>>(),
+                    null,
+                    false,
                     It.IsAny<CancellationToken>()))
-                .ReturnsAsync((Guid id, CancellationToken ct) => processingOrder);
+                .ReturnsAsync(processingOrder);
 
-            _mockRepository
-                .Setup(repo => repo.UpdateItemsAssemblyStatusAsync(
-                    processingOrder.Id,
-                    ItemAssemblyStatus.Ready,
+            _mockOrderItemsRepository
+                .Setup(repo => repo.ExecuteUpdateAsync(
+                    It.IsAny<Expression<Func<SetPropertyCalls<OrderItem>, SetPropertyCalls<OrderItem>>>>(),
+                    It.IsAny<Expression<Func<OrderItem, bool>>>(),
                     It.IsAny<CancellationToken>()))
                 .Callback(() => processingOrder.Items
                     .ForEach(i => i.Status = ItemAssemblyStatus.Ready));
 
-            _mockRepository
-                .Setup(repo => repo.UpdateAsync(
-                    It.Is<ProcessingOrder>(po =>
-                        po.Id == processingOrder.Id &&
-                        po.Items.All(i => i.Status == ItemAssemblyStatus.Ready) &&
-                        po.Stage == Stage.Assembly),
+            _mockProcessingOrdersRepository
+                .Setup(repo => repo.SaveChangesAsync(
                     It.IsAny<CancellationToken>()));
 
             _mockOrderServiceApi
@@ -78,11 +85,12 @@ namespace OrderProcessingService.Tests.UnitTests
 
             //Act
             stopWatch.Start();
-            await _asseblyWorker.ProcessAsync(processingOrder.Id, CancellationToken.None);
+            await _asseblyWorker.ProcessAsync(command, CancellationToken.None);
             stopWatch.Stop();
 
             //Assert
-            _mockRepository.VerifyAll();
+            _mockProcessingOrdersRepository.VerifyAll();
+            _mockOrderItemsRepository.VerifyAll();
             _mockOrderServiceApi.VerifyAll();
             Assert.True(processingOrder.Items.All(i => i.Status == ItemAssemblyStatus.Ready));
             Assert.Equal(ProcessingStatus.Completed, processingOrder.Status);
@@ -98,27 +106,29 @@ namespace OrderProcessingService.Tests.UnitTests
             var nonExistentId = Guid.NewGuid();
 
             //Act
-            await _asseblyWorker.ProcessAsync(nonExistentId, CancellationToken.None);
+            await _asseblyWorker.ProcessAsync(new StartAssemblyCommand(nonExistentId), CancellationToken.None);
 
             //Assert
-            _mockRepository
-                .Verify(repo => repo.GetByIdAsync(
-                    nonExistentId,
+            _mockProcessingOrdersRepository
+                .Verify(repo => repo.GetFirstOrDefaultAsync(
+                    It.IsAny<Expression<Func<ProcessingOrder, bool>>>(),
+                    It.IsAny<Func<IQueryable<ProcessingOrder>, IIncludableQueryable<ProcessingOrder, object>>>(),
+                    null,
+                    false,
                     It.IsAny<CancellationToken>()),
                     Times.Once());
 
-            _mockRepository
-                .Verify(repo => repo.UpdateItemsAssemblyStatusAsync(
-                    It.IsAny<Guid>(),
-                    It.IsAny<ItemAssemblyStatus>(),
+            _mockOrderItemsRepository
+                .Verify(repo => repo.ExecuteUpdateAsync(
+                    It.IsAny<Expression<Func<SetPropertyCalls<OrderItem>, SetPropertyCalls<OrderItem>>>>(),
+                    It.IsAny<Expression<Func<OrderItem, bool>>>(),
                     It.IsAny<CancellationToken>()),
                     Times.Never());
 
-            _mockRepository
-                .Verify(repo => repo.UpdateAsync(
-                    It.IsAny<ProcessingOrder>(),
+            _mockProcessingOrdersRepository
+                .Verify(repo => repo.SaveChangesAsync(
                     It.IsAny<CancellationToken>()),
-                    Times.Never());
+                    Times.Never);
 
             _mockOrderServiceApi
                 .Verify(api => api.UpdateStatus(

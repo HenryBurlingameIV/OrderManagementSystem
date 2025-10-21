@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.Logging;
 using OrderManagementSystem.Shared.Contracts;
+using OrderManagementSystem.Shared.DataAccess;
 using OrderManagementSystem.Shared.Exceptions;
 using OrderProcessingService.Application.Contracts;
 using OrderProcessingService.Application.DTO;
@@ -18,7 +19,7 @@ namespace OrderProcessingService.Application.Services
 {
     public class OrderProcessor : IOrderProcessor
     {
-        private readonly IProcessingOrderRepository _repository;
+        private readonly IEFRepository<ProcessingOrder, Guid> _processingOrdersRepository;
         private readonly IOrderBackgroundWorker<StartAssemblyCommand> _assemblyWorker;
         private readonly IOrderServiceApi _orderServiceApi;
         private readonly ILogger<OrderProcessor> _logger;
@@ -27,7 +28,7 @@ namespace OrderProcessingService.Application.Services
         private readonly IOrderBackgroundWorker<StartDeliveryCommand> _deliveryWorker;
 
         public OrderProcessor(
-            IProcessingOrderRepository repository, 
+            IEFRepository<ProcessingOrder, Guid> processingOrdeRepository,
             IOrderBackgroundWorker<StartAssemblyCommand> assemblyWorker,
             IOrderBackgroundWorker<StartDeliveryCommand> deliveryWorker,
             IOrderServiceApi orderServiceApi,
@@ -36,7 +37,7 @@ namespace OrderProcessingService.Application.Services
             IValidator<StartDeliveryStatus> deliveryStatusValidator
             )
         {
-            _repository = repository;
+            _processingOrdersRepository = processingOrdeRepository;
             _assemblyWorker = assemblyWorker;
             _orderServiceApi = orderServiceApi;
             _logger = logger;
@@ -46,18 +47,19 @@ namespace OrderProcessingService.Application.Services
         }
         public async Task BeginAssembly(Guid id, CancellationToken cancellationToken)
         {
-            var po = await _repository.GetByIdAsync(id, cancellationToken);
+            var po = await _processingOrdersRepository.GetByIdAsync(id, cancellationToken);
             if(po is null)
             {
                 throw new NotFoundException($"Processing order with ID {id} not found.");
             }
+
             _logger.LogInformation("Processing order with ID {@Id} successfully found", id);
             await _assemblyStatusValidator.ValidateAndThrowAsync(new StartAssemblyStatus(po.Stage, po.Status), cancellationToken);
 
             await _orderServiceApi.UpdateStatus(po.OrderId, "Processing", cancellationToken);
             po.Status = ProcessingStatus.Processing;
             po.UpdatedAt = DateTime.UtcNow;
-            await _repository.UpdateAsync(po, cancellationToken);
+            await _processingOrdersRepository.SaveChangesAsync(cancellationToken);
 
             await _assemblyWorker.ScheduleAsync(new StartAssemblyCommand(po.Id), cancellationToken);
             _logger.LogInformation("Assembly processing with ID {@Id} scheduled", id);
@@ -65,26 +67,34 @@ namespace OrderProcessingService.Application.Services
 
         public async Task BeginDelivery(List<Guid> ids, CancellationToken cancellationToken)
         {
-            var processingOrders = await _repository.GetByIdsAsync(ids, cancellationToken);
-            if (processingOrders.Count != ids.Count)
+            var uniqueIds = ids.ToHashSet();
+            var processingOrders = await _processingOrdersRepository.GetAllAsync(
+                    filter: po => uniqueIds.Contains(po.Id),
+                    asNoTraсking: true,
+                    ct: cancellationToken);
+
+            if (processingOrders.Count != uniqueIds.Count)
             {
-                var missingIds = ids.Except(processingOrders.Select(x => x.Id));
+                var missingIds = uniqueIds.Except(processingOrders.Select(x => x.Id));
                 throw new NotFoundException($"Processing orders not found. Missing IDs: {string.Join(", ", missingIds)}");
             }
             
             foreach (var po in processingOrders)
                 await _deliveryStatusValidator.ValidateAndThrowAsync(new StartDeliveryStatus(po.Stage, po.Status), cancellationToken);
 
-            await _repository.BulkUpdateProcessingOrdersStatusAsync(ids, 
-                ProcessingStatus.Processing, 
-                Stage.Delivery, 
-                cancellationToken);
+            await _processingOrdersRepository.ExecuteUpdateAsync(
+                  setPropertyCalls: calls => calls.SetProperty(po => po.Status, ProcessingStatus.Processing)
+                    .SetProperty(po => po.Stage, Stage.Delivery)
+                    .SetProperty(po => po.TrackingNumber, Guid.NewGuid().ToString())
+                    .SetProperty(po => po.UpdatedAt, DateTime.UtcNow),
+                  filter: po => uniqueIds.Contains(po.Id),
+                  cancellationToken: cancellationToken);
 
-            foreach(var po in processingOrders)
+            foreach (var po in processingOrders)
                 await _orderServiceApi.UpdateStatus(po.OrderId, "Delivering", cancellationToken);
 
-            await _deliveryWorker.ScheduleAsync(new StartDeliveryCommand(ids), cancellationToken);
-            _logger.LogInformation("Delivery processing for {OrdersCount} orders scheduled.", ids.Count);
+            await _deliveryWorker.ScheduleAsync(new StartDeliveryCommand(uniqueIds), cancellationToken);
+            _logger.LogInformation("Delivery processing for {@OrdersCount} orders scheduled.", uniqueIds.Count);
         }
     }
 }

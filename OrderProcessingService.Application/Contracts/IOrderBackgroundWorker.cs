@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OrderProcessingService.Application.DTO;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,7 @@ namespace OrderProcessingService.Application.Contracts
     public interface IOrderBackgroundWorker<TCommand>
     {
         Task ScheduleAsync(TCommand command, CancellationToken cancellationToken);
+        Task ProcessAsync(TCommand command, CancellationToken cancellationToken);
     }
 
 }

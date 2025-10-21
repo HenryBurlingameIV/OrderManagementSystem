@@ -1,11 +1,11 @@
 ﻿using CatalogService.Domain;
-using CatalogService.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OrderManagementSystem.Shared.Contracts;
+using OrderManagementSystem.Shared.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,10 +17,16 @@ namespace CatalogService.Infrastructure.Extensions
 {
     public static class InfrastructureExtensions
     {
-        public static IServiceCollection AddInfrastructure(this IServiceCollection services, string dbConnection)
+        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContext<CatalogDBContext>(options => options.UseNpgsql(dbConnection));
-            services.AddScoped<IRepository<Product>, ProductRepository>();
+            services.AddDbContext<CatalogDbContext>(options => options.UseNpgsql(
+                configuration.GetConnectionString("CatalogDbContext")));
+
+            services.AddScoped<IEFRepository<Product, Guid>>(provider =>
+            {
+                var dbContext = provider.GetRequiredService<CatalogDbContext>();
+                return new Repository<Product, Guid>(dbContext);
+            });
 
             return services;
         }
@@ -29,7 +35,7 @@ namespace CatalogService.Infrastructure.Extensions
         {
             using (var scope = app.Services.CreateScope())
             {
-                var db = scope.ServiceProvider.GetRequiredService<CatalogDBContext>();
+                var db = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
                 var pendingMigrations = db.Database.GetPendingMigrations().ToList();
                 if (pendingMigrations.Any())
                 {

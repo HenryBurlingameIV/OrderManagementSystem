@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using CatalogService.Application.Contracts;
 using CatalogService.Application.DTO;
 using CatalogService.Domain;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 using OrderManagementSystem.Shared.Contracts;
+using OrderManagementSystem.Shared.DataAccess.Pagination;
 using OrderManagementSystem.Shared.Exceptions;
 using Serilog;
 using ValidationException = FluentValidation.ValidationException;
@@ -18,35 +21,44 @@ namespace CatalogService.Application.Services
 {
     public class ProductService : IProductService
     {
-        private IRepository<Product> _productRepository;
+        private IEFRepository<Product, Guid> _productRepository;
         private IValidator<ProductCreateRequest> _createValidator;
         private IValidator<ProductUpdateRequest> _updateValidator;
         private IValidator<ProductUpdateQuantityRequest> _quantityValidator;
+        private readonly IValidator<GetPagindatedProductsRequest> _paginationValidator;
+        private readonly ILogger<ProductService> _logger;
 
-
-        public ProductService(IRepository<Product> productRepository,
-                    IValidator<ProductCreateRequest> createValidator,
+        public ProductService(
+            IEFRepository<Product, Guid> productRepository,
+            IValidator<ProductCreateRequest> createValidator,
             IValidator<ProductUpdateRequest> updateValidator,
-            IValidator<ProductUpdateQuantityRequest> quantityValidator)
+            IValidator<ProductUpdateQuantityRequest> quantityValidator,
+            IValidator<GetPagindatedProductsRequest> paginationValidator,
+            ILogger<ProductService> logger)
         {
             _productRepository = productRepository;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
             _quantityValidator = quantityValidator;
+            _paginationValidator = paginationValidator;
+            _logger = logger;
         }
 
         public async Task<Guid> CreateProductAsync(ProductCreateRequest request, CancellationToken cancellationToken)
         {
-            var validationResult = await _createValidator.ValidateAsync(request, cancellationToken);
-            if (!validationResult.IsValid)
+            await _createValidator.ValidateAndThrowAsync(request, cancellationToken);
+
+            var nameIsUnique = await IsProductNameUnique(request.Name, null, cancellationToken);
+            if (!nameIsUnique)
             {
-                throw new ValidationException(validationResult.Errors);
+                throw new ValidationException($"Product with name {request.Name} already exists");
             }
 
-            var product = CreateProductFromRequest(request);
-
-           
-            return await _productRepository.CreateAsync(product!, cancellationToken);
+            var product = request.ToEntity();         
+            var id = (await _productRepository.InsertAsync(product!, cancellationToken)).Id;
+            await _productRepository.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("Product with ID {@ProductId} created and saved in database", product.Id);
+            return id;
         }
 
         public async Task<ProductViewModel> GetProductByIdAsync(Guid productId, CancellationToken cancellationToken)
@@ -56,17 +68,68 @@ namespace CatalogService.Application.Services
             {
                 throw new NotFoundException($"Product with ID {productId} not found.");
             }
-            Log.Information("Product with ID {@productId} successfully found", productId);
-            return CreateProductViewModel(product);
+
+            _logger.LogInformation("Product with ID {@productId} successfully found", productId);
+            return product.ToViewModel();
+        }
+
+        public async Task<PaginatedResult<ProductViewModel>> GetProductsPaginatedAsync(GetPagindatedProductsRequest request, CancellationToken cancellationToken)
+        {
+            await _paginationValidator.ValidateAndThrowAsync(request, cancellationToken);
+            var pagination = new PaginationRequest()
+            {
+                PageSize = request.PageSize,
+                PageNumber = request.PageNumber,
+            };
+
+            Expression<Func<Product, bool>>? filter = string.IsNullOrEmpty(request.Search)
+                ? null
+                : (p) => p.Name.ToLower().Contains(request.Search.ToLower()) 
+                || p.Description.ToLower().Contains(request.Search.ToLower())
+                || p.Category.ToLower().Contains(request.Search.ToLower());
+
+
+            Func<IQueryable<Product>, IOrderedQueryable<Product>> orderBy = BuildOrderByExpression(request.SortBy, request.Descending);
+
+            return await _productRepository
+                .GetPaginated(
+                    request: pagination,
+                    orderBy: orderBy,
+                    filter: filter,
+                    selector: (p) => p.ToViewModel(),                       
+                    ct: cancellationToken
+                );
+        }
+
+        private Func<IQueryable<Product>, IOrderedQueryable<Product>> BuildOrderByExpression(string? sortBy, bool descending)
+        {
+            if(string.IsNullOrEmpty(sortBy))
+            {
+                return (q) => q.OrderByDescending(p => p.CreatedDateUtc);
+            }
+            var normalizedSortBy = sortBy?.ToLower().Trim();
+
+            return normalizedSortBy switch
+            {
+                "name" => descending
+                    ? q => q.OrderByDescending(p => p.Name)
+                    : q => q.OrderBy(p => p.Name),
+                "category" => descending
+                    ? q => q.OrderByDescending(p => p.Category)
+                    : q => q.OrderBy(p => p.Category),
+                "price" => descending
+                    ? q => q.OrderByDescending(p => p.Price)
+                    : q => q.OrderBy(p => p.Price),
+                "created" => descending
+                    ? q => q.OrderByDescending(p => p.CreatedDateUtc)
+                    : q => q.OrderBy(p => p.CreatedDateUtc),
+                _ => (q) => q.OrderByDescending(p => p.CreatedDateUtc)
+            };
         }
 
         public async Task<Guid> UpdateProductAsync(Guid productId, ProductUpdateRequest request, CancellationToken cancellationToken)
         {
-            var validationResult = await _updateValidator.ValidateAsync(request, cancellationToken);
-            if (!validationResult.IsValid)
-            {
-                throw new ValidationException(validationResult.Errors);
-            }
+            await _updateValidator.ValidateAndThrowAsync(request, cancellationToken);
 
             var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
             if (product == null)
@@ -74,25 +137,31 @@ namespace CatalogService.Application.Services
                 throw new NotFoundException($"Product with ID {productId} not found.");
             }
 
-            UpdateProductFromRequest(request, product);
-            await _productRepository.UpdateAsync(product, cancellationToken);
-            Log.Information("Product with ID {@productId} successfully updated", productId);
+            if(request.Name != product.Name && request.Name != null)
+            {
+                var nameIsUnique = await IsProductNameUnique(request.Name!, productId, cancellationToken);
+                if (!nameIsUnique)
+                {
+                    throw new ValidationException($"Product with name {request.Name} already exists");
+                }
+            }
+
+            product.UpdateFromRequest(request);
+            await _productRepository.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("Product with ID {@ProductId} successfully updated", productId);
             return productId;
         }
         public async Task<ProductViewModel> UpdateProductQuantityAsync(Guid productId, ProductUpdateQuantityRequest request, CancellationToken cancellationToken)
         {
-            var validationResult = await _quantityValidator.ValidateAsync(request);
-            if (!validationResult.IsValid)
-            {
-                throw new ValidationException(validationResult.Errors);
-            }
+            await _quantityValidator.ValidateAndThrowAsync(request);
 
             var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
             if (product == null)
             {
                 throw new NotFoundException($"Product with ID {productId} not found.");
             }
-            Log.Information("Product with ID {@productId} successfully found", productId);
+            _logger.LogInformation("Product with ID {@ProductId} successfully found", productId);
 
             if (product.Quantity + request.DeltaQuantity < 0)
             {
@@ -100,9 +169,9 @@ namespace CatalogService.Application.Services
             }
             product.Quantity += request.DeltaQuantity;
             product.UpdatedDateUtc = DateTime.UtcNow;
-            await _productRepository.UpdateAsync(product, cancellationToken);
-            Log.Information("{@Product} quantity successfully updated", product);
-            return CreateProductViewModel(product);
+            await _productRepository.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("{@Product} quantity successfully updated", product);
+            return product.ToViewModel();
 
         }
         public async Task DeleteProductAsync(Guid productId, CancellationToken cancellationToken)
@@ -112,49 +181,17 @@ namespace CatalogService.Application.Services
             {
                 throw new NotFoundException($"Product with ID {productId} not found.");
             }
-            Log.Information("Product with ID {@productId} successfully found", productId);
-            await _productRepository.DeleteAsync(product, cancellationToken);
+            _logger.LogInformation("Product with ID {@ProductId} successfully found", productId);
+            _productRepository.Delete(product);
+            await _productRepository.SaveChangesAsync(cancellationToken);
         }
 
-        public Product CreateProductFromRequest(ProductCreateRequest request)
-        {  
-            return new Product()
-            {
-                Id = Guid.NewGuid(),
-                Name = request.Name,
-                Description = request.Description,
-                Quantity = request.Quantity,
-                Price = request.Price,
-                Category = request.Category,
-                CreatedDateUtc = DateTime.UtcNow,
-                UpdatedDateUtc = DateTime.UtcNow
-            };
-        }
-
-        public void UpdateProductFromRequest(ProductUpdateRequest request, Product productToUpdate)
+        public async Task<bool> IsProductNameUnique(string name, Guid? excludedProduct = null, CancellationToken ct = default)
         {
-            productToUpdate.Name = request.Name ?? productToUpdate.Name;
-            productToUpdate.Description = request.Description ?? productToUpdate.Description;
-            productToUpdate.Category = request.Category ?? productToUpdate.Category;
-            productToUpdate.Price = request.Price ?? productToUpdate.Price;
-            productToUpdate.Quantity = request.Quantity ?? productToUpdate.Quantity;
-            productToUpdate.UpdatedDateUtc = DateTime.UtcNow;
-
-        }
-
-        public ProductViewModel CreateProductViewModel(Product product)
-        {
-            return new ProductViewModel()
-            {
-                Id = product.Id,
-                Name = product.Name,
-                Description = product.Description,
-                Quantity = product.Quantity,
-                Price = product.Price,
-                Category = product.Category,
-                CreatedDateUtc = product.CreatedDateUtc,
-                UpdatedDateUtc = product.UpdatedDateUtc
-            };
+            var normailizedName = name.ToLower().Trim();
+            return !await _productRepository.ExistsAsync(p => 
+                p.Name.ToLower().Trim() == normailizedName && (excludedProduct == null || p.Id != excludedProduct.Value), 
+                ct);
         }
 
     }

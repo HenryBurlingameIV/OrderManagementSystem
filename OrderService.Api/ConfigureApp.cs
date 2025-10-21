@@ -10,20 +10,20 @@ namespace OrderService.Api
 {
     public static class ConfigureApp
     {
-        public static void ConfigureServices(this WebApplicationBuilder builder)
+        public static IServiceCollection ConfigureServices(this IServiceCollection services, IConfiguration configuration)
         {
-            var dbConnection = builder.Configuration.GetConnectionString("DefaultConnection");
-            var catalogConnection = builder.Configuration["CatalogService:DefaultConnection"];
-            builder.Services.AddInfrastructure(dbConnection!, catalogConnection!);
-            builder.Services.AddApplication();
-            builder.Services.AddProducer<OrderEvent>(builder.Configuration.GetSection("Kafka:OrderProducer"), "OrderProducer");
-            builder.Services.AddProducer<OrderStatusEvent>(builder.Configuration.GetSection("Kafka:OrderStatusProducer"), "OrderStatusProducer");
-            builder.Services.AddControllers();
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+
+            services.AddInfrastructure(configuration);
+            services.AddApplication();
+            services.AddProducer<OrderEvent>(configuration.GetSection("Kafka:OrderProducer"), "OrderProducer");
+            services.AddProducer<OrderStatusEvent>(configuration.GetSection("Kafka:OrderStatusProducer"), "OrderStatusProducer");
+            services.AddControllers();
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen();
+            return services;
         }
 
-        public static void ConfigurePipeline(this WebApplication app)
+        public static WebApplication ConfigurePipeline(this WebApplication app)
         {
             app.UseMiddleware<ExceptionHandlerMiddleware>();
             if (app.Environment.IsDevelopment())
@@ -33,7 +33,7 @@ namespace OrderService.Api
             }
             app.UseRouting();
             app.MapControllers();
-
+            return app;
         }
 
         public static void ConfigureSerilog(this WebApplicationBuilder builder)

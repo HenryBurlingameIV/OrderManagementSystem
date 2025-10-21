@@ -18,8 +18,10 @@ namespace OrderProcessingService.Tests.ProcessingOrderFixture
                 {
                     return new OrderItem()
                     {
+                        Id = Guid.NewGuid(),
                         ProductId = Guid.NewGuid(),
-                        Quantity = (int)fixture.Create<uint>() % 1000 + 1,
+                        ProcessingOrderId = Guid.NewGuid(),
+                        Quantity = Random.Shared.Next(1, 101),
                         Status = ItemAssemblyStatus.Pending,
                     };
                 })
@@ -27,31 +29,34 @@ namespace OrderProcessingService.Tests.ProcessingOrderFixture
 
             var createdAt = DateTime.UtcNow;
             fixture.Customize<ProcessingOrder>(composer => composer
-                .With(po => po.Id, () => Guid.NewGuid())
-                .With(po => po.OrderId, () => Guid.NewGuid())
-                .With(po => po.Stage, () => Stage.Assembly)
-                .With(po => po.Status, () => ProcessingStatus.New)
-                .With(po => po.CreatedAt, createdAt)
-                .With(po => po.UpdatedAt, createdAt)
-                .With(po => po.TrackingNumber, () => null)
-                .With(po => po.Items, () =>
+                .FromFactory(() =>
                 {
-                    return fixture
-                        .CreateMany<OrderItem>((int)fixture.Create<uint>() % 99 + 1)
-                        .ToList();
+                    var processingOrderId = Guid.NewGuid();
+                    return new ProcessingOrder
+                    {
+                        Id = processingOrderId,
+                        OrderId = Guid.NewGuid(),
+                        Stage = Stage.Assembly,
+                        Status = ProcessingStatus.New,
+                        CreatedAt = createdAt,
+                        UpdatedAt = createdAt,
+                        TrackingNumber = null,
+                        Items = fixture.Build<OrderItem>()
+                            .With(x => x.ProcessingOrderId, processingOrderId)
+                            .With(x => x.Status, ItemAssemblyStatus.Pending)
+                            .CreateMany(Random.Shared.Next(1, 6))
+                            .ToList()
+                    };
                 })
-                .OmitAutoProperties()
-                );
-
+                .OmitAutoProperties());
 
             fixture.Customize<OrderItemDto>(composer => composer
                 .With(i => i.ProductId, () => Guid.NewGuid())
-                .With(i => i.Quantity, () => new Random().Next(1, 1001))
+                .With(i => i.Quantity, () => Random.Shared.Next(1, 101))
                 .OmitAutoProperties());
 
-
             fixture.Customize<OrderDto>(composer => composer
-                .With(o => o.Items, () => fixture.CreateMany<OrderItemDto>(new Random().Next(1, 11)).ToList())
+                .With(o => o.Items, () => fixture.CreateMany<OrderItemDto>(Random.Shared.Next(1, 6)).ToList())
                 .With(o => o.Id, () => Guid.NewGuid())
                 .With(o => o.CreatedAt, createdAt)
                 .With(o => o.UpdatedAt, createdAt)

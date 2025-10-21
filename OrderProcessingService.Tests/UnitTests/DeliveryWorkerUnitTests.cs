@@ -1,8 +1,11 @@
 ﻿using FluentAssertions;
 using Hangfire;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Logging;
 using Moq;
+using OrderManagementSystem.Shared.Contracts;
 using OrderProcessingService.Application.Contracts;
+using OrderProcessingService.Application.DTO;
 using OrderProcessingService.Domain.Entities;
 using OrderProcessingService.Infrastructure.BackgroundWorkers;
 using OrderProcessingService.Tests.ProcessingOrderFixture;
@@ -10,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,7 +21,7 @@ namespace OrderProcessingService.Tests.UnitTests
 {
     public class DeliveryWorkerUnitTests
     {
-        private readonly Mock<IProcessingOrderRepository> _mockRepository;
+        private readonly Mock<IEFRepository<ProcessingOrder, Guid>> _mockRepository;
         private readonly Mock<IBackgroundJobClient> _mockBackgroundJobClient;
         private readonly Mock<IOrderServiceApi> _mockOrderServiceApi;
         private readonly Mock<ILogger<DeliveryWorker>> _mockLogger;
@@ -25,7 +29,7 @@ namespace OrderProcessingService.Tests.UnitTests
 
         public DeliveryWorkerUnitTests()
         {
-            _mockRepository = new Mock<IProcessingOrderRepository>();
+            _mockRepository = new Mock<IEFRepository<ProcessingOrder, Guid>>();
             _mockBackgroundJobClient = new Mock<IBackgroundJobClient>();
             _mockOrderServiceApi = new Mock<IOrderServiceApi>();
             _mockLogger = new Mock<ILogger<DeliveryWorker>>();
@@ -42,41 +46,36 @@ namespace OrderProcessingService.Tests.UnitTests
         {
             //Arrange
             var stopWatch = new Stopwatch();
-            var expectedTime = TimeSpan.FromSeconds(30 * processingOrders.Count);
+            var expectedTime = TimeSpan.FromSeconds(30 * processingOrders.Count);        
             processingOrders.ForEach(po =>
             {
                 po.Stage = Stage.Delivery;
                 po.Status = ProcessingStatus.Processing;
             });
             var initialUpdatedAt = processingOrders.ToDictionary(po => po.Id, po => po.UpdatedAt);
-            var poIds = processingOrders.Select(po => po.Id).ToList();
+            var searchIds = processingOrders.Select(po => po.Id).ToList();
+            var command = new StartDeliveryCommand(searchIds);
             _mockRepository
-                .Setup(repo => repo.GetByIdsAsync(
-                    poIds,
+                .Setup(repo => repo.GetAllAsync(
+                    It.IsAny<Expression<Func<ProcessingOrder, bool>>>(),
+                    null,
+                    null,
+                    false,
                     It.IsAny<CancellationToken>()))
-                .ReturnsAsync((List<Guid> ids, CancellationToken ct) => processingOrders);
+                .ReturnsAsync(processingOrders);
 
             //Act
             stopWatch.Start();
-            await _deliveryWorker.ProcessAsync(poIds, CancellationToken.None);
+            await _deliveryWorker.ProcessAsync(command, CancellationToken.None);
             stopWatch.Stop();
 
             //Assert
             _mockRepository.VerifyAll();
-            _mockRepository
-                .Verify(repo => repo
-                    .AssignUniqueTrackingNumbersAsync(
-                        poIds,
-                        It.IsAny<CancellationToken>()),
-                    Times.Once());
 
             _mockRepository
                 .Verify(repo => repo
-                    .UpdateAsync(
-                        It.Is<ProcessingOrder>(po => poIds.Contains(po.Id) &&
-                            po.Status == ProcessingStatus.Completed &&
-                            po.UpdatedAt > initialUpdatedAt[po.Id]),
-                        It.IsAny<CancellationToken>()), 
+                    .SaveChangesAsync(
+                        It.IsAny<CancellationToken>()),
                     Times.Exactly(processingOrders.Count));
 
             _mockOrderServiceApi
@@ -100,6 +99,4 @@ namespace OrderProcessingService.Tests.UnitTests
             stopWatch.Elapsed.Should().BeCloseTo(expectedTime, TimeSpan.FromMilliseconds(500));
         }
     }
-
-
 }

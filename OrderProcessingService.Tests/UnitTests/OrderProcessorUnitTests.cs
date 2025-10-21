@@ -1,7 +1,9 @@
 ﻿using Castle.Core.Logging;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Logging;
 using Moq;
+using OrderManagementSystem.Shared.Contracts;
 using OrderManagementSystem.Shared.Exceptions;
 using OrderProcessingService.Application.Contracts;
 using OrderProcessingService.Application.DTO;
@@ -12,14 +14,16 @@ using OrderProcessingService.Tests.ProcessingOrderFixture;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using static Dapper.SqlMapper;
 
 namespace OrderProcessingService.Tests.UnitTests
 {
     public class OrderProcessorUnitTests
     {
-        private readonly Mock<IProcessingOrderRepository> _mockRepository;
+        private readonly Mock<IEFRepository<ProcessingOrder, Guid>> _mockRepository;
         private readonly Mock<IOrderBackgroundWorker<StartAssemblyCommand>> _mockAssemblyWorker;
         private readonly Mock<IOrderServiceApi> _mockOrderServiceApi;
         private readonly Mock<ILogger<OrderProcessor>> _mockLogger;
@@ -28,9 +32,9 @@ namespace OrderProcessingService.Tests.UnitTests
         private readonly StartDeliveryValidator _deliveryStatusValidator;
         private readonly OrderProcessor _orderProcessor;
 
-        public OrderProcessorUnitTests() 
+        public OrderProcessorUnitTests()
         {
-            _mockRepository = new Mock<IProcessingOrderRepository>();
+            _mockRepository = new Mock<IEFRepository<ProcessingOrder, Guid>>();
             _mockAssemblyWorker = new Mock<IOrderBackgroundWorker<StartAssemblyCommand>>();
             _mockOrderServiceApi = new Mock<IOrderServiceApi>();
             _mockLogger = new Mock<ILogger<OrderProcessor>>();
@@ -60,16 +64,9 @@ namespace OrderProcessingService.Tests.UnitTests
                 .ReturnsAsync((Guid id, CancellationToken ct) => processingOrder);
 
             _mockRepository
-               .Setup(repo => repo.UpdateAsync(
-                    It.Is<ProcessingOrder>(po => 
-                        po.Id == poId &&
-                        po.OrderId == orderId &&
-                        po.Items.Count == processingOrder.Items.Count &&
-                        po.Status == ProcessingStatus.Processing &&
-                        po.Stage == Stage.Assembly &&
-                        po.UpdatedAt > initialUpdatedAt),
+               .Setup(repo => repo.SaveChangesAsync(
                     It.IsAny<CancellationToken>()))
-               .ReturnsAsync((ProcessingOrder processingOrder, CancellationToken ct) => processingOrder.Id);
+               .ReturnsAsync(1);
 
             _mockAssemblyWorker
                 .Setup(worker => worker.ScheduleAsync(
@@ -152,24 +149,28 @@ namespace OrderProcessingService.Tests.UnitTests
         }
 
         [Theory, AutoProcessingOrderData]
-        public async Task Should_BeginDeliveryAndUpdateOrder_WhenProcessingOrdersExist(List<ProcessingOrder> processingOrders)
+        public async Task Should_BeginDeliveryAndUpdateOrders_WhenProcessingOrdersExist(List<ProcessingOrder> processingOrders)
         {
             //Arrange
-            foreach (var processingOrder in processingOrders) 
+            foreach (var processingOrder in processingOrders)
                 processingOrder.Status = ProcessingStatus.Completed;
 
             var poIds = processingOrders.Select(po => po.Id).ToList();
             var orderIds = processingOrders.Select(po => po.OrderId).ToList();
 
             _mockRepository
-                .Setup(repo => repo.GetByIdsAsync(poIds, It.IsAny<CancellationToken>()))
-                .ReturnsAsync((List<Guid> ids, CancellationToken ct) => processingOrders);
+                .Setup(repo => repo.GetAllAsync(
+                    It.IsAny<Expression<Func<ProcessingOrder, bool>>>(),
+                    It.IsAny<Func<IQueryable<ProcessingOrder>, IIncludableQueryable<ProcessingOrder, object>>>(),
+                    It.IsAny<Func<IQueryable<ProcessingOrder>, IOrderedQueryable<ProcessingOrder>>>(),
+                    true,
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(processingOrders);
 
             _mockRepository
-                .Setup(repo => repo.BulkUpdateProcessingOrdersStatusAsync(
-                    poIds,
-                    ProcessingStatus.Processing,
-                    Stage.Delivery,
+                .Setup(repo => repo.ExecuteUpdateAsync(
+                    It.IsAny<Expression<Func<SetPropertyCalls<ProcessingOrder>, SetPropertyCalls<ProcessingOrder>>>>(),
+                    It.IsAny<Expression<Func<ProcessingOrder, bool>>>(),
                     It.IsAny<CancellationToken>()));
 
             _mockDeliveryWorker
@@ -186,7 +187,7 @@ namespace OrderProcessingService.Tests.UnitTests
             _mockRepository.VerifyAll();
             _mockAssemblyWorker.VerifyAll();
             _mockOrderServiceApi
-                .Verify(api => 
+                .Verify(api =>
                     api.UpdateStatus(
                         It.Is<Guid>(id => orderIds.Contains(id)),
                         "Delivering",
@@ -201,23 +202,28 @@ namespace OrderProcessingService.Tests.UnitTests
             foreach (var processingOrder in processingOrders)
                 processingOrder.Status = ProcessingStatus.Completed;
 
-            var poIds = processingOrders.Select(po => po.Id).ToList();
-            poIds.Add(Guid.NewGuid());
+            var searchIds = processingOrders.Select(po => po.Id).ToList();
+            searchIds.Add(Guid.NewGuid());
 
             _mockRepository
-                .Setup(repo => repo.GetByIdsAsync(poIds, It.IsAny<CancellationToken>()))
-                .ReturnsAsync((List<Guid> ids, CancellationToken ct) => processingOrders);
+                .Setup(repo => repo.GetAllAsync(
+                    It.IsAny<Expression<Func<ProcessingOrder, bool>>>(),
+                    It.IsAny<Func<IQueryable<ProcessingOrder>, IIncludableQueryable<ProcessingOrder, object>>>(),
+                    It.IsAny<Func<IQueryable<ProcessingOrder>, IOrderedQueryable<ProcessingOrder>>>(),
+                    true,
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(processingOrders);
 
             //Act & Assert
-            var exception = await Assert.ThrowsAsync<NotFoundException>(() => 
-                _orderProcessor.BeginDelivery(poIds, CancellationToken.None));
+            var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
+                _orderProcessor.BeginDelivery(searchIds, CancellationToken.None));
 
             //Assert
             Assert.Contains("not found", exception.Message);
-            Assert.Contains($"{poIds.Last().ToString()}", exception.Message);
+            Assert.Contains($"{searchIds.Last().ToString()}", exception.Message);
             _mockRepository.VerifyAll();
             _mockDeliveryWorker
-                .Verify(worker => 
+                .Verify(worker =>
                     worker.ScheduleAsync(
                         It.IsAny<StartDeliveryCommand>(),
                         It.IsAny<CancellationToken>()),
@@ -245,8 +251,13 @@ namespace OrderProcessingService.Tests.UnitTests
             var orderIds = processingOrders.Select(po => po.OrderId).ToList();
 
             _mockRepository
-                .Setup(repo => repo.GetByIdsAsync(poIds, It.IsAny<CancellationToken>()))
-                .ReturnsAsync((List<Guid> ids, CancellationToken ct) => processingOrders);
+                .Setup(repo => repo.GetAllAsync(
+                    It.IsAny<Expression<Func<ProcessingOrder, bool>>>(),
+                    It.IsAny<Func<IQueryable<ProcessingOrder>, IIncludableQueryable<ProcessingOrder, object>>>(),
+                    It.IsAny<Func<IQueryable<ProcessingOrder>, IOrderedQueryable<ProcessingOrder>>>(),
+                    true,
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(processingOrders);
 
             //Act & Assert
             var exception = await Assert.ThrowsAsync<ValidationException>(() =>

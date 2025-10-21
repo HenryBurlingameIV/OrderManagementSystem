@@ -6,5 +6,5 @@ using System.Threading.Tasks;
 
 namespace OrderProcessingService.Application.DTO
 {
-    public record StartDeliveryCommand(List<Guid> ProcessingOrderIds);
+    public record StartDeliveryCommand(IReadOnlyCollection<Guid> ProcessingOrderIds);
 }

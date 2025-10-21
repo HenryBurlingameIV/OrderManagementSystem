@@ -6,7 +6,6 @@ using CatalogService.Application.Validators;
 using CatalogService.Domain;
 using CatalogService.Infrastructure;
 using CatalogService.Infrastructure.Extensions;
-using CatalogService.Infrastructure.Repositories;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -17,7 +16,9 @@ namespace CatalogService.Api
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            builder.ConfigureServices();
+            builder.Services
+                .ConfigureServices(builder.Configuration);
+
             builder.ConfigureSerilog();
 
             var app = builder.Build();

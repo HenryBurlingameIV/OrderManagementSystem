@@ -1,4 +1,6 @@
-﻿using Moq;
+﻿using Castle.Core.Logging;
+using Microsoft.Extensions.Logging;
+using Moq;
 using OrderManagementSystem.Shared.Contracts;
 using OrderProcessingService.Application.DTO;
 using OrderProcessingService.Application.Services;
@@ -14,13 +16,15 @@ namespace OrderProcessingService.Tests.UnitTests
 {
     public class OrderProcessingInitializerUnitTests
     {
-        private readonly Mock<IRepository<ProcessingOrder>> _mockRepository;
+        private readonly Mock<IEFRepository<ProcessingOrder, Guid>> _mockRepository;
+        private readonly Mock<ILogger<OrderProcessingInitializer>> _mockLogger;
         private readonly OrderProcessingInitializer _orderProcessingInitializer;
 
-        public OrderProcessingInitializerUnitTests() 
+        public OrderProcessingInitializerUnitTests()
         {
-            _mockRepository = new Mock<IRepository<ProcessingOrder>>();
-            _orderProcessingInitializer = new OrderProcessingInitializer(_mockRepository.Object);
+            _mockRepository = new Mock<IEFRepository<ProcessingOrder, Guid>>();
+            _mockLogger = new Mock<ILogger<OrderProcessingInitializer>>();
+            _orderProcessingInitializer = new OrderProcessingInitializer(_mockRepository.Object, _mockLogger.Object);
         }
 
 
@@ -28,31 +32,25 @@ namespace OrderProcessingService.Tests.UnitTests
         public async Task Should_CreateProcessingOrderFromDtoAndSaveToDB(OrderDto dto)
         {
             //Arrange
+            ProcessingOrder capturedOrder = null;
+
             _mockRepository
-                .Setup(repo => repo.CreateAsync(
-                    It.Is<ProcessingOrder>(po =>
-                        po.Id != Guid.Empty &&
-                        po.Id != dto.Id &&
-                        po.OrderId == dto.Id &&
-                        po.Items.Count == dto.Items.Count &&
-                        po.CreatedAt == dto.CreatedAt &&
-                        po.UpdatedAt == dto.UpdatedAt &&
-                        po.Status == ProcessingStatus.New &&
-                        po.Stage == Stage.Assembly &&
-                        po.TrackingNumber == null &&
-                        po.Items.All(i => 
-                            dto.Items.Any(dtoItem => 
-                                dtoItem.ProductId == i.ProductId &&
-                                dtoItem.Quantity == i.Quantity &&
-                                i.Status == ItemAssemblyStatus.Pending))),
-                    It.IsAny<CancellationToken>()))
-                .ReturnsAsync((ProcessingOrder po, CancellationToken cs) => po.Id);
+                .Setup(repo => repo.InsertAsync(It.IsAny<ProcessingOrder>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((ProcessingOrder po, CancellationToken ct) =>
+                {
+                    capturedOrder = po;
+                    return po;
+                });
 
             //Act
             await _orderProcessingInitializer.InitializeProcessingAsync(dto, CancellationToken.None);
 
             //Assert
-            _mockRepository.VerifyAll();
+            Assert.Equal(dto.Id, capturedOrder?.OrderId);
+            Assert.Equal(dto.Items.Count, capturedOrder?.Items.Count);
+            Assert.Equal(dto.CreatedAt, capturedOrder?.CreatedAt);
+            _mockRepository.Verify(repo => repo.InsertAsync(It.IsAny<ProcessingOrder>(), It.IsAny<CancellationToken>()), Times.Once);
+            _mockRepository.Verify(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
     }

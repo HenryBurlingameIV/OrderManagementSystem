@@ -1,4 +1,6 @@
-﻿using FluentValidation;
+﻿using Castle.Core.Logging;
+using FluentValidation;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestPlatform.Common.Interfaces;
 using Moq;
 using OrderManagementSystem.Shared.Contracts;
@@ -21,23 +23,26 @@ namespace OrderService.Tests.UnitTests
     public class UpdateOrderStatusCommandHandlerTests
     {
         private IValidator<OrderStatusValidationModel> _validator;
-        private Mock<IRepository<Order>> _mockOrderRepository;
+        private Mock<IEFRepository<Order, Guid>> _mockOrderRepository;
         private Mock<ICatalogServiceApi> _mockCatalogServiceApi;
-        private readonly Mock<IKafkaProducer<OrderStatusEvent>> _mockOrderStatusProducer;
+        private Mock<IKafkaProducer<OrderStatusEvent>> _mockOrderStatusProducer;
+        private Mock<ILogger<UpdateOrderStatusCommandHandler>> _mockLogger;
         private UpdateOrderStatusCommandHandler _handler;
 
 
         public UpdateOrderStatusCommandHandlerTests()
         {
             _validator = new OrderStatusTransitionValidator();
-            _mockOrderRepository = new Mock<IRepository<Order>>();
+            _mockOrderRepository = new Mock<IEFRepository<Order, Guid>>();
             _mockCatalogServiceApi = new Mock<ICatalogServiceApi>();
             _mockOrderStatusProducer = new Mock<IKafkaProducer<OrderStatusEvent>>();
+            _mockLogger = new Mock<ILogger<UpdateOrderStatusCommandHandler>>();
             _handler = new UpdateOrderStatusCommandHandler(
                 _mockOrderRepository.Object,
                 _validator, 
                 _mockCatalogServiceApi.Object,
-                _mockOrderStatusProducer.Object);
+                _mockOrderStatusProducer.Object,
+                _mockLogger.Object);
         }
 
         private static bool IsValidGuid(string id)
@@ -69,9 +74,9 @@ namespace OrderService.Tests.UnitTests
                 .ReturnsAsync(order);
 
             _mockOrderRepository
-                .Setup(repo => repo.UpdateAsync(
-                    It.Is<Order>(o => o.Id == order.Id && o.Status == to),
+                .Setup(repo => repo.SaveChangesAsync(
                     It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1)
                 .Verifiable();
 
             _mockOrderStatusProducer
@@ -110,11 +115,11 @@ namespace OrderService.Tests.UnitTests
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(order);
 
-            _mockOrderRepository
-                .Setup(repo => repo.UpdateAsync(
-                    It.Is<Order>(o => o.Id == order.Id && o.Status == to),
-                    It.IsAny<CancellationToken>()))
-                .Verifiable();
+            _mockOrderRepository.
+                Setup(repo => repo.SaveChangesAsync(
+                    It.IsAny<CancellationToken>()
+                    ))
+                .ReturnsAsync(1);
 
             //Act
             await _handler.Handle(command, CancellationToken.None);

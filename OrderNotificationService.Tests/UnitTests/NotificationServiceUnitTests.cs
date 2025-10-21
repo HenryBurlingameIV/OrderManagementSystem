@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging;
 using Moq;
+using OrderManagementSystem.Shared.Contracts;
 using OrderManagementSystem.Shared.Exceptions;
 using OrderNotificationService.Application.Contracts;
 using OrderNotificationService.Application.DTO;
@@ -17,7 +18,7 @@ namespace OrderNotificationService.Tests.UnitTests
 {
     public class NotificationServiceUnitTests
     {
-        private readonly Mock<INotificationTemplatesRepository> _mockRepository;
+        private readonly Mock<IRepositoryBase<NotificationTemplate, int>> _mockRepository;
         private readonly Mock<IEmailMessageSender> _mockEmailMessageSender;
         private readonly Mock<IMessageTemplateRenderer> _mockMessageTemplateRenderer;
         private readonly Mock<ILogger<NotificationService>> _mockLogger;
@@ -25,7 +26,7 @@ namespace OrderNotificationService.Tests.UnitTests
 
         public NotificationServiceUnitTests() 
         {
-            _mockRepository = new Mock<INotificationTemplatesRepository>();
+            _mockRepository = new Mock<IRepositoryBase<NotificationTemplate, int>>();
             _mockEmailMessageSender = new Mock<IEmailMessageSender>();
             _mockMessageTemplateRenderer = new Mock<IMessageTemplateRenderer>();
             _mockLogger = new Mock<ILogger<NotificationService>>();
@@ -54,7 +55,7 @@ namespace OrderNotificationService.Tests.UnitTests
             };
 
             _mockRepository
-                .Setup(repo => repo.GetNotificationTemplateByIdAsync(orderStatus, CancellationToken.None))
+                .Setup(repo => repo.GetByIdAsync(orderStatus, CancellationToken.None))
                 .ReturnsAsync(template);
       
 
@@ -89,7 +90,7 @@ namespace OrderNotificationService.Tests.UnitTests
 
             //Act && Assert
             await Assert.ThrowsAsync<NotFoundException>(() => _notificationService.NotifyAsync(request, CancellationToken.None));
-            _mockRepository.Verify(repo => repo.GetNotificationTemplateByIdAsync(orderStatus, It.IsAny<CancellationToken>()), Times.Once());
+            _mockRepository.Verify(repo => repo.GetByIdAsync(orderStatus, It.IsAny<CancellationToken>()), Times.Once());
             _mockEmailMessageSender.Verify(sender => sender.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never());
             _mockMessageTemplateRenderer.Verify(renderer => renderer.Render(It.IsAny<string>(), It.IsAny<Dictionary<string, string>>()), Times.Never());
         }

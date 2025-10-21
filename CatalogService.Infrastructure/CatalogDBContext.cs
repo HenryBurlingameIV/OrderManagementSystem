@@ -9,9 +9,9 @@ using CatalogService.Infrastructure.Configurations;
 
 namespace CatalogService.Infrastructure
 {
-    public class CatalogDBContext : DbContext
+    public class CatalogDbContext : DbContext
     {
-        public CatalogDBContext(DbContextOptions options) : base (options){ }
+        public CatalogDbContext(DbContextOptions options) : base (options){ }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

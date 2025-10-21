@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
+using OrderManagementSystem.Shared.Contracts;
 using OrderManagementSystem.Shared.Exceptions;
 using OrderNotificationService.Application.Contracts;
 using OrderNotificationService.Application.DTO;
+using OrderNotificationService.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,12 +14,12 @@ namespace OrderNotificationService.Application.Services
 {
     public class NotificationService : INotificationService<NotificationRequest>
     {
-        private readonly INotificationTemplatesRepository _repository;
+        private readonly IRepositoryBase<NotificationTemplate, int> _repository;
         private readonly IEmailMessageSender _sender;
         private readonly IMessageTemplateRenderer _messageTemplateRenderer;
         private readonly ILogger<NotificationService> _logger;
 
-        public NotificationService(INotificationTemplatesRepository repository,
+        public NotificationService(IRepositoryBase<NotificationTemplate, int> repository,
             IEmailMessageSender sender, 
             IMessageTemplateRenderer renderer,
             ILogger<NotificationService> logger)
@@ -30,7 +32,7 @@ namespace OrderNotificationService.Application.Services
         }
         public async Task NotifyAsync(NotificationRequest request, CancellationToken ct)
         {
-            var template = await _repository.GetNotificationTemplateByIdAsync(request.OrderStatus, ct);
+            var template = await _repository.GetByIdAsync(request.OrderStatus, ct);
             if (template == null)
                 throw new NotFoundException($"Template with Id {request.OrderStatus} not found.");
 
@@ -44,7 +46,7 @@ namespace OrderNotificationService.Application.Services
 
 
             await _sender.SendAsync(message, request.Email, ct);
-            _logger.LogInformation("Notification sent successfully for order {OrderId} to {Email}.", request.OrderId, request.Email);
+            _logger.LogInformation("Notification sent successfully for order {@OrderId} to {@Email}.", request.OrderId, request.Email);
         }
     }
 }

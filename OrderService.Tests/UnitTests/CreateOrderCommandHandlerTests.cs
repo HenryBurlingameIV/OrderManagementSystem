@@ -1,11 +1,14 @@
 ﻿using AutoFixture;
+using Castle.Core.Logging;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 using Moq;
 using OrderManagementSystem.Shared.Contracts;
 using OrderManagementSystem.Shared.Enums;
 using OrderService.Application.Commands.CreateOrderCommand;
 using OrderService.Application.Contracts;
 using OrderService.Application.DTO;
+using OrderService.Application.Services;
 using OrderService.Application.Validators;
 using OrderService.Domain.Entities;
 using System;
@@ -21,29 +24,38 @@ namespace OrderService.Tests.UnitTests
     {
         private CreateOrderCommandHandler _handler;
         private Fixture _autoFixture;
-        private IValidator<CreateOrderCommand> _validator;
-        private Mock<IRepository<Order>> _mockRepository;
+        private IValidator<CreateOrderRequest> _validator;
+        private Mock<IEFRepository<Order, Guid>> _mockRepository;
         private Mock<IKafkaProducer<OrderEvent>> _mockOrderProducer;
         private Mock<ICatalogServiceApi> _mockCatalogServiceApi;
+        private Mock<ILogger<CreateOrderCommandHandler>> _mockHandlerLogger;
+        private Mock<ILogger<OrderFactory>> _mockFactoryLogger;
         private Mock<IKafkaProducer<OrderStatusEvent>> _mockOrderStatusProducer;
+        private OrderFactory _orderFactory;
 
         public CreateOrderCommandHandlerTests() 
         {
             _autoFixture = new Fixture();
-            _autoFixture.Customize<OrderItemRequest>(composer => composer
-                .With(x => x.Quantity, () => new Random().Next(1, 1001))
-            );
-            _validator = new CreateOrderCommandValidator();
-            _mockRepository = new Mock<IRepository<Order>>();
+            _validator = new CreateOrderRequestValidator();
+            _mockRepository = new Mock<IEFRepository<Order, Guid>>();
             _mockOrderProducer = new Mock<IKafkaProducer<OrderEvent>>();
             _mockOrderStatusProducer  = new Mock<IKafkaProducer<OrderStatusEvent>>();
             _mockCatalogServiceApi = new Mock<ICatalogServiceApi>();
+            _mockHandlerLogger = new Mock<ILogger<CreateOrderCommandHandler>>();
+            _mockFactoryLogger = new Mock<ILogger<OrderFactory>>();
+
+            _autoFixture.Customize<OrderItemRequest>(composer => composer
+                .With(x => x.Quantity, () => Random.Shared.Next(1, 1001))
+            );
+
+            _orderFactory = new OrderFactory(_mockCatalogServiceApi.Object, _mockFactoryLogger.Object);
             _handler = new CreateOrderCommandHandler(
-                _mockRepository.Object, 
-                _mockCatalogServiceApi.Object, 
+                _mockRepository.Object,
+                _orderFactory, 
                 _validator, 
                 _mockOrderProducer.Object,
-                _mockOrderStatusProducer.Object);
+                _mockOrderStatusProducer.Object,
+                _mockHandlerLogger.Object);
         }
 
 
@@ -59,21 +71,26 @@ namespace OrderService.Tests.UnitTests
             Assert.Equal(expectedErrorCount, exception.Errors.Count());
         }
 
+        private CreateOrderCommand BuildOrderCommand(
+            int itemsCount = 3, string email = "test@gmail.com")
+        {
+            return new CreateOrderCommand(
+               new CreateOrderRequest(
+                   _autoFixture.CreateMany<OrderItemRequest>(itemsCount).ToList(),
+                   email
+                   ));
+        }
+
         [Fact]
         public async Task Should_CreateOrder_WhenRequestIsValid()
         {
             //Arrange
-            var command = new CreateOrderCommand()
-            {
-                OrderItems = _autoFixture.CreateMany<OrderItemRequest>(5).ToList(),
-                Email = "test@gmail.com"
-            };
-
-            var expectedTotalPrice = command.OrderItems.Sum(i => i.Quantity * 100m);
+            var command = BuildOrderCommand();
+            var expectedTotalPrice = command.Request.Items.Sum(i => i.Quantity * 100m);
             _mockCatalogServiceApi
                 .Setup(api => api.ReserveProductAsync(
-                    It.Is<Guid>(id => command.OrderItems.Any(item => item.Id == id)),
-                    It.Is<int>(q => command.OrderItems.Any(item => item.Quantity == q)),
+                    It.Is<Guid>(id => command.Request.Items.Any(item => item.Id == id)),
+                    It.Is<int>(q => command.Request.Items.Any(item => item.Quantity == q)),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Guid id, int quantity, CancellationToken cancellationToken) =>
                 {
@@ -81,14 +98,14 @@ namespace OrderService.Tests.UnitTests
                 });
 
             _mockRepository
-                .Setup(repo => repo.CreateAsync(
+                .Setup(repo => repo.InsertAsync(
                     It.Is<Order>(o => 
-                        o.Items.Count == command.OrderItems.Count &&
+                        o.Items.Count == command.Request.Items.Count &&
                         o.Status == OrderStatus.New &&
                         o.TotalPrice == expectedTotalPrice),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Order order, CancellationToken cancellationToken) =>
-                    order.Id);
+                    order);
 
 
             _mockOrderProducer
@@ -121,13 +138,9 @@ namespace OrderService.Tests.UnitTests
         public async Task Should_ThrowValidationException_WhenAnyItemQuantityExceedsMaximumAllowed()
         {
             //Arange
-            var command = new CreateOrderCommand()
-            {
-                OrderItems = _autoFixture.CreateMany<OrderItemRequest>(3).ToList(),
-                Email = "test@gmail.com"
-            };
-            command.OrderItems.Add(new OrderItemRequest(Guid.NewGuid(), 1001));
-
+            var command = BuildOrderCommand();
+            command.Request.Items.Add(new OrderItemRequest(Guid.NewGuid(), 1001));
+   
             //Act & Assert
             var exception = await Assert.ThrowsAsync<ValidationException>(() => _handler.Handle(command, CancellationToken.None));
             Assert.Contains("1000", exception.Message);
@@ -137,28 +150,22 @@ namespace OrderService.Tests.UnitTests
         public async Task Should_ThrowValidationException_WhenOrderItemsIsEmpty()
         {
             //Arrange
-            var command = new CreateOrderCommand()
-            {
-                OrderItems = new List<OrderItemRequest>(),
-                Email = "test@gmail.com"
-            };
+            var command = BuildOrderCommand(0);
 
             //Act && Assert
-            await AssertValidationException(command, "'Order Items' must not be empty", 1);
+            await AssertValidationException(command, "'Items' must not be empty", 1);
         }
 
+
         [Fact]
-        public async Task Should_ThrowValidationException_WhenOrderItemsIsNull()
+        public async Task Should_ThrowValidationException_WhenEmailFormatIsInvalid()
         {
             //Arrange
-            var command = new CreateOrderCommand()
-            {
-                OrderItems = null,
-                Email = "test@gmail.com"
-            };
+            var command = BuildOrderCommand(email: "not_email");
+
 
             //Act && Assert
-            await AssertValidationException(command, "'Order Items' must not be empty", 1);
+            await AssertValidationException(command, "Invalid email format.", 1);
         }
 
         [Theory]
@@ -167,31 +174,11 @@ namespace OrderService.Tests.UnitTests
         public async Task Should_ThrowValidationException_WhenItemQuantityIsInvalid(int invalidQuantity)
         {
             //Arrange
-            var command = new CreateOrderCommand()
-            {
-                OrderItems = new()
-                {
-                    new OrderItemRequest(Guid.NewGuid(), invalidQuantity),
-                },
-                Email = "test@gmail.com"
-            };
+            var command = BuildOrderCommand(0);
+            command.Request.Items.Add(new OrderItemRequest(Guid.NewGuid(), invalidQuantity));
 
             //Act & Assert
             await AssertValidationException(command, "'Quantity' must be greater than '0'", 1);
-        }
-
-        [Fact]
-        public async Task Should_ThrowValidationException_WhenEmailFormatIsInvalid()
-        {
-            //Arrange
-            var command = new CreateOrderCommand()
-            {
-                OrderItems = _autoFixture.CreateMany<OrderItemRequest>(3).ToList(),
-                Email = "not_email"
-            };
-
-            //Act && Assert
-            await AssertValidationException(command, "Invalid email format.", 1);
         }
     }
 }

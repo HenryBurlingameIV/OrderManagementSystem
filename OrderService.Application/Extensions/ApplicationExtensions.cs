@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OrderService.Application.Commands.CreateOrderCommand;
 using OrderService.Application.Commands.UpdateOrderStatusCommand;
 using OrderService.Application.DTO;
+using OrderService.Application.Services;
 using OrderService.Application.Validators;
 using System;
 using System.Collections.Generic;
@@ -14,15 +15,18 @@ namespace OrderService.Application.Extensions
 {
     public static class ApplicationExtensions
     {
-        public static void AddApplication(this IServiceCollection services )
+        public static IServiceCollection AddApplication(this IServiceCollection services )
         {
             services.AddMediatR(conf =>
             {
                 conf.RegisterServicesFromAssembly(typeof(CreateOrderCommand).Assembly);
             });
 
-            services.AddScoped<IValidator<CreateOrderCommand>, CreateOrderCommandValidator>();
+            services.AddScoped<IValidator<CreateOrderRequest>, CreateOrderRequestValidator>();
             services.AddScoped<IValidator<OrderStatusValidationModel>, OrderStatusTransitionValidator>();
+            services.AddScoped<IValidator<GetPaginatedOrdersRequest>, GetPaginatedOrdersRequestValidator>();
+            services.AddScoped<OrderFactory>();
+            return services;
         }
     }
 }
