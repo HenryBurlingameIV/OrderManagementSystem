@@ -1,7 +1,11 @@
-﻿using CatalogService.Application.Extensions;
+﻿using CatalogService.Api.GrpcServices;
+using CatalogService.Application.Extensions;
 using CatalogService.Infrastructure;
 using CatalogService.Infrastructure.Extensions;
+using Grpc.Core;
+using Grpc.Core.Interceptors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using OrderManagementSystem.Shared.Middlewares;
@@ -11,6 +15,24 @@ namespace CatalogService.Api
 {
     public static class ConfigureApp
     {
+        public static IWebHostBuilder ConfigureWebHost(this IWebHostBuilder webHostBuilder, IHostEnvironment env)
+        {
+            webHostBuilder.ConfigureKestrel(options =>
+            {
+                if (env.IsDevelopment())
+                {
+                    options.ListenLocalhost(5001, listenOptions => { listenOptions.Protocols = HttpProtocols.Http2; });
+                    options.ListenLocalhost(8080, listenOptions => { listenOptions.Protocols = HttpProtocols.Http1; });
+                }
+                else
+                {
+                    options.ListenAnyIP(5001, listenOptions => { listenOptions.Protocols = HttpProtocols.Http2; });
+                    options.ListenAnyIP(8080, listenOptions => { listenOptions.Protocols = HttpProtocols.Http1; });
+                }
+            });
+            return webHostBuilder;
+        }
+
         public static IServiceCollection ConfigureServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddInfrastructure(configuration);
@@ -18,6 +40,7 @@ namespace CatalogService.Api
             services.AddApplication();
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
+            services.AddGrpc();
             return services;
         }
 
@@ -25,12 +48,13 @@ namespace CatalogService.Api
         {
             app.UseMiddleware<ExceptionHandlerMiddleware>();
             app.UseSerilogRequestLogging();
-            if(app.Environment.IsDevelopment())
+            if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
             app.UseRouting();
+            app.MapGrpcService<CatalogGrpcService>();
             app.MapControllers();
             return app;
         }
@@ -45,4 +69,5 @@ namespace CatalogService.Api
 
 
     }
+
 }

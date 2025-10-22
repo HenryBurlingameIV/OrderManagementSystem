@@ -7,6 +7,7 @@ using CatalogService.Domain;
 using CatalogService.Infrastructure;
 using CatalogService.Infrastructure.Extensions;
 using FluentValidation;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 namespace CatalogService.Api
@@ -16,6 +17,9 @@ namespace CatalogService.Api
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.WebHost.ConfigureWebHost(builder.Environment);
+
+
             builder.Services
                 .ConfigureServices(builder.Configuration);
 
