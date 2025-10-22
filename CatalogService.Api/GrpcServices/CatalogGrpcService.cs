@@ -33,10 +33,6 @@ namespace CatalogService.Api.GrpcServices
             {
                 throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
             }
-            catch (InvalidOperationException ex) when (ex.Message.Contains("not have enough quantity"))
-            {
-                throw new RpcException(new Status(StatusCode.FailedPrecondition, ex.Message));
-            }
             catch (Exception ex)
             {
                 throw new RpcException(new Status(StatusCode.Internal, "Internal server error"));
