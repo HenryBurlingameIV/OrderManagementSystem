@@ -12,10 +12,10 @@ using System.Threading.Tasks;
 
 namespace CatalogService.Application.Validators
 {
-    public class ProductCreateRequestValidator : AbstractValidator<ProductCreateRequest>
+    public class CreateProductRequestValidator : AbstractValidator<CreateProductRequest>
     {
 
-        public ProductCreateRequestValidator() 
+        public CreateProductRequestValidator() 
         {
             RuleFor(request => request.Name)
                 .NotEmpty()

@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 namespace CatalogService.Application.DTO
 {
-    public record ProductUpdateRequest(string? Name, string? Description, string? Category, decimal? Price, int? Quantity);
+    public record UpdateProductRequest(string? Name, string? Description, string? Category, decimal? Price, int? Quantity);
 
 }

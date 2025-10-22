@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 
 namespace CatalogService.Application.Validators
 {
-    public class ProductUpdateRequestValidator : AbstractValidator<ProductUpdateRequest>
+    public class UpdateProductRequestValidator : AbstractValidator<UpdateProductRequest>
     {
-        public ProductUpdateRequestValidator() 
+        public UpdateProductRequestValidator() 
         {
             RuleFor(p => p.Name)
                 .NotEmpty().When(p => p.Name != null);

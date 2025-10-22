@@ -18,9 +18,9 @@ namespace CatalogService.Application.Extensions
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
             services.AddScoped<IProductService, ProductService>();
-            services.AddScoped<IValidator<ProductCreateRequest>, ProductCreateRequestValidator>();
-            services.AddScoped<IValidator<ProductUpdateRequest>, ProductUpdateRequestValidator>();
-            services.AddScoped<IValidator<ProductUpdateQuantityRequest>, ProductUpdateQuantityValidator>();
+            services.AddScoped<IValidator<CreateProductRequest>, CreateProductRequestValidator>();
+            services.AddScoped<IValidator<UpdateProductRequest>, UpdateProductRequestValidator>();
+            services.AddScoped<IValidator<ReserveProductRequest>, UpdateProductQuantityValidator>();
             services.AddScoped<IValidator<GetPagindatedProductsRequest>, GetPaginatedProductsRequestValidator>();
             return services;
         }

@@ -26,7 +26,7 @@ namespace CatalogService.Tests.ProductFixture
                     );
 
             fixture
-                .Customize<ProductCreateRequest>(composer => composer
+                .Customize<CreateProductRequest>(composer => composer
                     .With(p => p.Name, () => Guid.NewGuid().ToString())
                     .With(p => p.Price, () => Math.Round((decimal)new Random().NextDouble() * 100, 2))
                     .With(p => p.Quantity, () => new Random().Next(1, 101))
@@ -34,7 +34,7 @@ namespace CatalogService.Tests.ProductFixture
                     );
 
             fixture
-                .Customize<ProductUpdateRequest>(composer => composer
+                .Customize<UpdateProductRequest>(composer => composer
                     .With(p => p.Name, () => Guid.NewGuid().ToString())
                     .With(p => p.Price, () => Math.Round((decimal)new Random().NextDouble() * 100, 2))
                     .With(p => p.Quantity, () => new Random().Next(1, 101))
