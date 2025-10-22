@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Grpc.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using OrderManagementSystem.Shared.Exceptions;
@@ -15,7 +16,7 @@ namespace OrderManagementSystem.Shared.Middlewares
         RequestDelegate _next;
         private readonly ILogger<ExceptionHandlerMiddleware> _logger;
 
-        public ExceptionHandlerMiddleware(RequestDelegate next, ILogger<ExceptionHandlerMiddleware> logger) 
+        public ExceptionHandlerMiddleware(RequestDelegate next, ILogger<ExceptionHandlerMiddleware> logger)
         {
             _next = next;
             _logger = logger;
@@ -38,16 +39,30 @@ namespace OrderManagementSystem.Shared.Middlewares
         {
             var (statusCode, message) = ex switch
             {
-                ValidationException vEx => (HttpStatusCode.BadRequest, vEx.Message),
-                HttpRequestException httpEx => (httpEx.StatusCode ?? HttpStatusCode.BadRequest, httpEx.Message),
-                NotFoundException notFoundEx => (HttpStatusCode.NotFound, notFoundEx.Message),
-                _ => (HttpStatusCode.InternalServerError, ex.Message),
+                ValidationException vEx => ((int)HttpStatusCode.BadRequest, vEx.Message),
+                HttpRequestException httpEx => ((int)(httpEx.StatusCode ?? HttpStatusCode.BadRequest), httpEx.Message),
+                NotFoundException notFoundEx => ((int)HttpStatusCode.NotFound, notFoundEx.Message),
+                RpcException rpcEx => (MapGrpcStatusCode(rpcEx), rpcEx.Status.Detail),
+                _ => ((int)HttpStatusCode.InternalServerError, ex.Message),
             };
 
             _logger.LogError("Error {@exception} occured", ex);
             context.Response.ContentType = "application/json";
-            context.Response.StatusCode = (int)statusCode;
+            context.Response.StatusCode = statusCode;
             await context.Response.WriteAsJsonAsync(new { Message = message });
+        }
+
+        private static int MapGrpcStatusCode(RpcException rpcEx)
+        {
+            return rpcEx.StatusCode switch
+            {
+                StatusCode.NotFound => 404,
+                StatusCode.InvalidArgument or StatusCode.FailedPrecondition => 400,
+                StatusCode.PermissionDenied => 403,
+                StatusCode.Unauthenticated => 401,
+                StatusCode.Unavailable => 503,
+                _ => 500
+            };
         }
     }
 }
