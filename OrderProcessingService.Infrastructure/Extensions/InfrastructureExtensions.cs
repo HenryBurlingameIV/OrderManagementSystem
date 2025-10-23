@@ -14,11 +14,13 @@ using OrderProcessingService.Infrastructure.BackgroundWorkers;
 using OrderProcessingService.Infrastructure.ExternalServices;
 using OrderProcessingService.Infrastructure.Messaging.Handlers;
 using OrderProcessingService.Infrastructure.Messaging.Messages;
+using OrderService.Api.Protos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace OrderProcessingService.Infrastructure.Extensions
 {
@@ -51,10 +53,19 @@ namespace OrderProcessingService.Infrastructure.Extensions
 
             var kafkaConf = configuration.GetSection("Kafka:Order");
             services.AddConsumer<OrderCreatedMessage, OrderCreatedMessageHandler>(kafkaConf);
-            services.AddHttpClient<IOrderServiceApi, OrderServiceApi>(conf =>
+
+            //services.AddHttpClient<IOrderServiceApi, OrderServiceApi>(conf =>
+            //{
+            //    conf.BaseAddress = new Uri(configuration["OrderService:HttpConnection"]!);
+            //});
+            services.AddScoped<IOrderServiceApi, OrderGrpcClient>();
+
+            services.AddGrpcClient<Order.OrderClient>(options =>
             {
-                conf.BaseAddress = new Uri(configuration["OrderService:DefaultConnection"]!);
+                options.Address = new Uri(
+                    configuration["OrderService:GrpcConnection"]!);
             });
+
             string hangfireStorageConnection = configuration.GetConnectionString("OrderProcessingDbContext")!;
             services.AddHangfire(conf => 
                 conf.UsePostgreSqlStorage(options => 
