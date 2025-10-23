@@ -45,7 +45,7 @@ namespace OrderService.Infrastructure.Extensions
             //    conf.BaseAddress = new Uri(
             //        configuration["CatalogService:HttpConnection"]!);
             //});
-            services.AddScoped<ICatalogServiceApi, CatalogGrpcServiceApi>();
+            services.AddScoped<ICatalogServiceApi, CatalogGrpcClient>();
             services.AddGrpcClient<Catalog.CatalogClient>(options =>
             {
                 options.Address = new Uri(

@@ -9,11 +9,11 @@ using CatalogService.Api.Protos;
 
 namespace OrderService.Infrastructure.ExternalServices
 {
-    public class CatalogGrpcServiceApi : ICatalogServiceApi
+    public class CatalogGrpcClient : ICatalogServiceApi
     {
         private readonly Catalog.CatalogClient _client;
 
-        public CatalogGrpcServiceApi(Catalog.CatalogClient client)
+        public CatalogGrpcClient(Catalog.CatalogClient client)
         {
             _client = client;
         }
