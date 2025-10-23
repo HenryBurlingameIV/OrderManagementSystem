@@ -16,6 +16,7 @@ namespace OrderService.Api
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.WebHost.ConfigureWebHost(builder.Environment);
             builder.ConfigureSerilog();
             builder.Services
                 .ConfigureServices(builder.Configuration);
