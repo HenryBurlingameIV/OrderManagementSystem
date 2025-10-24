@@ -10,7 +10,7 @@ namespace CatalogService.Application.Services
 {
     public static class ProductMapper
     {
-        public static Product ToEntity(this ProductCreateRequest request)
+        public static Product ToEntity(this CreateProductRequest request)
         {
             var createdAt = DateTime.UtcNow;
             return new Product()
@@ -35,7 +35,7 @@ namespace CatalogService.Application.Services
                 product.Price,
                 product.Quantity);
 
-        public static void UpdateFromRequest(this Product product, ProductUpdateRequest request)
+        public static void UpdateFromRequest(this Product product, UpdateProductRequest request)
         {
             product.Name = request.Name ?? product.Name;
             product.Description = request.Description ?? product.Description;

@@ -1,5 +1,7 @@
-﻿using OrderManagementSystem.Shared.Kafka;
+﻿using Microsoft.AspNetCore.Server.Kestrel.Core;
+using OrderManagementSystem.Shared.Kafka;
 using OrderManagementSystem.Shared.Middlewares;
+using OrderService.Api.GrpcServices;
 using OrderService.Application.DTO;
 using OrderService.Application.Extensions;
 using OrderService.Domain.Entities;
@@ -10,6 +12,18 @@ namespace OrderService.Api
 {
     public static class ConfigureApp
     {
+
+        public static IWebHostBuilder ConfigureWebHost(this IWebHostBuilder webHostBuilder, IHostEnvironment env, IConfiguration configuration)
+        {
+            webHostBuilder.ConfigureKestrel(options =>
+            {
+                var grpcPort = configuration.GetValue<int>("Endpoints:GrpcPort");
+                options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
+                var restPort = configuration.GetValue<int>("Endpoints:RestPort");
+                options.ListenAnyIP(restPort, o => o.Protocols = HttpProtocols.Http1);
+            });
+            return webHostBuilder;
+        }
         public static IServiceCollection ConfigureServices(this IServiceCollection services, IConfiguration configuration)
         {
 
@@ -20,6 +34,7 @@ namespace OrderService.Api
             services.AddControllers();
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
+            services.AddGrpc();
             return services;
         }
 
@@ -32,6 +47,7 @@ namespace OrderService.Api
                 app.UseSwaggerUI();
             }
             app.UseRouting();
+            app.MapGrpcService<OrderGrpcService>();
             app.MapControllers();
             return app;
         }

@@ -20,7 +20,7 @@ namespace CatalogService.Api.Controllers
 
         [HttpPost]
         public async Task<ActionResult<Guid>> CreateProductAsync(
-            [FromBody] ProductCreateRequest request,
+            [FromBody] CreateProductRequest request,
             CancellationToken cancellationToken
             )
         {
@@ -53,7 +53,7 @@ namespace CatalogService.Api.Controllers
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<Guid>> UpdateProductAsync(
             [FromRoute] Guid id, 
-            [FromBody] ProductUpdateRequest request,
+            [FromBody] UpdateProductRequest request,
             CancellationToken cancellationToken
             )
         {
@@ -62,17 +62,28 @@ namespace CatalogService.Api.Controllers
             return Ok(result);
         }
 
-        [HttpPatch("{id:guid}/quantity")]
-        public async Task<ActionResult<ProductViewModel>> UpdateProductQuantityAsync(
-            [FromRoute] Guid id, 
-            [FromBody] ProductUpdateQuantityRequest request,
+        [HttpPatch("{id:guid}/reserve")]
+        public async Task<ActionResult<ProductViewModel>> ReserveProductAsync(
+            [FromRoute] Guid id,
+            [FromBody] ReserveProductRequest request,
             CancellationToken cancellationToken
             )
         {
-            
-            var result = await _productService.UpdateProductQuantityAsync(id, request, cancellationToken);
+            var result = await _productService.ReserveProductAsync(id, request.Quantity, cancellationToken);
             return Ok(result);
         }
+
+        [HttpPatch("{id:guid}/release")]
+        public async Task<ActionResult<ProductViewModel>> ReleaseProductAsync(
+            [FromRoute] Guid id,
+            [FromBody] ReserveProductRequest request,
+            CancellationToken cancellationToken
+            )
+        {
+            var result = await _productService.ReleaseProductAsync(id, request.Quantity, cancellationToken);
+            return Ok(result);
+        }
+
 
         [HttpDelete("{id:guid}")]
         public async Task<ActionResult> DeleteProductAsync(
