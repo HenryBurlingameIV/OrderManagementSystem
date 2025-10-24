@@ -13,20 +13,14 @@ namespace OrderService.Api
     public static class ConfigureApp
     {
 
-        public static IWebHostBuilder ConfigureWebHost(this IWebHostBuilder webHostBuilder, IHostEnvironment env)
+        public static IWebHostBuilder ConfigureWebHost(this IWebHostBuilder webHostBuilder, IHostEnvironment env, IConfiguration configuration)
         {
             webHostBuilder.ConfigureKestrel(options =>
             {
-                if (env.IsDevelopment())
-                {
-                    options.ListenLocalhost(5002, listenOptions => { listenOptions.Protocols = HttpProtocols.Http2; });
-                    options.ListenLocalhost(8081, listenOptions => { listenOptions.Protocols = HttpProtocols.Http1; });
-                }
-                else
-                {
-                    options.ListenAnyIP(5002, listenOptions => { listenOptions.Protocols = HttpProtocols.Http2; });
-                    options.ListenAnyIP(8081, listenOptions => { listenOptions.Protocols = HttpProtocols.Http1; });
-                }
+                var grpcPort = configuration.GetValue<int>("Endpoints:GrpcPort");
+                options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
+                var restPort = configuration.GetValue<int>("Endpoints:RestPort");
+                options.ListenAnyIP(restPort, o => o.Protocols = HttpProtocols.Http1);
             });
             return webHostBuilder;
         }
