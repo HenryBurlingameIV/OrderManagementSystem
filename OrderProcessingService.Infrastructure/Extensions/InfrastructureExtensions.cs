@@ -54,10 +54,6 @@ namespace OrderProcessingService.Infrastructure.Extensions
             var kafkaConf = configuration.GetSection("Kafka:Order");
             services.AddConsumer<OrderCreatedMessage, OrderCreatedMessageHandler>(kafkaConf);
 
-            //services.AddHttpClient<IOrderServiceApi, OrderServiceApi>(conf =>
-            //{
-            //    conf.BaseAddress = new Uri(configuration["OrderService:HttpConnection"]!);
-            //});
             services.AddScoped<IOrderServiceApi, OrderGrpcClient>();
 
             services.AddGrpcClient<Order.OrderClient>(options =>

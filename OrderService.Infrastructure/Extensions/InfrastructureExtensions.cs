@@ -40,11 +40,6 @@ namespace OrderService.Infrastructure.Extensions
                 return new Repository<Order, Guid>(context);
             });
 
-            //services.AddHttpClient<ICatalogServiceApi, CatalogServiceApi>(conf =>
-            //{
-            //    conf.BaseAddress = new Uri(
-            //        configuration["CatalogService:HttpConnection"]!);
-            //});
             services.AddScoped<ICatalogServiceApi, CatalogGrpcClient>();
             services.AddGrpcClient<Catalog.CatalogClient>(options =>
             {
