@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using OrderManagementSystem.Shared.DataAccess;
 using Microsoft.Extensions.Configuration;
+using CatalogService.Api.Protos;
 
 namespace OrderService.Infrastructure.Extensions
 {
@@ -39,10 +40,11 @@ namespace OrderService.Infrastructure.Extensions
                 return new Repository<Order, Guid>(context);
             });
 
-            services.AddHttpClient<ICatalogServiceApi, CatalogServiceApi>(conf =>
+            services.AddScoped<ICatalogServiceApi, CatalogGrpcClient>();
+            services.AddGrpcClient<Catalog.CatalogClient>(options =>
             {
-                conf.BaseAddress = new Uri(
-                    configuration["CatalogService:DefaultConnection"]!);
+                options.Address = new Uri(
+                    configuration["CatalogService:GrpcConnection"]!);
             });
 
             return services;

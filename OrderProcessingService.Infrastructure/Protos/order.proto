@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto"; 
+
+option csharp_namespace = "OrderService.Api.Protos";
+
+service Order{
+	rpc UpdateOrderStatus(UpdateOrderStatusRequest) returns (google.protobuf.Empty);
+}
+
+message UpdateOrderStatusRequest{
+	string order_id = 1;
+	string new_status = 2;
+}

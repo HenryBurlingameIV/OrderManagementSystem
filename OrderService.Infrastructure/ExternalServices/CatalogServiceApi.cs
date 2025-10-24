@@ -23,26 +23,31 @@ namespace OrderService.Infrastructure.ExternalServices
 
         public async Task<ProductDto?> ReserveProductAsync(Guid id, int quantity, CancellationToken cancellationToken)
         {
-            return await UpdateProductInventoryAsync(id, -quantity, cancellationToken);
-        }
 
-        public async Task ReleaseProductAsync(Guid id, int quantity, CancellationToken cancellationToken)
-        {
-            await UpdateProductInventoryAsync(id, quantity, cancellationToken);
-        }
-
-        private async Task<ProductDto?> UpdateProductInventoryAsync(Guid id, int deltaQuantity, CancellationToken cancellationToken)
-        {
             var response = await _httpClient.PatchAsJsonAsync(
-                $"api/products/{id}/quantity", 
-                new UpdateQuantityRequest(deltaQuantity), 
-                cancellationToken);
+               $"api/products/{id}/reserve",
+               new { Quantity = quantity },
+               cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {
                 await CreateAndThrowHttpRequestExceptionAsync(response, cancellationToken);
             }
             return await response.Content.ReadFromJsonAsync<ProductDto>(cancellationToken);
+        }
+
+        public async Task ReleaseProductAsync(Guid id, int quantity, CancellationToken cancellationToken)
+        {
+            var response = await _httpClient.PatchAsJsonAsync(
+                $"api/products/{id}/release",
+                new { Quantity = quantity },
+                cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                await CreateAndThrowHttpRequestExceptionAsync(response, cancellationToken);
+            }
+            
         }
 
         private async Task CreateAndThrowHttpRequestExceptionAsync(HttpResponseMessage response, CancellationToken cancellationToken)

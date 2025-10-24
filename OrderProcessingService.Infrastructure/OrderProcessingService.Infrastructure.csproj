@@ -7,7 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Protos\order.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Bogus" Version="35.6.3" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.72.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Hangfire" Version="1.8.20" />
     <PackageReference Include="Hangfire.PostgreSql" Version="1.20.12" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.8">
@@ -29,6 +38,12 @@
     <ProjectReference Include="..\OrderManagementSystem.Shared\OrderManagementSystem.Shared.csproj" />
     <ProjectReference Include="..\OrderProcessingService.Application\OrderProcessingService.Application.csproj" />
     <ProjectReference Include="..\OrderProcessingService.Domain\OrderProcessingService.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="Protos\order.proto">
+      <GrpcServices>Client</GrpcServices>
+    </Protobuf>
   </ItemGroup>
 
 </Project>

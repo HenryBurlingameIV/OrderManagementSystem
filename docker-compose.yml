@@ -6,10 +6,10 @@ services:
         context: .
         dockerfile: OrderManagementSystem.Gateway/Dockerfile
     ports: 
-      - "8088:8088"
+      - "8088:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:8088
+      - ASPNETCORE_URLS=http://+:8080
     depends_on:
        - catalog_service_api
        - order_service_api
@@ -38,7 +38,7 @@ services:
       dockerfile: OrderService.Api/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:8081
+      - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=orderdb;Username=postgres;Password=qazQWESZ178
       - Kafka__BootstrapServers=kafka:9092
     depends_on:
@@ -55,7 +55,7 @@ services:
         dockerfile: OrderProcessingService.Api/Dockerfile
     environment: 
       - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:8082
+      - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=opsdb;Username=postgres;Password=qazQWESZ178
       - Kafka__BootstrapServers=kafka:9092
     depends_on:
@@ -72,7 +72,7 @@ services:
         dockerfile: OrderNotificationService.Api/Dockerfile
     environment: 
       - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:8083
+      - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=onsdb;Username=postgres;Password=qazQWESZ178
       - Kafka__BootstrapServers=kafka:9092
     depends_on:

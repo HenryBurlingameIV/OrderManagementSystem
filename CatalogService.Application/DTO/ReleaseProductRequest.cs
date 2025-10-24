@@ -6,5 +6,6 @@ using System.Threading.Tasks;
 
 namespace CatalogService.Application.DTO
 {
-    public record ProductUpdateQuantityRequest(int DeltaQuantity);
+    public record ReleaseProductRequest(int Quantity);
+
 }

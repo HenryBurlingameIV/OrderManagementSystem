@@ -22,29 +22,26 @@ namespace CatalogService.Application.Services
     public class ProductService : IProductService
     {
         private IEFRepository<Product, Guid> _productRepository;
-        private IValidator<ProductCreateRequest> _createValidator;
-        private IValidator<ProductUpdateRequest> _updateValidator;
-        private IValidator<ProductUpdateQuantityRequest> _quantityValidator;
+        private IValidator<CreateProductRequest> _createValidator;
+        private IValidator<UpdateProductRequest> _updateValidator;
         private readonly IValidator<GetPagindatedProductsRequest> _paginationValidator;
         private readonly ILogger<ProductService> _logger;
 
         public ProductService(
             IEFRepository<Product, Guid> productRepository,
-            IValidator<ProductCreateRequest> createValidator,
-            IValidator<ProductUpdateRequest> updateValidator,
-            IValidator<ProductUpdateQuantityRequest> quantityValidator,
+            IValidator<CreateProductRequest> createValidator,
+            IValidator<UpdateProductRequest> updateValidator,
             IValidator<GetPagindatedProductsRequest> paginationValidator,
             ILogger<ProductService> logger)
         {
             _productRepository = productRepository;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
-            _quantityValidator = quantityValidator;
             _paginationValidator = paginationValidator;
             _logger = logger;
         }
 
-        public async Task<Guid> CreateProductAsync(ProductCreateRequest request, CancellationToken cancellationToken)
+        public async Task<Guid> CreateProductAsync(CreateProductRequest request, CancellationToken cancellationToken)
         {
             await _createValidator.ValidateAndThrowAsync(request, cancellationToken);
 
@@ -127,7 +124,7 @@ namespace CatalogService.Application.Services
             };
         }
 
-        public async Task<Guid> UpdateProductAsync(Guid productId, ProductUpdateRequest request, CancellationToken cancellationToken)
+        public async Task<Guid> UpdateProductAsync(Guid productId, UpdateProductRequest request, CancellationToken cancellationToken)
         {
             await _updateValidator.ValidateAndThrowAsync(request, cancellationToken);
 
@@ -152,28 +149,49 @@ namespace CatalogService.Application.Services
             _logger.LogInformation("Product with ID {@ProductId} successfully updated", productId);
             return productId;
         }
-        public async Task<ProductViewModel> UpdateProductQuantityAsync(Guid productId, ProductUpdateQuantityRequest request, CancellationToken cancellationToken)
+
+        public async Task<ProductViewModel> ReserveProductAsync(Guid productId, int quantity, CancellationToken cancellationToken)
         {
-            await _quantityValidator.ValidateAndThrowAsync(request);
+            if (quantity <= 0)
+                throw new ValidationException("Quantity must be positive");
 
             var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
             if (product == null)
-            {
                 throw new NotFoundException($"Product with ID {productId} not found.");
-            }
-            _logger.LogInformation("Product with ID {@ProductId} successfully found", productId);
 
-            if (product.Quantity + request.DeltaQuantity < 0)
+            if (product.Quantity < quantity)
             {
-                throw new ValidationException($"Product '{product.Name}' does not have enough quantity available. Requested: {Math.Abs(request.DeltaQuantity)}, Available: {product.Quantity}.");
+                throw new ValidationException($"Not enough quantity. Available: {product.Quantity}");
             }
-            product.Quantity += request.DeltaQuantity;
-            product.UpdatedDateUtc = DateTime.UtcNow;
-            await _productRepository.SaveChangesAsync(cancellationToken);
-            _logger.LogInformation("{@Product} quantity successfully updated", product);
-            return product.ToViewModel();
 
+            product.Quantity -= quantity;
+            product.UpdatedDateUtc = DateTime.UtcNow;
+
+            await _productRepository.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("Reserved {Quantity} of product {@ProductId}", quantity, productId);
+
+            return product.ToViewModel();
         }
+
+        public async Task<ProductViewModel> ReleaseProductAsync(Guid productId, int quantity, CancellationToken cancellationToken)
+        {
+            if (quantity <= 0)
+                throw new ValidationException("Quantity must be positive");
+
+            var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
+            if (product == null)
+                throw new NotFoundException($"Product with ID {productId} not found.");
+
+            product.Quantity += quantity;
+            product.UpdatedDateUtc = DateTime.UtcNow;
+
+            await _productRepository.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("Released {Quantity} of product {@ProductId}", quantity, productId);
+
+            return product.ToViewModel();
+        }
+
+
         public async Task DeleteProductAsync(Guid productId, CancellationToken cancellationToken)
         {
             var product = await _productRepository.GetByIdAsync(productId, cancellationToken);
