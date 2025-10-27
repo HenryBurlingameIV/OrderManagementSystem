@@ -18,7 +18,7 @@ namespace CatalogService.Api
         {
             var builder = WebApplication.CreateBuilder(args);
             builder.WebHost
-                .ConfigureWebHost(builder.Environment, builder.Configuration);
+                .ConfigureWebHost(builder.Configuration);
 
 
             builder.Services
