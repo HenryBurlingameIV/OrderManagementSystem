@@ -15,7 +15,7 @@ namespace CatalogService.Api
 {
     public static class ConfigureApp
     {
-        public static IWebHostBuilder ConfigureWebHost(this IWebHostBuilder webHostBuilder, IHostEnvironment env, IConfiguration configuration)
+        public static IWebHostBuilder ConfigureWebHost(this IWebHostBuilder webHostBuilder, IConfiguration configuration)
         {
             webHostBuilder.ConfigureKestrel(options =>
             {                
