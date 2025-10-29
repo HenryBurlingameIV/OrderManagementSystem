@@ -66,7 +66,7 @@ namespace OrderManagementSystem.Shared.Kafka
                             result.Message.Key, result.Offset);
                         using var scope = _serviceProvider.CreateScope();
                         var handler = scope.ServiceProvider.GetRequiredService<IMessageHandler<TMessage>>();
-                        await handler.HandleAsync(result.Value, stoppingToken);
+                        await handler.HandleAsync(result.Message.Value, stoppingToken);
                         _consumer.Commit(result);
                     }
                     catch (ConsumeException ex)
