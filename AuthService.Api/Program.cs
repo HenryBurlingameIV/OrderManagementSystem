@@ -1,3 +1,6 @@
+using AuthService.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+
 namespace AuthService.Api
 {
     public class Program
@@ -5,6 +8,11 @@ namespace AuthService.Api
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            var dbConnection = builder.Configuration.GetConnectionString(nameof(AuthDbContext));
+            builder.Services.AddDbContext<AuthDbContext>(options =>
+            {
+                options.UseNpgsql(dbConnection);
+            });
             var app = builder.Build();
 
             app.MapGet("/", () => "Hello World!");
