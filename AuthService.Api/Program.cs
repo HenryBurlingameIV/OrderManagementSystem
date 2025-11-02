@@ -1,4 +1,5 @@
 using AuthService.Infrastructure;
+using AuthService.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuthService.Api

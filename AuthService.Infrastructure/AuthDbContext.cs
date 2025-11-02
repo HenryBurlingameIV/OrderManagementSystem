@@ -1,4 +1,5 @@
 ﻿using AuthService.Domain.Entities;
+using AuthService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -19,11 +20,6 @@ namespace AuthService.Infrastructure
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AuthDbContext).Assembly);
-        }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=AuthDB;Username=postgres;Password=0807");
         }
     }
 }
