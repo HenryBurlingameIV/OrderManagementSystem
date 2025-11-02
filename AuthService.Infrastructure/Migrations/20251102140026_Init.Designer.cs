@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AuthService.Infrastructure.Migrations
 {
     [DbContext(typeof(AuthDbContext))]
-    [Migration("20251102133106_Init")]
+    [Migration("20251102140026_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -225,7 +225,7 @@ namespace AuthService.Infrastructure.Migrations
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111111"),
                             Email = "admin@system.com",
-                            HashedPassword = "$2a$11$fixedhashvalueforadmin123000000000",
+                            HashedPassword = "$2a$11$AP30ALTeWRMpPxFLVS3yEeLhVt13hIfvbrUXRMQI4Ije9OwEgmKbC",
                             IsActive = true,
                             Name = "Administrator"
                         });

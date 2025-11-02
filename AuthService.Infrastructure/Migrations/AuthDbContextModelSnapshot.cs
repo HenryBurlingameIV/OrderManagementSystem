@@ -222,7 +222,7 @@ namespace AuthService.Infrastructure.Migrations
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111111"),
                             Email = "admin@system.com",
-                            HashedPassword = "$2a$11$fixedhashvalueforadmin123000000000",
+                            HashedPassword = "$2a$11$AP30ALTeWRMpPxFLVS3yEeLhVt13hIfvbrUXRMQI4Ije9OwEgmKbC",
                             IsActive = true,
                             Name = "Administrator"
                         });

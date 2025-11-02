@@ -143,7 +143,7 @@ namespace AuthService.Infrastructure.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "Email", "HashedPassword", "IsActive", "Name" },
-                values: new object[] { new Guid("11111111-1111-1111-1111-111111111111"), "admin@system.com", "$2a$11$fixedhashvalueforadmin123000000000", true, "Administrator" });
+                values: new object[] { new Guid("11111111-1111-1111-1111-111111111111"), "admin@system.com", "$2a$11$AP30ALTeWRMpPxFLVS3yEeLhVt13hIfvbrUXRMQI4Ije9OwEgmKbC", true, "Administrator" });
 
             migrationBuilder.InsertData(
                 table: "RolePermissions",
