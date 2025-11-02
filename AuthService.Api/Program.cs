@@ -12,6 +12,7 @@ namespace AuthService.Api
             builder.ConfigureSerilog();
             builder.Services.ConfigureServices(builder.Configuration);
             var app = builder.Build();
+            app.ConfigurePipeline();
 
             app.MapGet("/", () => "Hello World!");
 

@@ -1,10 +1,12 @@
-﻿using AuthService.Application.Contracts;
+﻿using AuthService.Application;
+using AuthService.Application.Contracts;
 using AuthService.Domain.Entities;
 using AuthService.Infrastructure.Data;
 using AuthService.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OrderManagementSystem.Shared.Authorization;
 using OrderManagementSystem.Shared.Contracts;
 using OrderManagementSystem.Shared.DataAccess;
 using System;
@@ -31,6 +33,8 @@ namespace AuthService.Infrastructure.Extensions
             });
 
             services.AddScoped<IPasswordHasher, PasswordHasher>();
+            services.Configure<JwtOptions>(configuration.GetSection("JwtOptions"));
+            services.AddScoped<IJwtProvider, JwtProvider>();
 
             return services;
         }
