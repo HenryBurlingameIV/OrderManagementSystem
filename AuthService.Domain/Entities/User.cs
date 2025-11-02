@@ -13,6 +13,8 @@ namespace AuthService.Domain.Entities
         public string Email { get; set; }
         public string HashedPassword { get; set; }
 
+        public bool IsActive {  get; set; }
+
         public List<Role> Roles { get; set; } = new();
 
         public List<string> GetAllPermissions()
