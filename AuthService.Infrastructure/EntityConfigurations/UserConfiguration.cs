@@ -1,4 +1,5 @@
 ﻿using AuthService.Domain.Entities;
+using AuthService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -14,6 +15,10 @@ namespace AuthService.Infrastructure.EntityConfigurations
         public void Configure(EntityTypeBuilder<User> builder)
         {
             builder.HasKey(user => user.Id);
+
+            builder
+                .Property(user => user.Id)
+                .HasDefaultValueSql("gen_random_uuid()");
 
             builder
                 .Property(user => user.Name)
@@ -33,14 +38,19 @@ namespace AuthService.Infrastructure.EntityConfigurations
             builder
                 .HasMany(user => user.Roles)
                 .WithMany()
-                .UsingEntity(j => j.ToTable("UserRoles"));
+                .UsingEntity<Dictionary<string, object>>(
+                    "UserRoles",
+                    j => j.HasData(SeedData.GetUserRolesForSeed()));
 
             builder
                 .HasIndex(user => user.Email)
                 .IsUnique();
 
             builder
-                .HasIndex(user => user.Name);                        
+                .HasIndex(user => user.Name);
+
+            builder
+                .HasData(SeedData.GetAdminUser());
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AuthService.Domain.Entities;
+using AuthService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -17,6 +18,10 @@ namespace AuthService.Infrastructure.EntityConfigurations
                 .HasKey(p => p.Id);
 
             builder
+                .Property(p => p.Id)
+                .ValueGeneratedOnAdd();
+
+            builder
                 .Property(p => p.Name)
                 .HasMaxLength(100)
                 .IsRequired();
@@ -24,6 +29,9 @@ namespace AuthService.Infrastructure.EntityConfigurations
             builder
                 .HasIndex(p => p.Name)
                 .IsUnique();
+
+            builder
+                .HasData(SeedData.GetPermissionsForSeed());
         }
     }
 }

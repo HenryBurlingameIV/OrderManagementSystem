@@ -1,4 +1,5 @@
 ﻿using AuthService.Domain.Entities;
+using AuthService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -17,6 +18,10 @@ namespace AuthService.Infrastructure.EntityConfigurations
                 .HasKey(r => r.Id);
 
             builder
+                .Property(r => r.Id)
+                .ValueGeneratedOnAdd();
+
+            builder
                 .Property(r => r.Name)
                 .HasMaxLength(100)
                 .IsRequired();
@@ -24,11 +29,16 @@ namespace AuthService.Infrastructure.EntityConfigurations
             builder
                 .HasMany(r => r.Permissions)
                 .WithMany()
-                .UsingEntity(j => j.ToTable("RolePermissions"));
+                .UsingEntity<Dictionary<string, object>>(
+                    "RolePermissions",
+                    j => j.HasData(SeedData.GetRolePermissionsForSeed()));
 
             builder
                 .HasIndex(r => r.Name)
                 .IsUnique();
+
+            builder
+                .HasData(SeedData.GetRolesForSeed());
         }
     }
 }
