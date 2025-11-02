@@ -11,8 +11,8 @@ using System.Xml.Linq;
 namespace AuthService.Infrastructure.Data
 {
     public static class SeedData
-    {       
-        public const string AdminHashedPassword = "$2a$11$fixedhashvalueforadmin123000000000"; //Admin123!
+    {
+        public const string AdminHashedPassword = "$2a$11$AP30ALTeWRMpPxFLVS3yEeLhVt13hIfvbrUXRMQI4Ije9OwEgmKbC"; //Admin123!
         public static readonly Dictionary<string, Permission> AllPermissions = new()
         {
             // Catalog
