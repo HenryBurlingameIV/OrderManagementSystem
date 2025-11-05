@@ -20,7 +20,7 @@ namespace AuthService.Api.Controllers
             _authService = authService;
         }
 
-        [HttpPost]
+        [HttpPost("login")]
         public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request, CancellationToken ct)
         {
             var result = await _authService.LoginAsync(request, ct);
