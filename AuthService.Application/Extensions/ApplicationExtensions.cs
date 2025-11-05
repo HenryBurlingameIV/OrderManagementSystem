@@ -14,6 +14,7 @@ namespace AuthService.Application.Extensions
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
             services.AddScoped<IAuthenticationService, AuthenticationService>();
+            services.AddScoped<IRoleProvider, RoleProvider>();
             return services;
         }
     }

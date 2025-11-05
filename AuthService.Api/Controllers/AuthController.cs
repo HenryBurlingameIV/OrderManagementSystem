@@ -25,6 +25,13 @@ namespace AuthService.Api.Controllers
             var result = await _authService.LoginAsync(request, ct);
             return Ok(result);
         }
+
+        [HttpPost("register")]
+        public async Task<ActionResult> Register([FromBody] RegisterRequest request, CancellationToken ct)
+        {
+            await _authService.RegisterAsync(request, ct);
+            return Accepted(new {Message = "Registration successful" });
+        }
     }
 
 

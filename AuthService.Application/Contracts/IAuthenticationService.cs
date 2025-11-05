@@ -10,5 +10,6 @@ namespace AuthService.Application.Contracts
     public interface IAuthenticationService
     {
         Task<LoginResponse> LoginAsync(LoginRequest request, CancellationToken ct);
+        Task RegisterAsync(RegisterRequest registerRequest, CancellationToken ct);
     }
 }

@@ -31,6 +31,12 @@ namespace AuthService.Infrastructure.Extensions
                 return new Repository<User, Guid>(context);
             });
 
+            services.AddScoped<IEFRepository<Role, int>, Repository<Role, int>>(rpovider =>
+            {
+                var context = rpovider.GetRequiredService<AuthDbContext>();
+                return new Repository<Role, int>(context);
+            });
+
             services.AddScoped<IPasswordHasher, PasswordHasher>();
             services.Configure<JwtOptions>(configuration.GetSection("JwtOptions"));
             services.AddScoped<IJwtProvider, JwtProvider>();
