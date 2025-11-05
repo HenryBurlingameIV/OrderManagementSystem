@@ -27,7 +27,6 @@ namespace CatalogService.Tests.UnitTests
     {     
         private IValidator<CreateProductRequest> _productCreateRequestValidator;
         private IValidator<UpdateProductRequest> _productUpdateRequestValidator;
-        private IValidator<ReserveProductRequest> _productUpdateQuantityRequestValidator;
         private IValidator<GetPagindatedProductsRequest> _paginationValidator;
         private Mock<IEFRepository<Product, Guid>> _mockRepository;
         private Mock<ILogger<ProductService>> _mockLogger;
@@ -37,7 +36,6 @@ namespace CatalogService.Tests.UnitTests
         {
             _productCreateRequestValidator = new CreateProductRequestValidator();
             _productUpdateRequestValidator = new UpdateProductRequestValidator();
-            _productUpdateQuantityRequestValidator = new UpdateProductQuantityValidator();
             _paginationValidator = new GetPaginatedProductsRequestValidator();
             _mockRepository = new Mock<IEFRepository<Product, Guid>>();
             _mockLogger = new Mock<ILogger<ProductService>>();
@@ -45,7 +43,6 @@ namespace CatalogService.Tests.UnitTests
                 _mockRepository.Object,
                 _productCreateRequestValidator,
                 _productUpdateRequestValidator,
-                _productUpdateQuantityRequestValidator,
                 _paginationValidator,
                 _mockLogger.Object
                 );
@@ -251,14 +248,13 @@ namespace CatalogService.Tests.UnitTests
         }
 
         [Theory, AutoProductData]
-        public async Task Should_UpdateQuantity_WhenRequestContainsValidData(Product product)
+        public async Task Should_ReserveQuantity_WhenRequestContainsValidData(Product product)
         {
-            var updateRequest = new ReserveProductRequest(-1);
-
-
             var initialQuantity = product.Quantity;
             var id = product.Id;
-            var expectedQuantity = initialQuantity + updateRequest.Quantity;
+            var reserveQuantity = initialQuantity - 1;
+            var expectedStock = 1;
+
 
             _mockRepository
                 .Setup(repo => repo.GetByIdAsync(id, It.IsAny<CancellationToken>()))
@@ -271,20 +267,18 @@ namespace CatalogService.Tests.UnitTests
 
 
             //Act
-            await _productService.UpdateProductQuantityAsync(id, updateRequest, CancellationToken.None);
+            await _productService.ReserveProductAsync(id, reserveQuantity, CancellationToken.None);
 
             //Assert
-            Assert.Equal(expectedQuantity, product.Quantity);
+            Assert.Equal(expectedStock, product.Quantity);
             _mockRepository.VerifyAll();
         }
 
         [Theory, AutoProductData]
         public async Task Should_ThrowValidationException_WhenRequestedQuantityExceedsAvailable(Product product)
         {
-            var updateRequest = new ReserveProductRequest(-(product.Quantity + 1));
-
-
             var initialQuantity = product.Quantity;
+            var reserveQuantity = product.Quantity + 1;
             var id = product.Id;
 
             _mockRepository
@@ -292,8 +286,8 @@ namespace CatalogService.Tests.UnitTests
                 .ReturnsAsync((Guid id, CancellationToken token) => product);
 
             //Act & Assert
-            var exception = await Assert.ThrowsAsync<ValidationException>(async () => await _productService.UpdateProductQuantityAsync(id, updateRequest, CancellationToken.None));
-            Assert.Contains($"Product '{product.Name}' does not have enough quantity available. Requested: {Math.Abs(updateRequest.Quantity)}, Available: {product.Quantity}.", exception.Message);
+            var exception = await Assert.ThrowsAsync<ValidationException>(async () => await _productService.ReserveProductAsync(id, reserveQuantity, CancellationToken.None));
+            Assert.Contains($"Not enough quantity.", exception.Message);
             _mockRepository.VerifyAll();
             _mockRepository.Verify(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
 
