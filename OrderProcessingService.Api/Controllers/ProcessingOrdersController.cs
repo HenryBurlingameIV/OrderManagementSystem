@@ -14,14 +14,14 @@ namespace OrderProcessingService.Api.Controllers
         ): ControllerBase
     {
         [HttpGet("{id:Guid}")]
-        public async Task<ActionResult<ProcessingOrderViewModel>> GetProcessingOrderAsync(Guid id, CancellationToken cancellationToken)
+        public async Task<ActionResult<ProcessingOrderViewModel>> GetProcessingOrder(Guid id, CancellationToken cancellationToken)
         {
             var result = await queryService.GetProcesingOrderById(id, cancellationToken);
             return Ok(result);
         }
 
         [HttpGet]
-        public async Task<ActionResult<PaginatedResult<ProcessingOrderViewModel>>> GetProcessingOrdersAsync(
+        public async Task<ActionResult<PaginatedResult<ProcessingOrderViewModel>>> GetProcessingOrders(
             [FromQuery] GetPaginatedProcessingOrdersRequest query,
             CancellationToken cancellationToken)
         {

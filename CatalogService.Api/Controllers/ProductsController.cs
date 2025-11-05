@@ -19,7 +19,7 @@ namespace CatalogService.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Guid>> CreateProductAsync(
+        public async Task<ActionResult<Guid>> CreateProduct(
             [FromBody] CreateProductRequest request,
             CancellationToken cancellationToken
             )
@@ -29,7 +29,7 @@ namespace CatalogService.Api.Controllers
         }
 
         [HttpGet("{id:guid}", Name = "GetProduct")]
-        public async Task<ActionResult<ProductViewModel>> GetProductAsync(
+        public async Task<ActionResult<ProductViewModel>> GetProduct(
             [FromRoute] Guid id,
             CancellationToken cancellationToken
             )
@@ -39,7 +39,7 @@ namespace CatalogService.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<ProductViewModel>> GetProductsAsync(
+        public async Task<ActionResult<ProductViewModel>> GetProducts(
             [FromQuery] GetPagindatedProductsRequest request,
             CancellationToken cancellationToken)
         {
@@ -51,7 +51,7 @@ namespace CatalogService.Api.Controllers
             
 
         [HttpPut("{id:guid}")]
-        public async Task<ActionResult<Guid>> UpdateProductAsync(
+        public async Task<ActionResult<Guid>> UpdateProduct(
             [FromRoute] Guid id, 
             [FromBody] UpdateProductRequest request,
             CancellationToken cancellationToken
@@ -63,7 +63,7 @@ namespace CatalogService.Api.Controllers
         }
 
         [HttpPatch("{id:guid}/reserve")]
-        public async Task<ActionResult<ProductViewModel>> ReserveProductAsync(
+        public async Task<ActionResult<ProductViewModel>> ReserveProduct(
             [FromRoute] Guid id,
             [FromBody] ReserveProductRequest request,
             CancellationToken cancellationToken
@@ -74,7 +74,7 @@ namespace CatalogService.Api.Controllers
         }
 
         [HttpPatch("{id:guid}/release")]
-        public async Task<ActionResult<ProductViewModel>> ReleaseProductAsync(
+        public async Task<ActionResult<ProductViewModel>> ReleaseProduct(
             [FromRoute] Guid id,
             [FromBody] ReserveProductRequest request,
             CancellationToken cancellationToken
@@ -86,7 +86,7 @@ namespace CatalogService.Api.Controllers
 
 
         [HttpDelete("{id:guid}")]
-        public async Task<ActionResult> DeleteProductAsync(
+        public async Task<ActionResult> DeleteProduct(
             [FromRoute] Guid id, 
             CancellationToken cancellationToken
             )

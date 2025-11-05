@@ -15,7 +15,7 @@ namespace OrderService.Api.Controllers
     public class OrdersController(IMediator mediator) : ControllerBase
     {
         [HttpPost]
-        public async Task<ActionResult<Guid>> CreateOrderAsync(
+        public async Task<ActionResult<Guid>> CreateOrder(
             [FromBody] CreateOrderRequest request,
             CancellationToken cancellationToken)
         {
@@ -25,7 +25,7 @@ namespace OrderService.Api.Controllers
         }
 
         [HttpGet("{id:Guid}", Name = "GetOrder")]
-        public async Task<ActionResult<OrderViewModel>> GetOrderAsync(
+        public async Task<ActionResult<OrderViewModel>> GetOrder(
             [FromRoute]
             Guid id,
             CancellationToken cancellationToken)
@@ -48,7 +48,7 @@ namespace OrderService.Api.Controllers
         }
 
         [HttpPatch("{id:guid}/status")]
-        public async Task<ActionResult> UpdateOrderStatusAsync(
+        public async Task<ActionResult> UpdateOrderStatus(
             [FromRoute]
             Guid id,
             [FromBody]
