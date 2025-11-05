@@ -1,5 +1,4 @@
-﻿using AuthService.Application;
-using AuthService.Application.Contracts;
+﻿using AuthService.Application.Contracts;
 using AuthService.Application.DTO;
 using AuthService.Infrastructure;
 using AuthService.Infrastructure.Data;

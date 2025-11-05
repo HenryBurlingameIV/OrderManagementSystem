@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AuthService.Application
+namespace AuthService.Application.Contracts
 {
     public interface IJwtProvider
     {
