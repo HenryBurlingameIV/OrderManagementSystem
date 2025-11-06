@@ -6,6 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AuthService.Application.Contracts;
+using FluentValidation;
+using AuthService.Application.DTO;
+using AuthService.Application.Validators;
 
 namespace AuthService.Application.Extensions
 {
@@ -15,6 +18,7 @@ namespace AuthService.Application.Extensions
         {
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<IRoleProvider, RoleProvider>();
+            services.AddScoped<IValidator<RegisterRequest>, RegisterRequestValidator>();
             return services;
         }
     }
