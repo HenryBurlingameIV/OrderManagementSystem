@@ -25,6 +25,7 @@ namespace AuthService.Application.Services
         private readonly IRoleProvider _roleProvider;
         private readonly IJwtProvider _jwtProvider;
         private readonly IPasswordHasher _passwordHasher;
+        private readonly IValidator<RegisterRequest> _registerValidator;
         private readonly ILogger<AuthenticationService> _logger;
 
         public AuthenticationService(
@@ -32,12 +33,14 @@ namespace AuthService.Application.Services
             IRoleProvider roleProvider,
             IJwtProvider jwtProvider,
             IPasswordHasher passwordHasher,
+            IValidator<RegisterRequest> registerValidator,
             ILogger<AuthenticationService> logger)
         {
             _usersRepository = usersRepository;
             _roleProvider = roleProvider;
             _jwtProvider = jwtProvider;
             _passwordHasher = passwordHasher;
+            _registerValidator = registerValidator;
             _logger = logger;
         }
 
@@ -68,14 +71,7 @@ namespace AuthService.Application.Services
 
         public async Task RegisterAsync(RegisterRequest request, CancellationToken ct)
         {
-            var emailIsExists = await _usersRepository.ExistsAsync(
-                predicate: u => u.Email == request.Email,
-                ct: ct);
-
-            if (emailIsExists)
-            {
-                throw new ValidationException("Such email already used.");
-            }
+            await _registerValidator.ValidateAndThrowAsync(request, ct);
 
             var user = new User()
             {
