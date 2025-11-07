@@ -25,6 +25,7 @@ namespace AuthService.Application.Services
         private readonly IRoleProvider _roleProvider;
         private readonly IJwtProvider _jwtProvider;
         private readonly IPasswordHasher _passwordHasher;
+        private readonly IValidator<LoginRequest> _loginValidator;
         private readonly IValidator<RegisterRequest> _registerValidator;
         private readonly ILogger<AuthenticationService> _logger;
 
@@ -33,6 +34,7 @@ namespace AuthService.Application.Services
             IRoleProvider roleProvider,
             IJwtProvider jwtProvider,
             IPasswordHasher passwordHasher,
+            IValidator<LoginRequest> loginValidator,
             IValidator<RegisterRequest> registerValidator,
             ILogger<AuthenticationService> logger)
         {
@@ -40,12 +42,15 @@ namespace AuthService.Application.Services
             _roleProvider = roleProvider;
             _jwtProvider = jwtProvider;
             _passwordHasher = passwordHasher;
+            _loginValidator = loginValidator;
             _registerValidator = registerValidator;
             _logger = logger;
         }
 
         public async Task<LoginResponse> LoginAsync(LoginRequest request, CancellationToken ct)
         {
+            await _loginValidator.ValidateAndThrowAsync(request, ct);
+
             var user = await _usersRepository.GetFirstOrDefaultAsync(
                 filter: x => x.Email == request.Email,
                 include: x => x
@@ -66,6 +71,7 @@ namespace AuthService.Application.Services
             }
 
             var token = _jwtProvider.GenerateToken(user!);
+            _logger.LogInformation("User with ID {UserId} successfully logged on.", user.Id);
             return new LoginResponse(token);
         }
 
@@ -84,7 +90,7 @@ namespace AuthService.Application.Services
             user.Roles.Add(await _roleProvider.GetClientRoleAsync(ct));
             await _usersRepository.InsertAsync(user, ct);
             await _usersRepository.SaveChangesAsync(ct);
+            _logger.LogInformation("User with ID {UserId} successfully created.", user.Id);
         }
-
     }
 }

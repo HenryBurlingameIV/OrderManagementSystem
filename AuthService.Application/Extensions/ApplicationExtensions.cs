@@ -19,6 +19,7 @@ namespace AuthService.Application.Extensions
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<IRoleProvider, RoleProvider>();
             services.AddScoped<IValidator<RegisterRequest>, RegisterRequestValidator>();
+            services.AddScoped<IValidator<LoginRequest>, LoginRequestValidator>();
             return services;
         }
     }
