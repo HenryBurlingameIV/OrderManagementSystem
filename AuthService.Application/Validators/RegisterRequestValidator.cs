@@ -38,7 +38,7 @@ namespace AuthService.Application.Validators
 
         private async Task<bool> BeUniqueEmail(string email, CancellationToken ct)
         {
-            return !await _usersRepository.ExistsAsync(predicate: u => u.Email == email, ct: ct);
+            return !await _usersRepository.ExistsAsync(predicate: u => u.Email == email.Trim().ToLower(), ct: ct);
         }
 
     }

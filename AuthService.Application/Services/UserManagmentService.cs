@@ -61,20 +61,23 @@ namespace AuthService.Application.Services
         public async Task<Guid> CreateUserAsync(CreateUserRequest request, CancellationToken ct)
         {
             await _createUserValidator.ValidateAndThrowAsync(request, ct);
-            var normalizedEmail = request.Email.Trim().ToLowerInvariant();
-            var roles = await _roleProvider.GetRolesByNamesAsync(request.Roles, ct);
-            var foundRoleNames = roles.Select(r => r.Name).ToList();
-            var missingRoles = request.Roles.Except(foundRoleNames).ToList();
 
-            if (missingRoles.Any())
+            var roles = await _roleProvider.GetRolesByNamesAsync(request.Roles, ct);
+
+            if (roles.Count != request.Roles.Count)
             {
+                var foundRoleNames = roles.Select(r => r.Name).ToList();
+                var missingRoles = request.Roles.Except(foundRoleNames, StringComparer.OrdinalIgnoreCase).ToList();
+
                 throw new ValidationException($"The following roles were not found: {string.Join(", ", missingRoles)}");
             }
+
+            var normalizedEmail = request.Email.Trim().ToLowerInvariant();
 
             var user = new User()
             {
                 Name = request.Name.Trim(),
-                Email = request.Email,
+                Email = normalizedEmail,
                 IsActive = request.IsActive,
                 HashedPassword = _passwordHasher.HashPassword(request.Password),
                 Roles = roles.ToList(),
