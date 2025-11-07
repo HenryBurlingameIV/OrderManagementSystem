@@ -9,7 +9,7 @@ namespace AuthService.Application.Contracts
 {
     public interface IUserManagmentService
     {
-        Task CreateUserAsync(CreateUserRequest request, CancellationToken ct);
+        Task<Guid> CreateUserAsync(CreateUserRequest request, CancellationToken ct);
         Task ActivateUserAsync(Guid userId, CancellationToken ct);
         Task DeactivateUserAsync(Guid userId, CancellationToken ct);
 

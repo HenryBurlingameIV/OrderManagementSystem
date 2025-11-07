@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 namespace AuthService.Application.DTO
 {
-    public record CreateUserRequest(string Name, string Email, string Password, List<string> Roles);
+    public record CreateUserRequest(string Name, string Email, string Password, bool IsActive, List<string> Roles);
 
 }

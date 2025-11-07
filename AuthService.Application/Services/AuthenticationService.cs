@@ -50,9 +50,9 @@ namespace AuthService.Application.Services
         public async Task<LoginResponse> LoginAsync(LoginRequest request, CancellationToken ct)
         {
             await _loginValidator.ValidateAndThrowAsync(request, ct);
-
+            var normalizedEmail = request.Email.Trim().ToLowerInvariant();
             var user = await _usersRepository.GetFirstOrDefaultAsync(
-                filter: x => x.Email == request.Email,
+                filter: x => x.Email == normalizedEmail,
                 include: x => x
                     .Include(u => u.Roles)
                         .ThenInclude(r => r.Permissions),
@@ -78,11 +78,11 @@ namespace AuthService.Application.Services
         public async Task RegisterAsync(RegisterRequest request, CancellationToken ct)
         {
             await _registerValidator.ValidateAndThrowAsync(request, ct);
-
+            var normalizedEmail = request.Email.Trim().ToLowerInvariant();
             var user = new User()
             {
-                Name = request.Name,
-                Email = request.Email,
+                Name = request.Name.Trim(),
+                Email = normalizedEmail,
                 IsActive = true,
                 HashedPassword = _passwordHasher.HashPassword(request.Password)
             };

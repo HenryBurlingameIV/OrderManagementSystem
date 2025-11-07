@@ -1,4 +1,5 @@
 ﻿using AuthService.Application.Contracts;
+using AuthService.Application.DTO;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthService.Api.Controllers
@@ -12,6 +13,13 @@ namespace AuthService.Api.Controllers
         public UsersController(IUserManagmentService userManagmentService)
         {
             _userManagmentService = userManagmentService;
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<Guid>> CreateUser([FromBody] CreateUserRequest request, CancellationToken ct)
+        {
+            var result = await _userManagmentService.CreateUserAsync(request, ct);
+            return Ok(result);
         }
 
         [HttpPatch("{userId:Guid}/activate")]

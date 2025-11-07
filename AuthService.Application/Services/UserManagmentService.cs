@@ -1,6 +1,7 @@
 ﻿using AuthService.Application.Contracts;
 using AuthService.Application.DTO;
 using AuthService.Domain.Entities;
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 using OrderManagementSystem.Shared.Contracts;
 using OrderManagementSystem.Shared.Exceptions;
@@ -16,15 +17,21 @@ namespace AuthService.Application.Services
     {
         private readonly IEFRepository<User, Guid> _usersRepository;
         private readonly IRoleProvider _roleProvider;
+        private readonly IPasswordHasher _passwordHasher;
+        private readonly IValidator<CreateUserRequest> _createUserValidator;
         private readonly ILogger<UserManagmentService> _logger;
 
         public UserManagmentService(
             IEFRepository<User, Guid> usersRepository,
             IRoleProvider roleProvider,
+            IPasswordHasher passwordHasher,
+            IValidator<CreateUserRequest> createUserValidator,
             ILogger<UserManagmentService> logger)
         {
             _usersRepository = usersRepository;
             _roleProvider = roleProvider;
+            _passwordHasher = passwordHasher;
+            _createUserValidator = createUserValidator;
             _logger = logger;
         }
         public async Task ActivateUserAsync(Guid userId, CancellationToken ct)
@@ -51,9 +58,31 @@ namespace AuthService.Application.Services
             throw new NotImplementedException();
         }
 
-        public Task CreateUserAsync(CreateUserRequest request, CancellationToken ct)
+        public async Task<Guid> CreateUserAsync(CreateUserRequest request, CancellationToken ct)
         {
-            throw new NotImplementedException();
+            await _createUserValidator.ValidateAndThrowAsync(request, ct);
+            var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+            var roles = await _roleProvider.GetRolesByNamesAsync(request.Roles, ct);
+            var foundRoleNames = roles.Select(r => r.Name).ToList();
+            var missingRoles = request.Roles.Except(foundRoleNames).ToList();
+
+            if (missingRoles.Any())
+            {
+                throw new ValidationException($"The following roles were not found: {string.Join(", ", missingRoles)}");
+            }
+
+            var user = new User()
+            {
+                Name = request.Name.Trim(),
+                Email = request.Email,
+                IsActive = request.IsActive,
+                HashedPassword = _passwordHasher.HashPassword(request.Password),
+                Roles = roles.ToList(),
+            };
+
+            await _usersRepository.InsertAsync(user, ct);
+            await _usersRepository.SaveChangesAsync(ct);
+            return user.Id;               
         }
 
         public async Task DeactivateUserAsync(Guid userId, CancellationToken ct)

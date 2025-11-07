@@ -21,6 +21,7 @@ namespace AuthService.Application.Extensions
             services.AddScoped<IRoleProvider, RoleProvider>();
             services.AddScoped<IValidator<RegisterRequest>, RegisterRequestValidator>();
             services.AddScoped<IValidator<LoginRequest>, LoginRequestValidator>();
+            services.AddScoped<IValidator<CreateUserRequest>, CreateUserRequestValidator>();
             return services;
         }
     }
