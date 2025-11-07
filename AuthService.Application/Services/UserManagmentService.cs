@@ -1,5 +1,9 @@
 ﻿using AuthService.Application.Contracts;
 using AuthService.Application.DTO;
+using AuthService.Domain.Entities;
+using Microsoft.Extensions.Logging;
+using OrderManagementSystem.Shared.Contracts;
+using OrderManagementSystem.Shared.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +14,38 @@ namespace AuthService.Application.Services
 {
     internal class UserManagmentService : IUserManagmentService
     {
+        private readonly IEFRepository<User, Guid> _usersRepository;
+        private readonly IRoleProvider _roleProvider;
+        private readonly ILogger<UserManagmentService> _logger;
+
+        public UserManagmentService(
+            IEFRepository<User, Guid> usersRepository,
+            IRoleProvider roleProvider,
+            ILogger<UserManagmentService> logger)
+        {
+            _usersRepository = usersRepository;
+            _roleProvider = roleProvider;
+            _logger = logger;
+        }
+        public async Task ActivateUserAsync(Guid userId, CancellationToken ct)
+        {
+            var user = await _usersRepository.GetByIdAsync(userId, ct);
+            if (user == null)
+            {
+                throw new NotFoundException($"User with ID {userId} not found.");
+            }
+
+            if(user.IsActive is true)
+            {
+                _logger.LogInformation("User with ID {@UserId} is already active.", userId);
+                return;
+            }
+
+            user.IsActive = true;
+            await _usersRepository.SaveChangesAsync(ct);
+            _logger.LogInformation("User with ID {@UserId} activated.", userId);
+        }
+
         public Task AssignRoleAsync(Guid userId, List<string> roles, CancellationToken ct)
         {
             throw new NotImplementedException();
@@ -20,9 +56,23 @@ namespace AuthService.Application.Services
             throw new NotImplementedException();
         }
 
-        public Task DeactivateUserAsync(Guid userId, CancellationToken ct)
+        public async Task DeactivateUserAsync(Guid userId, CancellationToken ct)
         {
-            throw new NotImplementedException();
+            var user = await _usersRepository.GetByIdAsync(userId, ct);
+            if (user == null)
+            {
+                throw new NotFoundException($"User with ID {userId} not found.");
+            }
+
+            if (user.IsActive is false)
+            {
+                _logger.LogInformation("User with ID {@UserId} is already deactivated.", userId);
+                return;
+            }
+
+            user.IsActive = false;
+            await _usersRepository.SaveChangesAsync(ct);
+            _logger.LogInformation("User with ID {@UserId} deactivated.", userId);
         }
 
         public Task<UserViewModel> GetUserAsync(Guid userId, CancellationToken ct)
@@ -30,7 +80,7 @@ namespace AuthService.Application.Services
             throw new NotImplementedException();
         }
 
-        public Task UnassignRoleAsync(Guid userId, string role, CancellationToken ct)
+        public Task RemoveRoleAsync(Guid userId, string role, CancellationToken ct)
         {
             throw new NotImplementedException();
         }
