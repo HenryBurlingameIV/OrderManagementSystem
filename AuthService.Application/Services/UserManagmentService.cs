@@ -59,6 +59,7 @@ namespace AuthService.Application.Services
             var user = await _usersRepository.GetFirstOrDefaultAsync(
                 filter: u => u.Id == userId,
                 include: q => q.Include(u => u.Roles),
+                asNoTraсking: false,
                 ct: ct);
 
             if (user == null)
@@ -137,9 +138,35 @@ namespace AuthService.Application.Services
             throw new NotImplementedException();
         }
 
-        public Task RemoveRoleAsync(Guid userId, string role, CancellationToken ct)
+        public async Task RemoveRoleAsync(Guid userId, string roleName, CancellationToken ct)
         {
-            throw new NotImplementedException();
+            var role = await _roleProvider.GetRoleByNameAsync(roleName, ct);
+            if(role is null)
+            {
+                throw new NotFoundException($"Role {roleName} not found.");
+            }
+
+            var user = await _usersRepository.GetFirstOrDefaultAsync(
+                filter: u => u.Id == userId,
+                include: q => q.Include(u => u.Roles),
+                asNoTraсking: false,
+                ct: ct);
+
+            if (user == null)
+            {
+                throw new NotFoundException($"User with ID {userId} not found.");
+            }
+
+            var userRole = user.Roles.FirstOrDefault(r => r.Id == role.Id);
+;
+            if (userRole == null)
+            {
+                _logger.LogWarning("User {@UserId} doesn't have role {@RoleName}.", userId, roleName);
+                return;
+            }
+            user.Roles.Remove(userRole);
+            await _usersRepository.SaveChangesAsync(ct);
+            _logger.LogInformation("Role {@RoleName} removed from user {@UserId}", roleName, userId);
         }
     }
 }

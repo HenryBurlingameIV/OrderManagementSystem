@@ -36,10 +36,17 @@ namespace AuthService.Api.Controllers
             return NoContent();
         }
 
-        [HttpPost("{userId:Guid}/roles/{roleName:string}")]
+        [HttpPost("{userId:Guid}/roles/{roleName}")]
         public async Task<ActionResult> AssignRole([FromRoute] Guid userId, [FromRoute] string roleName, CancellationToken ct)
         {
             await _userManagmentService.AssignRoleAsync(userId, roleName, ct);
+            return NoContent();
+        }
+
+        [HttpDelete("{userId:Guid}/roles/{roleName}")]
+        public async Task<ActionResult> RemoveRole([FromRoute] Guid userId, [FromRoute] string roleName, CancellationToken ct)
+        {
+            await _userManagmentService.RemoveRoleAsync(userId, roleName, ct);
             return NoContent();
         }
     }
