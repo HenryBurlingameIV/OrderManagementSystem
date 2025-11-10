@@ -2,6 +2,7 @@
 using AuthService.Application.DTO;
 using AuthService.Domain.Entities;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OrderManagementSystem.Shared.Contracts;
 using OrderManagementSystem.Shared.Exceptions;
@@ -53,9 +54,33 @@ namespace AuthService.Application.Services
             _logger.LogInformation("User with ID {@UserId} activated.", userId);
         }
 
-        public Task AssignRoleAsync(Guid userId, List<string> roles, CancellationToken ct)
+        public async Task AssignRoleAsync(Guid userId, string roleName, CancellationToken ct)
         {
-            throw new NotImplementedException();
+            var user = await _usersRepository.GetFirstOrDefaultAsync(
+                filter: u => u.Id == userId,
+                include: q => q.Include(u => u.Roles),
+                ct: ct);
+
+            if (user == null)
+            {
+                throw new NotFoundException($"User with ID {userId} not found.");
+            }
+
+            var role = await _roleProvider.GetRoleByNameAsync(roleName, ct);
+            if (role == null)
+            {
+                throw new NotFoundException($"Role {roleName} not found.");
+            }
+
+            if(user.Roles.Any(r => r.Id == role.Id))
+            {
+                _logger.LogWarning("Role {RoleName} is already assigned to user {UserId}", roleName, userId);
+                return;
+            }
+
+            user.Roles.Add(role);
+            await _usersRepository.SaveChangesAsync(ct);
+            _logger.LogInformation("New role {@RoleName} assigned to user {@UserId}", roleName, userId);
         }
 
         public async Task<Guid> CreateUserAsync(CreateUserRequest request, CancellationToken ct)

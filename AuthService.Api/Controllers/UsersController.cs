@@ -35,5 +35,12 @@ namespace AuthService.Api.Controllers
             await _userManagmentService.DeactivateUserAsync(userId, ct);
             return NoContent();
         }
+
+        [HttpPost("{userId:Guid}/roles/{roleName:string}")]
+        public async Task<ActionResult> AssignRole([FromRoute] Guid userId, [FromRoute] string roleName, CancellationToken ct)
+        {
+            await _userManagmentService.AssignRoleAsync(userId, roleName, ct);
+            return NoContent();
+        }
     }
 }

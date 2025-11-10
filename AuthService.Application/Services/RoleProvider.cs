@@ -38,6 +38,13 @@ namespace AuthService.Application.Services
                 asNoTraсking: false,
                 ct: ct) ?? throw new InvalidOperationException("Admin role not found.");
 
+        public async Task<Role?> GetRoleByNameAsync(string roleName, CancellationToken ct)
+        {
+            var normalizeName = roleName.Trim().ToLowerInvariant();
+            return await _rolesRepository.GetFirstOrDefaultAsync(
+                filter: r => r.Name.ToLower() == normalizeName,
+                ct: ct);
+        }
 
         public async Task<IList<Role>> GetRolesByNamesAsync(List<string> roleNames, CancellationToken ct)
         {

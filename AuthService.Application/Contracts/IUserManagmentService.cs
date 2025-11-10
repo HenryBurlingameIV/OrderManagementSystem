@@ -15,7 +15,7 @@ namespace AuthService.Application.Contracts
 
         Task<UserViewModel> GetUserAsync(Guid userId, CancellationToken ct);
 
-        Task AssignRoleAsync(Guid userId, List<string> roles, CancellationToken ct);
+        Task AssignRoleAsync(Guid userId, string role, CancellationToken ct);
         Task RemoveRoleAsync(Guid userId, string role, CancellationToken ct);
     }
 }

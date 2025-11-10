@@ -13,5 +13,7 @@ namespace AuthService.Application.Contracts
         Task<Role> GetAdminRoleAsync(CancellationToken ct);
         Task<Role> GetManagerRoleAsync(CancellationToken ct);
         Task<IList<Role>> GetRolesByNamesAsync(List<string> roleNames, CancellationToken ct);
+
+        Task<Role?> GetRoleByNameAsync(string roleName, CancellationToken ct);
     }
 }
