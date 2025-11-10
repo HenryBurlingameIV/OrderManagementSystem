@@ -8,7 +8,7 @@ namespace OrderManagementSystem.Shared.Authorization
 {
     public class CustomClaimTypes
     {
-        public const string Permissions = "permissions";
-        public const string Roles = "roles";
+        public const string Permission = "permission";
+        //public const string Role = "role";
     }
 }

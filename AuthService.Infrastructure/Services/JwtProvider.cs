@@ -27,14 +27,25 @@ namespace AuthService.Infrastructure.Services
                 new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey)),
                 SecurityAlgorithms.HmacSha256);
 
-            var claims = new Claim[]
+            var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name, user.Name),
-                new Claim(CustomClaimTypes.Roles, string.Join(",", user.Roles.Select(r => r.Name))),
-                new Claim (CustomClaimTypes.Permissions, string.Join(",", user.GetAllPermissions()))
+                //new Claim(CustomClaimTypes.Roles, string.Join(",", user.Roles.Select(r => r.Name))),
+                //new Claim (CustomClaimTypes.Permissions, string.Join(",", user.GetAllPermissions()))
             };
+
+            foreach (var role in user.Roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role.Name));
+            }
+
+
+            foreach (var permission in user.GetAllPermissions())
+            {
+                claims.Add(new Claim(CustomClaimTypes.Permission, permission));
+            }
 
             var token = new JwtSecurityToken(
                 issuer: _jwtOptions.Issuer,

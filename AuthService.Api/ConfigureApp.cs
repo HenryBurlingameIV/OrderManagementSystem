@@ -2,6 +2,7 @@
 using AuthService.Application.Extensions;
 using Serilog;
 using OrderManagementSystem.Shared.Middlewares;
+using OrderManagementSystem.Shared.Authorization;
 
 namespace AuthService.Api
 {
@@ -9,6 +10,8 @@ namespace AuthService.Api
     {
         public static  IServiceCollection ConfigureServices(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddJwtAuthentication(configuration);
+            services.AddPermissionAuthorization();
             services.AddInfrastructure(configuration);
             services.AddApplication();
             services.AddEndpointsApiExplorer();
@@ -35,6 +38,8 @@ namespace AuthService.Api
                 app.UseSwaggerUI();
             }
             app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
             app.MapControllers();
             return app;
         }
