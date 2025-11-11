@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace AuthService.Application.DTO
 {
-    public record GetPaginatedUserDetailsRequest(
+    public record GetPaginatedUsersDetailsRequest(
         int PageNumber,
         int PageSize,
         string? Search = null,          
-        List<string>? Roles = null,     
+        string? Role = null,     
         bool? IsActive = null,          
         string? SortBy = "Email",
         bool Descending = false

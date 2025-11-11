@@ -1,4 +1,5 @@
 ﻿using AuthService.Application.DTO;
+using OrderManagementSystem.Shared.DataAccess.Pagination;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,8 @@ namespace AuthService.Application.Contracts
         Task<UserDetailsViewModel> GetUserDetailsAsync(Guid userId, CancellationToken ct);
 
         Task<UserProfileViewModel> GetUserProfileAsync(Guid userId, CancellationToken ct);
+
+        Task<PaginatedResult<UserDetailsViewModel>> GetPaginatedUsersDetailsAsync(GetPaginatedUsersDetailsRequest request, CancellationToken ct);
 
         Task AssignRoleAsync(Guid userId, string role, CancellationToken ct);
         Task RemoveRoleAsync(Guid userId, string role, CancellationToken ct);

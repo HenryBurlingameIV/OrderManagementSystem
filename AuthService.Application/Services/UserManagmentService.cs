@@ -5,10 +5,12 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OrderManagementSystem.Shared.Contracts;
+using OrderManagementSystem.Shared.DataAccess.Pagination;
 using OrderManagementSystem.Shared.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -151,6 +153,34 @@ namespace AuthService.Application.Services
                 user.Email,
                 user.Roles.Select(r => r.Name).ToList(),
                 user.IsActive);
+        }
+
+        public async Task<PaginatedResult<UserDetailsViewModel>> GetPaginatedUsersDetailsAsync(GetPaginatedUsersDetailsRequest request, CancellationToken ct)
+        {
+            var paginationRequest = new PaginationRequest() { PageNumber = request.PageNumber, PageSize = request.PageSize };
+            Expression<Func<User, bool>> filter = user =>
+                (string.IsNullOrEmpty(request.Search) || user.Name.Contains(request.Search) || user.Email.Contains(request.Search)) &&
+                (string.IsNullOrEmpty(request.Role) || user.Roles.Any(r => r.Name == request.Role)) &&
+                (request.IsActive == null || user.IsActive == request.IsActive);
+
+            Func<IQueryable<User>, IOrderedQueryable<User>>? orderBy =
+                request?.SortBy?.ToLower() switch
+                {
+                    "name" => request.Descending
+                        ? query => query.OrderByDescending(u => u.Name)
+                        : query => query.OrderBy(u => u.Name),
+                    "email" => request.Descending
+                        ? query => query.OrderByDescending(u => u.Email)
+                        : query => query.OrderBy(u => u.Email),
+                    _ => null
+                };
+
+            return await _usersRepository.GetPaginated<UserDetailsViewModel>(
+                request: paginationRequest,
+                filter: filter,
+                orderBy: orderBy,
+                selector: u => new UserDetailsViewModel(
+                    u.Id, u.Name, u.Email, u.Roles.Select(r => r.Name).ToList(), u.IsActive));
         }
 
         public async Task<UserProfileViewModel> GetUserProfileAsync(Guid userId, CancellationToken ct)

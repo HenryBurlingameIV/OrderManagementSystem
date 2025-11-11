@@ -29,6 +29,14 @@ namespace AuthService.Api.Controllers
             return Ok(result);
         }
 
+        [HttpGet()]
+        [Authorize(Policy = Permissions.Users.ReadAll)]
+        public async Task<ActionResult<UserDetailsViewModel>> GetUsers([FromQuery] GetPaginatedUsersDetailsRequest request, CancellationToken ct)
+        {
+            var result = await _userManagmentService.GetPaginatedUsersDetailsAsync(request, ct);
+            return Ok(result);
+        }
+
         [HttpGet("me")]
         [Authorize]
         public async Task<ActionResult<UserDetailsViewModel>> GetMyProfile(CancellationToken ct)
