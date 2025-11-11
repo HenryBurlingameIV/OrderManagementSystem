@@ -13,7 +13,9 @@ namespace AuthService.Application.Contracts
         Task ActivateUserAsync(Guid userId, CancellationToken ct);
         Task DeactivateUserAsync(Guid userId, CancellationToken ct);
 
-        Task<UserViewModel> GetUserAsync(Guid userId, CancellationToken ct);
+        Task<UserDetailsViewModel> GetUserDetailsAsync(Guid userId, CancellationToken ct);
+
+        Task<UserProfileViewModel> GetUserProfileAsync(Guid userId, CancellationToken ct);
 
         Task AssignRoleAsync(Guid userId, string role, CancellationToken ct);
         Task RemoveRoleAsync(Guid userId, string role, CancellationToken ct);

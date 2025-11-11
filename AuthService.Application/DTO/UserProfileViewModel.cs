@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 namespace AuthService.Application.DTO
 {
-    public record UserViewModel(Guid Id, string Name, string Email, List<string> Roles);
+    public record UserProfileViewModel(Guid Id, string Name, string Email);
 
 }

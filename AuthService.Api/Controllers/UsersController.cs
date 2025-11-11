@@ -4,6 +4,7 @@ using AuthService.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrderManagementSystem.Shared.Authorization;
+using OrderManagementSystem.Shared.Contracts;
 
 namespace AuthService.Api.Controllers
 {
@@ -12,10 +13,29 @@ namespace AuthService.Api.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserManagmentService _userManagmentService;
+        private readonly ICurrentUser _currentUser;
 
-        public UsersController(IUserManagmentService userManagmentService)
+        public UsersController(IUserManagmentService userManagmentService, ICurrentUser currentUser)
         {
             _userManagmentService = userManagmentService;
+            _currentUser = currentUser;
+        }
+
+        [HttpGet("{userId:guid}")]
+        [Authorize(Policy = Permissions.Users.ReadAll)]
+        public async Task<ActionResult<UserDetailsViewModel>> GetUser([FromRoute] Guid userId, CancellationToken ct)
+        {
+            var result = await _userManagmentService.GetUserDetailsAsync(userId, ct);
+            return Ok(result);
+        }
+
+        [HttpGet("me")]
+        [Authorize]
+        public async Task<ActionResult<UserDetailsViewModel>> GetMyProfile(CancellationToken ct)
+        {
+            var userId = _currentUser.UserId;
+            var result = await _userManagmentService.GetUserProfileAsync(userId, ct);
+            return Ok(result);
         }
 
         [HttpPost]

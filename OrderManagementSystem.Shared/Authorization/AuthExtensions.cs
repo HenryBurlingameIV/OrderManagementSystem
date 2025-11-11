@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using OrderManagementSystem.Shared.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace OrderManagementSystem.Shared.Authorization
 {
     public static class AuthExtensions
     {
-        public static void AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
             var jwtOptions = configuration.GetSection("JwtOptions").Get<JwtOptions>();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -31,9 +32,11 @@ namespace OrderManagementSystem.Shared.Authorization
                             Encoding.UTF8.GetBytes(jwtOptions!.SecretKey))
                     };
                 });
+
+            return services;
         }
 
-        public static void AddPermissionAuthorization(this IServiceCollection services)
+        public static IServiceCollection AddPermissionAuthorization(this IServiceCollection services)
         {
             services.AddAuthorization(options =>
             {
@@ -48,6 +51,15 @@ namespace OrderManagementSystem.Shared.Authorization
                         policy.RequireClaim("permission", permission!));
                 }
             });
+
+            return services;
+        }
+
+        public static IServiceCollection AddCurrentUser(this IServiceCollection services)
+        {
+            services.AddHttpContextAccessor();
+            services.AddScoped<ICurrentUser, CurrentUser>();
+            return services;
         }
     }
 }

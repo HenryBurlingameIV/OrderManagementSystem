@@ -133,9 +133,41 @@ namespace AuthService.Application.Services
             _logger.LogInformation("User with ID {@UserId} deactivated.", userId);
         }
 
-        public Task<UserViewModel> GetUserAsync(Guid userId, CancellationToken ct)
+        public async Task<UserDetailsViewModel> GetUserDetailsAsync(Guid userId, CancellationToken ct)
         {
-            throw new NotImplementedException();
+            var user = await _usersRepository.GetFirstOrDefaultAsync(
+                filter: u => u.Id == userId,
+                include: q => q.Include(u => u.Roles),
+                ct: ct);
+
+            if(user == null)
+            {
+                throw new NotFoundException($"User with ID {userId} not found.");
+            }
+
+            return new UserDetailsViewModel(
+                user.Id,
+                user.Name,
+                user.Email,
+                user.Roles.Select(r => r.Name).ToList(),
+                user.IsActive);
+        }
+
+        public async Task<UserProfileViewModel> GetUserProfileAsync(Guid userId, CancellationToken ct)
+        {
+            var user = await _usersRepository.GetFirstOrDefaultAsync(
+                filter: u => u.Id == userId,
+                ct: ct);
+
+            if (user == null)
+            {
+                throw new NotFoundException($"User with ID {userId} not found.");
+            }
+
+            return new UserProfileViewModel(
+                user.Id,
+                user.Name,
+                user.Email);
         }
 
         public async Task RemoveRoleAsync(Guid userId, string roleName, CancellationToken ct)
@@ -158,7 +190,7 @@ namespace AuthService.Application.Services
             }
 
             var userRole = user.Roles.FirstOrDefault(r => r.Id == role.Id);
-;
+
             if (userRole == null)
             {
                 _logger.LogWarning("User {@UserId} doesn't have role {@RoleName}.", userId, roleName);
@@ -168,5 +200,6 @@ namespace AuthService.Application.Services
             await _usersRepository.SaveChangesAsync(ct);
             _logger.LogInformation("Role {@RoleName} removed from user {@UserId}", roleName, userId);
         }
+
     }
 }

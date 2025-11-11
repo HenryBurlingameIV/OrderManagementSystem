@@ -10,10 +10,9 @@ namespace AuthService.Application.DTO
         Guid Id, 
         string Name, 
         string Email, 
-        List<string> Roles, 
-        List<string> Permissions, 
+        List<string> Roles,  
         bool IsActive)
-        : UserViewModel(Id, Name, Email, Roles)
+        : UserProfileViewModel(Id, Name, Email)
     {
     }
 }

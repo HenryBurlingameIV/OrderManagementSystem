@@ -17,6 +17,7 @@ namespace AuthService.Api
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
             services.AddControllers();
+            services.AddCurrentUser();            
             return services;
         }
 
