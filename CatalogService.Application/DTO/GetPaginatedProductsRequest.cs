@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 namespace CatalogService.Application.DTO
 {
-    public record GetPagindatedProductsRequest(int PageNumber, int PageSize, string? Search, string? SortBy, bool Descending = false);
+    public record GetPaginatedProductsRequest(int PageNumber, int PageSize, string? Search, string? SortBy, bool Descending = false);
 
 }

@@ -20,7 +20,7 @@ namespace CatalogService.Application.Extensions
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IValidator<CreateProductRequest>, CreateProductRequestValidator>();
             services.AddScoped<IValidator<UpdateProductRequest>, UpdateProductRequestValidator>();
-            services.AddScoped<IValidator<GetPagindatedProductsRequest>, GetPaginatedProductsRequestValidator>();
+            services.AddScoped<IValidator<GetPaginatedProductsRequest>, GetPaginatedProductsRequestValidator>();
             return services;
         }
     }

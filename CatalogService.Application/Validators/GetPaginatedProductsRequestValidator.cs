@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CatalogService.Application.Validators
 {
-    public class GetPaginatedProductsRequestValidator : AbstractValidator<GetPagindatedProductsRequest>
+    public class GetPaginatedProductsRequestValidator : AbstractValidator<GetPaginatedProductsRequest>
     {
         public GetPaginatedProductsRequestValidator()
         {

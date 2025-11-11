@@ -40,10 +40,10 @@ namespace CatalogService.Api.Controllers
 
         [HttpGet]
         public async Task<ActionResult<ProductViewModel>> GetProducts(
-            [FromQuery] GetPagindatedProductsRequest request,
+            [FromQuery] GetPaginatedProductsRequest request,
             CancellationToken cancellationToken)
         {
-            var result = await _productService.GetProductsPaginatedAsync(
+            var result = await _productService.GetPaginatedProductsAsync(
                 request,
                 cancellationToken);
             return Ok(result);

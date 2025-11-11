@@ -27,7 +27,7 @@ namespace CatalogService.Tests.UnitTests
     {     
         private IValidator<CreateProductRequest> _productCreateRequestValidator;
         private IValidator<UpdateProductRequest> _productUpdateRequestValidator;
-        private IValidator<GetPagindatedProductsRequest> _paginationValidator;
+        private IValidator<GetPaginatedProductsRequest> _paginationValidator;
         private Mock<IEFRepository<Product, Guid>> _mockRepository;
         private Mock<ILogger<ProductService>> _mockLogger;
         private IProductService _productService;
@@ -342,7 +342,7 @@ namespace CatalogService.Tests.UnitTests
             //Arrange
             var pageNumber = 1;
             var pageSize = 3;
-            var request = new GetPagindatedProductsRequest(
+            var request = new GetPaginatedProductsRequest(
                 pageNumber, pageSize, null, null);
             var expectedResult = new PaginatedResult<ProductViewModel>(
                 products.Select(p => new ProductViewModel(p.Id, p.Name, p.Description, p.Category, p.Price, p.Quantity)),
@@ -362,7 +362,7 @@ namespace CatalogService.Tests.UnitTests
                 .ReturnsAsync(expectedResult);
 
             //Act
-            var actualResult = await _productService.GetProductsPaginatedAsync(request, CancellationToken.None);
+            var actualResult = await _productService.GetPaginatedProductsAsync(request, CancellationToken.None);
 
             //Assert
             Assert.NotNull(actualResult);
@@ -375,12 +375,12 @@ namespace CatalogService.Tests.UnitTests
         public async Task Should_ThrowValidationException_WhenPageNumberIsZero()
         {
             // Arrange
-            var invalidRequest = new GetPagindatedProductsRequest(
+            var invalidRequest = new GetPaginatedProductsRequest(
                 0, 2, null, null);
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<ValidationException>(() =>
-                _productService.GetProductsPaginatedAsync(invalidRequest, CancellationToken.None));
+                _productService.GetPaginatedProductsAsync(invalidRequest, CancellationToken.None));
             Assert.Contains("PageNumber", exception.Message);
             Assert.Contains("must be greater than '0'", exception.Message);
         }
@@ -393,7 +393,7 @@ namespace CatalogService.Tests.UnitTests
         public async Task Should_ApplyCorrectOrderBy_WhenValidSortByProvided(string sortBy, string expectedProperty)
         {
             // Arrange
-            var request = new GetPagindatedProductsRequest(1, 10, null, sortBy);
+            var request = new GetPaginatedProductsRequest(1, 10, null, sortBy);
 
             Func<IQueryable<Product>, IOrderedQueryable<Product>> capturedOrderBy = null;
 
@@ -419,7 +419,7 @@ namespace CatalogService.Tests.UnitTests
                 .ReturnsAsync(returnsTask);
 
             // Act
-            await _productService.GetProductsPaginatedAsync(request, CancellationToken.None);
+            await _productService.GetPaginatedProductsAsync(request, CancellationToken.None);
 
             // Assert
             Assert.NotNull(capturedOrderBy);
@@ -430,12 +430,12 @@ namespace CatalogService.Tests.UnitTests
         public async Task Should_ThrowValidationException_WhenInvalidSortByProvided()
         {
             // Arrange
-            var request = new GetPagindatedProductsRequest(1, 10, null, "invalid");
+            var request = new GetPaginatedProductsRequest(1, 10, null, "invalid");
 
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<ValidationException>(() =>
-               _productService.GetProductsPaginatedAsync(request, CancellationToken.None));
+               _productService.GetPaginatedProductsAsync(request, CancellationToken.None));
             Assert.Contains("SortBy", exception.Message);
         }
     }
