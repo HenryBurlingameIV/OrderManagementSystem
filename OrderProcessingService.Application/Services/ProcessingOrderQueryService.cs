@@ -49,7 +49,7 @@ namespace OrderProcessingService.Application.Services
             return result;
         }
 
-        public async Task<PaginatedResult<ProcessingOrderViewModel>> GetProcessingOrdersPaginatedAsync(GetPaginatedProcessingOrdersRequest query, CancellationToken ct)
+        public async Task<PaginatedResult<ProcessingOrderViewModel>> GetPaginatedProcessingOrdersAsync(GetPaginatedProcessingOrdersRequest query, CancellationToken ct)
         {
             await _paginationValidator.ValidateAndThrowAsync(query);
             var paginationRequest = new PaginationRequest()

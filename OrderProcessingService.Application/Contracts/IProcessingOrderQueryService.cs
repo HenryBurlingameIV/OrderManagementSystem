@@ -12,6 +12,6 @@ namespace OrderProcessingService.Application.Contracts
     {
         Task<ProcessingOrderViewModel> GetProcesingOrderById(Guid id, CancellationToken ct);
 
-        Task<PaginatedResult<ProcessingOrderViewModel>>GetProcessingOrdersPaginatedAsync(GetPaginatedProcessingOrdersRequest query, CancellationToken ct);
+        Task<PaginatedResult<ProcessingOrderViewModel>>GetPaginatedProcessingOrdersAsync(GetPaginatedProcessingOrdersRequest query, CancellationToken ct);
     }
 }

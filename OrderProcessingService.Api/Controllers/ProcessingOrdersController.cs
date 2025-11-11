@@ -25,7 +25,7 @@ namespace OrderProcessingService.Api.Controllers
             [FromQuery] GetPaginatedProcessingOrdersRequest query,
             CancellationToken cancellationToken)
         {
-            var result = await queryService.GetProcessingOrdersPaginatedAsync(query, cancellationToken);
+            var result = await queryService.GetPaginatedProcessingOrdersAsync(query, cancellationToken);
             return Ok(result);
         }
 
