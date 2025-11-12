@@ -12,7 +12,7 @@ namespace AuthService.Application.DTO
         string? Search = null,          
         string? Role = null,     
         bool? IsActive = null,          
-        string? SortBy = "Email",
+        string? SortBy = null,
         bool Descending = false
     );
 

@@ -22,6 +22,7 @@ namespace AuthService.Application.Services
         private readonly IRoleProvider _roleProvider;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IValidator<CreateUserRequest> _createUserValidator;
+        private readonly IValidator<GetPaginatedUsersDetailsRequest> _paginationRequestValidator;
         private readonly ILogger<UserManagmentService> _logger;
 
         public UserManagmentService(
@@ -29,12 +30,14 @@ namespace AuthService.Application.Services
             IRoleProvider roleProvider,
             IPasswordHasher passwordHasher,
             IValidator<CreateUserRequest> createUserValidator,
+            IValidator<GetPaginatedUsersDetailsRequest> paginationRequestValidator,
             ILogger<UserManagmentService> logger)
         {
             _usersRepository = usersRepository;
             _roleProvider = roleProvider;
             _passwordHasher = passwordHasher;
             _createUserValidator = createUserValidator;
+            _paginationRequestValidator = paginationRequestValidator;
             _logger = logger;
         }
         public async Task ActivateUserAsync(Guid userId, CancellationToken ct)
@@ -157,6 +160,7 @@ namespace AuthService.Application.Services
 
         public async Task<PaginatedResult<UserDetailsViewModel>> GetPaginatedUsersDetailsAsync(GetPaginatedUsersDetailsRequest request, CancellationToken ct)
         {
+            await _paginationRequestValidator.ValidateAndThrowAsync(request, ct);
             var paginationRequest = new PaginationRequest() { PageNumber = request.PageNumber, PageSize = request.PageSize };
             Expression<Func<User, bool>> filter = user =>
                 (string.IsNullOrEmpty(request.Search) || user.Name.Contains(request.Search) || user.Email.Contains(request.Search)) &&
