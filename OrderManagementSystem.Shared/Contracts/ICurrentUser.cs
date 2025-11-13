@@ -10,5 +10,8 @@ namespace OrderManagementSystem.Shared.Contracts
     {
         Guid UserId { get; }
         string Email {  get; }
+
+        List<string> GetClaims(string claimType);
+        bool HasClaim(string claimType, string claimValue);
     }
 }

@@ -27,5 +27,18 @@ namespace OrderManagementSystem.Shared.Authorization
         }
         public string Email => _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Email)?.Value ?? "";
 
+        public List<string> GetClaims(string claimType)
+        {
+            return _httpContextAccessor?.HttpContext?.User?
+                .FindAll(claimType)
+                .Select(c => c.Value)
+                .ToList() ?? new List<string>();
+        }
+
+        public bool HasClaim(string claimType, string claimValue)
+        {
+            return GetClaims(claimType).Contains(claimValue);
+        }
+
     }
 }
