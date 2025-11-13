@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using OrderManagementSystem.Shared.Authorization;
 using OrderManagementSystem.Shared.Middlewares;
 using Serilog;
 
@@ -30,6 +31,8 @@ namespace CatalogService.Api
 
         public static IServiceCollection ConfigureServices(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddJwtAuthentication(configuration);
+            services.AddPermissionAuthorization();
             services.AddInfrastructure(configuration);
             services.AddControllers();
             services.AddApplication();
@@ -50,6 +53,8 @@ namespace CatalogService.Api
             }
             app.UseRouting();
             app.MapGrpcService<CatalogGrpcService>();
+            app.UseAuthentication();
+            app.UseAuthorization();
             app.MapControllers();
             return app;
         }

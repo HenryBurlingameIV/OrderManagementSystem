@@ -2,8 +2,10 @@
 using CatalogService.Application.Contracts;
 using CatalogService.Application.DTO;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OrderManagementSystem.Shared.Authorization;
 
 namespace CatalogService.Api.Controllers
 {
@@ -19,6 +21,7 @@ namespace CatalogService.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = Permissions.Catalog.Create)]
         public async Task<ActionResult<Guid>> CreateProduct(
             [FromBody] CreateProductRequest request,
             CancellationToken cancellationToken
@@ -51,6 +54,7 @@ namespace CatalogService.Api.Controllers
             
 
         [HttpPut("{id:guid}")]
+        [Authorize(Policy = Permissions.Catalog.Update)]
         public async Task<ActionResult<Guid>> UpdateProduct(
             [FromRoute] Guid id, 
             [FromBody] UpdateProductRequest request,
@@ -58,11 +62,12 @@ namespace CatalogService.Api.Controllers
             )
         {
             
-            var result = await _productService.UpdateProductAsync(id, request, cancellationToken);
-            return Ok(result);
+            await _productService.UpdateProductAsync(id, request, cancellationToken);
+            return NoContent();
         }
 
         [HttpPatch("{id:guid}/reserve")]
+        [Authorize(Policy = Permissions.Catalog.Update)]
         public async Task<ActionResult<ProductViewModel>> ReserveProduct(
             [FromRoute] Guid id,
             [FromBody] ReserveProductRequest request,
@@ -74,6 +79,7 @@ namespace CatalogService.Api.Controllers
         }
 
         [HttpPatch("{id:guid}/release")]
+        [Authorize(Policy = Permissions.Catalog.Update)]
         public async Task<ActionResult<ProductViewModel>> ReleaseProduct(
             [FromRoute] Guid id,
             [FromBody] ReserveProductRequest request,
@@ -86,6 +92,7 @@ namespace CatalogService.Api.Controllers
 
 
         [HttpDelete("{id:guid}")]
+        [Authorize(Policy = Permissions.Catalog.Delete)]
         public async Task<ActionResult> DeleteProduct(
             [FromRoute] Guid id, 
             CancellationToken cancellationToken
