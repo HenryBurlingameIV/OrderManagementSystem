@@ -16,7 +16,7 @@ namespace CatalogService.Application.Contracts
 
         Task<PaginatedResult<ProductViewModel>> GetPaginatedProductsAsync(GetPaginatedProductsRequest request, CancellationToken cancellationToken);
 
-        Task<Guid> UpdateProductAsync(Guid productId, UpdateProductRequest request, CancellationToken cancellationToken);
+        Task UpdateProductAsync(Guid productId, UpdateProductRequest request, CancellationToken cancellationToken);
 
         Task<ProductViewModel> ReserveProductAsync(Guid productId, int quantity, CancellationToken cancellationToken);
         Task<ProductViewModel> ReleaseProductAsync(Guid productId, int quantity, CancellationToken cancellationToken);

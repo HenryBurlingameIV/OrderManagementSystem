@@ -124,7 +124,7 @@ namespace CatalogService.Application.Services
             };
         }
 
-        public async Task<Guid> UpdateProductAsync(Guid productId, UpdateProductRequest request, CancellationToken cancellationToken)
+        public async Task UpdateProductAsync(Guid productId, UpdateProductRequest request, CancellationToken cancellationToken)
         {
             await _updateValidator.ValidateAndThrowAsync(request, cancellationToken);
 
@@ -147,7 +147,6 @@ namespace CatalogService.Application.Services
             await _productRepository.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Product with ID {@ProductId} successfully updated", productId);
-            return productId;
         }
 
         public async Task<ProductViewModel> ReserveProductAsync(Guid productId, int quantity, CancellationToken cancellationToken)
