@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Server.Kestrel.Core;
+using OrderManagementSystem.Shared.Authorization;
 using OrderManagementSystem.Shared.Kafka;
 using OrderManagementSystem.Shared.Middlewares;
 using OrderService.Api.GrpcServices;
@@ -26,7 +27,9 @@ namespace OrderService.Api
         }
         public static IServiceCollection ConfigureServices(this IServiceCollection services, IConfiguration configuration)
         {
-
+            services.AddJwtAuthentication(configuration);
+            services.AddPermissionAuthorization();
+            services.AddCurrentUser();
             services.AddInfrastructure(configuration);
             services.AddApplication();
             services.AddProducer<OrderEvent>(configuration.GetSection("Kafka:OrderProducer"), "OrderProducer");
@@ -48,6 +51,8 @@ namespace OrderService.Api
             }
             app.UseRouting();
             app.MapGrpcService<OrderGrpcService>();
+            app.UseAuthentication();
+            app.UseAuthorization();
             app.MapControllers();
             return app;
         }
