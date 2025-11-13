@@ -46,6 +46,12 @@ namespace OrderService.Infrastructure.EntityConfigurations
                 .IsRequired()
                 .HasMaxLength(254);
 
+            builder
+                .HasIndex(o => o.Email);
+
+            builder
+                .Property(o => o.CustomerId)
+                .IsRequired();
         }
 
     }

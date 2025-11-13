@@ -17,5 +17,7 @@ namespace OrderService.Domain.Entities
         public DateTime UpdatedAtUtc { get; set; }
         public string Email { get; set; }
 
+        public Guid CustomerId { get; set; }
+
     }
 }
