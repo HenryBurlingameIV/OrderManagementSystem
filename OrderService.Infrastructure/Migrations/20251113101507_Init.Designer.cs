@@ -12,7 +12,7 @@ using OrderService.Infrastructure;
 namespace OrderService.Infrastructure.Migrations
 {
     [DbContext(typeof(OrderDbContext))]
-    [Migration("20250622112428_Init")]
+    [Migration("20251113101507_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -20,7 +20,7 @@ namespace OrderService.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.6")
+                .HasAnnotation("ProductVersion", "9.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -33,6 +33,14 @@ namespace OrderService.Infrastructure.Migrations
 
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
@@ -47,6 +55,8 @@ namespace OrderService.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedAtUtc");
+
+                    b.HasIndex("Email");
 
                     b.HasIndex("Status");
 

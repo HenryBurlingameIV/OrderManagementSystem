@@ -20,6 +20,8 @@ namespace OrderService.Infrastructure.Migrations
                     TotalPrice = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
                     CreatedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Email = table.Column<string>(type: "character varying(254)", maxLength: 254, nullable: false),
+                    CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
                     Items = table.Column<string>(type: "jsonb", nullable: true)
                 },
                 constraints: table =>
@@ -31,6 +33,11 @@ namespace OrderService.Infrastructure.Migrations
                 name: "IX_Orders_CreatedAtUtc",
                 table: "Orders",
                 column: "CreatedAtUtc");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_Email",
+                table: "Orders",
+                column: "Email");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Orders_Status",

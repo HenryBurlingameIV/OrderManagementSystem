@@ -31,6 +31,9 @@ namespace OrderService.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(254)
@@ -49,6 +52,8 @@ namespace OrderService.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedAtUtc");
+
+                    b.HasIndex("Email");
 
                     b.HasIndex("Status");
 
