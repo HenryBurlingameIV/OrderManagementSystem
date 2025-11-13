@@ -33,7 +33,8 @@ namespace OrderService.Application.Commands.CreateOrderCommand
                 throw new ValidationException(validationResult.Errors);
             }
 
-            var order = await orderFactory.CreateOrderAsync(command.Request, cancellationToken);
+            var order = await orderFactory.CreateOrderAsync(
+                command.Request.Items, command.Email, command.CustomerId, cancellationToken);
             await orderRepository.InsertAsync(order, cancellationToken);
             await orderRepository.SaveChangesAsync(cancellationToken);
             logger.LogInformation("Order with Id {@OrderId} was created and saved in database", order.Id);

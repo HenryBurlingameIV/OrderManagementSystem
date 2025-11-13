@@ -26,9 +26,9 @@ namespace OrderService.Application.Services
             _logger = logger;
         }
 
-        public async Task<Order> CreateOrderAsync(CreateOrderRequest request, CancellationToken ct)
+        public async Task<Order> CreateOrderAsync(List<OrderItemRequest> requests, string email, Guid customerId, CancellationToken ct)
         {
-            var orderItems = await CreateOrderItemsAsync(request.Items, ct);
+            var orderItems = await CreateOrderItemsAsync(requests, ct);
             var createdAt = DateTime.UtcNow;
             return new Order()
             {
@@ -38,7 +38,8 @@ namespace OrderService.Application.Services
                 Status = OrderStatus.New,
                 CreatedAtUtc = createdAt,
                 UpdatedAtUtc = createdAt,
-                Email = request.Email.Trim()
+                Email = email.Trim(),
+                CustomerId = customerId
             };
         }
 

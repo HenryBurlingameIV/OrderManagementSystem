@@ -9,6 +9,6 @@ using System.Windows.Input;
 
 namespace OrderService.Application.Commands.CreateOrderCommand
 {
-    public record CreateOrderCommand(CreateOrderRequest Request) : IRequest<Guid>;
+    public record CreateOrderCommand(CreateOrderRequest Request, string Email, Guid CustomerId) : IRequest<Guid>;
 
 }

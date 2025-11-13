@@ -14,30 +14,15 @@ namespace OrderService.Application.Validators
     {
         public CreateOrderRequestValidator()
         {
-            RuleFor(command => command.Items)
+            RuleFor(r => r.Items)
                 .NotNull()
                 .DependentRules(() =>
                 {
-                    RuleFor(command => command.Items)
+                    RuleFor(r => r.Items)
                         .NotEmpty()
-                        .Must(items => items.Count < 100);                       
-                    RuleForEach(command => command.Items)
+                        .Must(r => r.Count < 100);                       
+                    RuleForEach(r => r.Items)
                         .SetValidator(new OrderItemRequestValidator());
-                });
-
-            RuleFor(command => command.Email)
-                .NotNull()
-                .DependentRules(() =>
-                {
-                    RuleFor(command => command.Email)
-                        .NotEmpty()
-                        .MaximumLength(254)
-                        .Must(email =>
-                        {
-                            string pattern = @"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$";
-                            return Regex.IsMatch(email.Trim(), pattern);
-                        })
-                        .WithMessage("Invalid email format.");
                 });
         }
     }
