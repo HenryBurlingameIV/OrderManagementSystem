@@ -8,6 +8,6 @@ using System.Threading.Tasks;
 
 namespace OrderService.Application.Queries.OrderQuery
 {
-    public record GetOrderByIdQuery(Guid Id) : IRequest<OrderViewModel>;
+    public record GetOrderByIdQuery(Guid Id, Guid? CustomerId) : IRequest<OrderViewModel>;
 
 }
