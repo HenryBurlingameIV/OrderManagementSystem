@@ -9,6 +9,6 @@ using System.Threading.Tasks;
 
 namespace OrderService.Application.Queries.OrdersPaginatedQuery
 {
-    public record GetPaginatedOrdersQuery(GetPaginatedOrdersRequest Request) : IRequest<PaginatedResult<OrderViewModel>>;
+    public record GetPaginatedOrdersQuery(GetPaginatedOrdersRequest Request, Guid? customerId) : IRequest<PaginatedResult<OrderViewModel>>;
 
 }

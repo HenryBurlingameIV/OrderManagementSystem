@@ -34,7 +34,7 @@ namespace OrderService.Application.Queries.OrdersPaginatedQuery
             };
 
 
-            Expression<Func<Order, bool>>? filter = BuildFilter(query.Request.Search);
+            Expression<Func<Order, bool>>? filter = BuildFilter(query.Request.Search, query.customerId);
 
             Func<IQueryable<Order>, IOrderedQueryable<Order>>? orderBy = BuildOrderBy(query.Request.SortBy, query.Request.Descending);
 
@@ -50,12 +50,13 @@ namespace OrderService.Application.Queries.OrdersPaginatedQuery
             return result;
         }
 
-        private Expression<Func<Order, bool>>? BuildFilter(string? search)
+        private Expression<Func<Order, bool>>? BuildFilter(string? search, Guid? customerId)
         {
-            if(string.IsNullOrEmpty(search)) return null;
-            var searchLower = search.ToLower();
-            return (o) => o.Email.ToLower().Contains(searchLower)
-               || o.Status.ToString().ToLower().Contains(searchLower);
+            return (o) => 
+                (string.IsNullOrEmpty(search)|| 
+                o.Email.ToLower().Contains(search.ToLower()) ||
+                o.Status.ToString().ToLower().Contains(search.ToLower()))
+                && (customerId == null || o.CustomerId == customerId);
         }
 
         private Func<IQueryable<Order>, IOrderedQueryable<Order>>? BuildOrderBy(string? sortBy, bool descending)
