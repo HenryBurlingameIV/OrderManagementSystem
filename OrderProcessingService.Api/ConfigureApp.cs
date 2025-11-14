@@ -1,4 +1,5 @@
 ﻿using Hangfire;
+using OrderManagementSystem.Shared.Authorization;
 using OrderManagementSystem.Shared.Kafka;
 using OrderManagementSystem.Shared.Middlewares;
 using OrderProcessingService.Application.Extensions;
@@ -8,18 +9,20 @@ namespace OrderProcessingService.Api
 {
     public static class ConfigureApp
     {
-        public static void ConfigureServices(this WebApplicationBuilder builder)
+        public static IServiceCollection ConfigureServices(this IServiceCollection services, IConfiguration configuration)
         {
-            
-            builder.Services.AddApplication();
-            builder.Services.AddInfrastructure(builder.Configuration);
-            builder.Services.AddControllers();
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            services.AddJwtAuthentication(configuration);
+            services.AddPermissionAuthorization();
+            services.AddApplication();
+            services.AddInfrastructure(configuration);
+            services.AddControllers();
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen();
+            return services;
 
         }
 
-        public static void ConfigurePipeline(this WebApplication app)
+        public static WebApplication ConfigurePipeline(this WebApplication app)
         {
             app.UseMiddleware<ExceptionHandlerMiddleware>();
             if(app.Environment.IsDevelopment())
@@ -28,8 +31,11 @@ namespace OrderProcessingService.Api
                 app.UseSwaggerUI();
             }
             app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
             app.MapControllers();
             app.UseHangfireDashboard("/hangfire");
+            return app;
         }
 
         public static void ConfigureSerilog(this WebApplicationBuilder builder)

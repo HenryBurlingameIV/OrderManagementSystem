@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using OrderManagementSystem.Shared.Authorization;
 using OrderManagementSystem.Shared.DataAccess.Pagination;
 using OrderProcessingService.Application.Contracts;
 using OrderProcessingService.Application.DTO;
@@ -14,6 +16,7 @@ namespace OrderProcessingService.Api.Controllers
         ): ControllerBase
     {
         [HttpGet("{id:Guid}")]
+        [Authorize(Policy = Permissions.OrderProcessing.Read)]
         public async Task<ActionResult<ProcessingOrderViewModel>> GetProcessingOrder(Guid id, CancellationToken cancellationToken)
         {
             var result = await queryService.GetProcesingOrderById(id, cancellationToken);
@@ -21,6 +24,7 @@ namespace OrderProcessingService.Api.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = Permissions.OrderProcessing.Read)]
         public async Task<ActionResult<PaginatedResult<ProcessingOrderViewModel>>> GetProcessingOrders(
             [FromQuery] GetPaginatedProcessingOrdersRequest query,
             CancellationToken cancellationToken)
@@ -30,6 +34,7 @@ namespace OrderProcessingService.Api.Controllers
         }
 
         [HttpPatch("{id:Guid}/begin-assembly")]
+        [Authorize(Policy = Permissions.OrderProcessing.BeginAssembly)]
         public async Task<ActionResult> BeginAssembly(Guid id, CancellationToken cancellationToken)
         {
             await orderProcessor.BeginAssembly(id, cancellationToken);
@@ -37,6 +42,7 @@ namespace OrderProcessingService.Api.Controllers
         }
 
         [HttpPatch("begin-delivery")]
+        [Authorize(Policy = Permissions.OrderProcessing.BeginDelivery)]
         public async Task<ActionResult> BeginDelivery([FromBody] DeliveryRequest request, CancellationToken cancellationToken)
         {
             if (!request.Ids.Any()) 

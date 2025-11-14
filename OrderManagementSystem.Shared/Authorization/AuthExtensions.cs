@@ -43,12 +43,12 @@ namespace OrderManagementSystem.Shared.Authorization
                 var permissions = typeof(Permissions).GetNestedTypes()
                     .SelectMany(t => t.GetFields(BindingFlags.Public | BindingFlags.Static))
                     .Where(f => f.FieldType == typeof(string))
-                    .Select(f => (string)f.GetValue(null));
+                    .Select(f => (string)f.GetValue(null)!);
 
                 foreach (var permission in permissions)
                 {
                     options.AddPolicy(permission!, policy =>
-                        policy.RequireClaim("permission", permission!));
+                        policy.RequireClaim(CustomClaimTypes.Permission, permission!));
                 }
             });
 
