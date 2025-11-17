@@ -3,10 +3,10 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /app
 
 COPY ["./OrderManagementSystem.Shared/OrderManagementSystem.Shared.csproj", "OrderManagementSystem.Shared/"]
-COPY ["./OrderNotificationService.Api/OrderNotificationService.Api.csproj", "OrderNotificationService.Api/"]
-COPY ["./OrderNotificationService.Application/OrderNotificationService.Application.csproj", "OrderNotificationService.Application/"]
-COPY ["./OrderNotificationService.Domain/OrderNotificationService.Domain.csproj", "OrderNotificationService.Domain/"]
-COPY ["./OrderNotificationService.Infrastructure/OrderNotificationService.Infrastructure.csproj", "OrderNotificationService.Infrastructure/"]
+COPY ["./OrderNotificationService/OrderNotificationService.Api/OrderNotificationService.Api.csproj", "OrderNotificationService.Api/"]
+COPY ["./OrderNotificationService/OrderNotificationService.Application/OrderNotificationService.Application.csproj", "OrderNotificationService.Application/"]
+COPY ["./OrderNotificationService/OrderNotificationService.Domain/OrderNotificationService.Domain.csproj", "OrderNotificationService.Domain/"]
+COPY ["./OrderNotificationService/OrderNotificationService.Infrastructure/OrderNotificationService.Infrastructure.csproj", "OrderNotificationService.Infrastructure/"]
 RUN dotnet restore "OrderNotificationService.Api/OrderNotificationService.Api.csproj"
 
 
