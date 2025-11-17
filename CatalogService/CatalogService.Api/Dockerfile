@@ -4,10 +4,10 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /app
 
 COPY ["./OrderManagementSystem.Shared/OrderManagementSystem.Shared.csproj", "OrderManagementSystem.Shared/"]
-COPY ["./CatalogService.Api/CatalogService.Api.csproj", "CatalogService.Api/"]
-COPY ["./CatalogService.Application/CatalogService.Application.csproj", "CatalogService.Application/"]
-COPY ["./CatalogService.Domain/CatalogService.Domain.csproj", "CatalogService.Domain/"]
-COPY ["./CatalogService.Infrastructure/CatalogService.Infrastructure.csproj", "CatalogService.Infrastructure/"]
+COPY ["./CatalogService/CatalogService.Api/CatalogService.Api.csproj", "CatalogService.Api/"]
+COPY ["./CatalogService/CatalogService.Application/CatalogService.Application.csproj", "CatalogService.Application/"]
+COPY ["./CatalogService/CatalogService.Domain/CatalogService.Domain.csproj", "CatalogService.Domain/"]
+COPY ["./CatalogService/CatalogService.Infrastructure/CatalogService.Infrastructure.csproj", "CatalogService.Infrastructure/"]
 RUN dotnet restore "CatalogService.Api/CatalogService.Api.csproj"
 
 
