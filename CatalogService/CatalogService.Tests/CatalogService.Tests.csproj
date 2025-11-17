@@ -28,10 +28,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\OrderManagementSystem.Shared\OrderManagementSystem.Shared.csproj" />
     <ProjectReference Include="..\CatalogService.Application\CatalogService.Application.csproj" />
     <ProjectReference Include="..\CatalogService.Domain\CatalogService.Domain.csproj" />
     <ProjectReference Include="..\CatalogService.Infrastructure\CatalogService.Infrastructure.csproj" />
-    <ProjectReference Include="..\OrderManagementSystem.Shared\OrderManagementSystem.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
