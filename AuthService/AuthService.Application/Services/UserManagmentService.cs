@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace AuthService.Application.Services
 {
-    internal class UserManagmentService : IUserManagmentService
+    public class UserManagmentService : IUserManagmentService
     {
         private readonly IEFRepository<User, Guid> _usersRepository;
         private readonly IRoleProvider _roleProvider;

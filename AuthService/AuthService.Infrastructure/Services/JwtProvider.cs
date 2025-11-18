@@ -32,8 +32,6 @@ namespace AuthService.Infrastructure.Services
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name, user.Name),
-                //new Claim(CustomClaimTypes.Roles, string.Join(",", user.Roles.Select(r => r.Name))),
-                //new Claim (CustomClaimTypes.Permissions, string.Join(",", user.GetAllPermissions()))
             };
 
             foreach (var role in user.Roles)
