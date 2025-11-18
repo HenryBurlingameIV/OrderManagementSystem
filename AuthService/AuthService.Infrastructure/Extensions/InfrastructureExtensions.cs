@@ -2,6 +2,7 @@
 using AuthService.Domain.Entities;
 using AuthService.Infrastructure.Data;
 using AuthService.Infrastructure.Services;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,6 +43,19 @@ namespace AuthService.Infrastructure.Extensions
             services.AddScoped<IJwtProvider, JwtProvider>();
 
             return services;
+        }
+
+        public static void RunDatabaseMigrations(this WebApplication app)
+        {
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+                var pendingMigrations = db.Database.GetPendingMigrations().ToList();
+                if (pendingMigrations.Any())
+                {
+                    db.Database.Migrate();
+                }
+            }
         }
 
     }

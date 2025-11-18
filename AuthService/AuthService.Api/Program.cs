@@ -14,7 +14,10 @@ namespace AuthService.Api
             var app = builder.Build();
             app.ConfigurePipeline();
 
-            app.MapGet("/", () => "Hello World!");
+            if (!app.Environment.IsDevelopment())
+            {
+                app.RunDatabaseMigrations();
+            }
 
             app.Run();
         }
