@@ -4,15 +4,15 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /app
 
 COPY ["./OrderManagementSystem.Shared/OrderManagementSystem.Shared.csproj", "OrderManagementSystem.Shared/"]
-COPY ["./CatalogService/CatalogService.Api/CatalogService.Api.csproj", "CatalogService.Api/"]
-COPY ["./CatalogService/CatalogService.Application/CatalogService.Application.csproj", "CatalogService.Application/"]
-COPY ["./CatalogService/CatalogService.Domain/CatalogService.Domain.csproj", "CatalogService.Domain/"]
-COPY ["./CatalogService/CatalogService.Infrastructure/CatalogService.Infrastructure.csproj", "CatalogService.Infrastructure/"]
-RUN dotnet restore "CatalogService.Api/CatalogService.Api.csproj"
+COPY ["./CatalogService/CatalogService.Api/CatalogService.Api.csproj", "CatalogService/CatalogService.Api/"]
+COPY ["./CatalogService/CatalogService.Application/CatalogService.Application.csproj", "CatalogService/CatalogService.Application/"]
+COPY ["./CatalogService/CatalogService.Domain/CatalogService.Domain.csproj", "CatalogService/CatalogService.Domain/"]
+COPY ["./CatalogService/CatalogService.Infrastructure/CatalogService.Infrastructure.csproj", "CatalogService/CatalogService.Infrastructure/"]
+RUN dotnet restore "CatalogService/CatalogService.Api/CatalogService.Api.csproj"
 
 
 COPY . .
-WORKDIR "/app/CatalogService.Api"
+WORKDIR "/app/CatalogService/CatalogService.Api"
 RUN dotnet build "CatalogService.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish
 
 
@@ -25,6 +25,6 @@ WORKDIR /app
 EXPOSE 8080
 
 COPY --from=publish /app/publish .
-COPY --from=build /app/CatalogService.Infrastructure/Migrations ./Migrations/
+COPY --from=build /app/CatalogService/CatalogService.Infrastructure/Migrations ./Migrations/
 
 ENTRYPOINT ["dotnet", "CatalogService.Api.dll"]

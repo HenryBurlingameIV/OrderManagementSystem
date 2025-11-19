@@ -3,15 +3,15 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /app
 
 COPY ["./OrderManagementSystem.Shared/OrderManagementSystem.Shared.csproj", "OrderManagementSystem.Shared/"]
-COPY ["./OrderNotificationService/OrderNotificationService.Api/OrderNotificationService.Api.csproj", "OrderNotificationService.Api/"]
-COPY ["./OrderNotificationService/OrderNotificationService.Application/OrderNotificationService.Application.csproj", "OrderNotificationService.Application/"]
-COPY ["./OrderNotificationService/OrderNotificationService.Domain/OrderNotificationService.Domain.csproj", "OrderNotificationService.Domain/"]
-COPY ["./OrderNotificationService/OrderNotificationService.Infrastructure/OrderNotificationService.Infrastructure.csproj", "OrderNotificationService.Infrastructure/"]
-RUN dotnet restore "OrderNotificationService.Api/OrderNotificationService.Api.csproj"
+COPY ["./OrderNotificationService/OrderNotificationService.Api/OrderNotificationService.Api.csproj", "OrderNotificationService/OrderNotificationService.Api/"]
+COPY ["./OrderNotificationService/OrderNotificationService.Application/OrderNotificationService.Application.csproj", "OrderNotificationService/OrderNotificationService.Application/"]
+COPY ["./OrderNotificationService/OrderNotificationService.Domain/OrderNotificationService.Domain.csproj", "OrderNotificationService/OrderNotificationService.Domain/"]
+COPY ["./OrderNotificationService/OrderNotificationService.Infrastructure/OrderNotificationService.Infrastructure.csproj", "OrderNotificationService/OrderNotificationService.Infrastructure/"]
+RUN dotnet restore "OrderNotificationService/OrderNotificationService.Api/OrderNotificationService.Api.csproj"
 
 
 COPY . .
-WORKDIR "/app/OrderNotificationService.Api"
+WORKDIR "/app/OrderNotificationService/OrderNotificationService.Api"
 RUN dotnet build "OrderNotificationService.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish
 
 
@@ -24,6 +24,6 @@ WORKDIR /app
 EXPOSE 8083
 
 COPY --from=publish /app/publish .
-COPY --from=build /app/OrderNotificationService.Infrastructure/Migrations ./Migrations/
+COPY --from=build /app/OrderNotificationService/OrderNotificationService.Infrastructure/Migrations ./Migrations/
 
 ENTRYPOINT ["dotnet", "OrderNotificationService.Api.dll"]
