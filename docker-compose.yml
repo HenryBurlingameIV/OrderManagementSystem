@@ -6,11 +6,12 @@ services:
         context: .
         dockerfile: OrderManagementSystem.Gateway/Dockerfile
     ports: 
-      - "8088:8080"
+      - "8080:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
     depends_on:
+       - auth_service_api
        - catalog_service_api
        - order_service_api
        - order_processing_service_api
@@ -18,14 +19,30 @@ services:
     restart: unless-stopped
     container_name: gateway_container
 
-  catalog_service_api:
+  auth_service_api:
     build:
       context: .
-      dockerfile: CatalogService.Api/Dockerfile
+      dockerfile: AuthService/AuthService.Api/Dockerfile
+    env_file:
+      - jwt.env
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=catalogdb;Username=postgres;Password=qazQWESZ178
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    container_name: auth_service_api_container
+   
+  catalog_service_api:
+    build:
+      context: .
+      dockerfile: CatalogService/CatalogService.Api/Dockerfile
+    env_file:
+      - jwt.env
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
     depends_on:
       db:
         condition: service_healthy
@@ -35,12 +52,12 @@ services:
   order_service_api:
     build:
       context: .
-      dockerfile: OrderService.Api/Dockerfile
+      dockerfile: OrderService/OrderService.Api/Dockerfile
+    env_file:
+      - jwt.env
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=orderdb;Username=postgres;Password=qazQWESZ178
-      - Kafka__BootstrapServers=kafka:9092
     depends_on:
       db:
         condition: service_healthy
@@ -52,12 +69,12 @@ services:
   order_processing_service_api:
     build:
         context: .
-        dockerfile: OrderProcessingService.Api/Dockerfile
+        dockerfile: OrderProcessingService/OrderProcessingService.Api/Dockerfile
+    env_file:
+      - jwt.env
     environment: 
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=opsdb;Username=postgres;Password=qazQWESZ178
-      - Kafka__BootstrapServers=kafka:9092
     depends_on:
       db:
         condition: service_healthy
@@ -69,12 +86,10 @@ services:
   order_notification_service:
     build:
         context: .
-        dockerfile: OrderNotificationService.Api/Dockerfile
+        dockerfile: OrderNotificationService/OrderNotificationService.Api/Dockerfile
     environment: 
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=onsdb;Username=postgres;Password=qazQWESZ178
-      - Kafka__BootstrapServers=kafka:9092
     depends_on:
         db:
             condition: service_healthy
@@ -122,7 +137,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: qazQWESZ178
-      POSTGRES_MULTIPLE_DATABASES: catalogdb,orderdb,opsdb,onsdb
+      POSTGRES_MULTIPLE_DATABASES: authdb,catalogdb,orderdb,opsdb,onsdb
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s

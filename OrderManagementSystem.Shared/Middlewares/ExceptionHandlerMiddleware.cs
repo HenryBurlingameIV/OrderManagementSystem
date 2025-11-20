@@ -7,6 +7,7 @@ using Serilog;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Runtime.ExceptionServices;
+using static OrderManagementSystem.Shared.Exceptions.AuthExceptions;
 using ValidationException = FluentValidation.ValidationException;
 
 namespace OrderManagementSystem.Shared.Middlewares
@@ -43,13 +44,17 @@ namespace OrderManagementSystem.Shared.Middlewares
                 HttpRequestException httpEx => ((int)(httpEx.StatusCode ?? HttpStatusCode.BadRequest), httpEx.Message),
                 NotFoundException notFoundEx => ((int)HttpStatusCode.NotFound, notFoundEx.Message),
                 RpcException rpcEx => (MapGrpcStatusCode(rpcEx), rpcEx.Status.Detail),
+                InvalidCredentialsException => (401, ex.Message),
+                AccountInactiveException => (401, ex.Message),
+                ForbiddenException => (403, ex.Message),
+                AuthenticationException => (401, ex.Message),
                 _ => ((int)HttpStatusCode.InternalServerError, ex.Message),
             };
 
             _logger.LogError("Error {@exception} occured", ex);
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = statusCode;
-            await context.Response.WriteAsJsonAsync(new { Message = message });
+            await context.Response.WriteAsJsonAsync(new { Message = message, ErrorType = ex.GetType().Name });
         }
 
         private static int MapGrpcStatusCode(RpcException rpcEx)

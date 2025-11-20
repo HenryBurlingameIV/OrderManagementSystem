@@ -3,55 +3,74 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34622.214
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatalogService.Api", "CatalogService.Api\CatalogService.Api.csproj", "{0914C4A0-29E7-4E63-8C78-32EC1DA51951}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatalogService.Api", "CatalogService\CatalogService.Api\CatalogService.Api.csproj", "{0914C4A0-29E7-4E63-8C78-32EC1DA51951}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatalogService.Application", "CatalogService.Application\CatalogService.Application.csproj", "{E375F78A-E2D6-41CE-835F-3C33D8B9797D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatalogService.Application", "CatalogService\CatalogService.Application\CatalogService.Application.csproj", "{E375F78A-E2D6-41CE-835F-3C33D8B9797D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatalogService.Domain", "CatalogService.Domain\CatalogService.Domain.csproj", "{399C2F99-B99A-4E12-BADA-AD4E290B2B3D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatalogService.Domain", "CatalogService\CatalogService.Domain\CatalogService.Domain.csproj", "{399C2F99-B99A-4E12-BADA-AD4E290B2B3D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatalogService.Infrastructure", "CatalogService.Infrastructure\CatalogService.Infrastructure.csproj", "{180704AC-A32F-4F5E-91A8-A6220B508693}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatalogService.Infrastructure", "CatalogService\CatalogService.Infrastructure\CatalogService.Infrastructure.csproj", "{180704AC-A32F-4F5E-91A8-A6220B508693}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatalogService.Tests", "CatalogService.Tests\CatalogService.Tests.csproj", "{50B6D574-92EF-432D-ACA2-AED00845EF7E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CatalogService.Tests", "CatalogService\CatalogService.Tests\CatalogService.Tests.csproj", "{50B6D574-92EF-432D-ACA2-AED00845EF7E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{721A4E63-1FC4-40C5-A2C2-65A1123D29C5}"
 	ProjectSection(SolutionItems) = preProject
 		docker-compose.yml = docker-compose.yml
 		init-multiple-databases.sh = init-multiple-databases.sh
+		jwt.env = jwt.env
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderService.Api", "OrderService.Api\OrderService.Api.csproj", "{6A16EF14-8F74-4BC4-A77F-953E6FB91386}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderService.Api", "OrderService\OrderService.Api\OrderService.Api.csproj", "{6A16EF14-8F74-4BC4-A77F-953E6FB91386}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderService.Application", "OrderService.Application\OrderService.Application.csproj", "{1A8C93F3-38B7-4161-AD11-FA2DDD1E68C0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderService.Application", "OrderService\OrderService.Application\OrderService.Application.csproj", "{1A8C93F3-38B7-4161-AD11-FA2DDD1E68C0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderService.Domain", "OrderService.Domain\OrderService.Domain.csproj", "{C34BE7CE-0344-4F7B-9DBD-78A6D2AB2199}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderService.Domain", "OrderService\OrderService.Domain\OrderService.Domain.csproj", "{C34BE7CE-0344-4F7B-9DBD-78A6D2AB2199}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderService.Infrastructure", "OrderService.Infrastructure\OrderService.Infrastructure.csproj", "{1E18CCFF-33F1-4CF4-9CA3-68900A2D5628}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderService.Infrastructure", "OrderService\OrderService.Infrastructure\OrderService.Infrastructure.csproj", "{1E18CCFF-33F1-4CF4-9CA3-68900A2D5628}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderManagementSystem.Shared", "OrderManagementSystem.Shared\OrderManagementSystem.Shared.csproj", "{CEF79D4A-77E3-41A1-8976-656751709439}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderService.Tests", "OrderService.Tests\OrderService.Tests.csproj", "{408B23D6-8787-4F4D-ADB8-96EAAAF4EB98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderService.Tests", "OrderService\OrderService.Tests\OrderService.Tests.csproj", "{408B23D6-8787-4F4D-ADB8-96EAAAF4EB98}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderProcessingService.Api", "OrderProcessingService.Api\OrderProcessingService.Api.csproj", "{D21A40C6-6A63-4875-9091-500D516C3847}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderProcessingService.Api", "OrderProcessingService\OrderProcessingService.Api\OrderProcessingService.Api.csproj", "{D21A40C6-6A63-4875-9091-500D516C3847}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderProcessingService.Application", "OrderProcessingService.Application\OrderProcessingService.Application.csproj", "{38D98787-88C9-4A5A-ADE1-2D242EA3A0DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderProcessingService.Application", "OrderProcessingService\OrderProcessingService.Application\OrderProcessingService.Application.csproj", "{38D98787-88C9-4A5A-ADE1-2D242EA3A0DC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderProcessingService.Domain", "OrderProcessingService.Domain\OrderProcessingService.Domain.csproj", "{76AF435C-7AFB-4D59-81BE-8B3C7AB57665}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderProcessingService.Domain", "OrderProcessingService\OrderProcessingService.Domain\OrderProcessingService.Domain.csproj", "{76AF435C-7AFB-4D59-81BE-8B3C7AB57665}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderProcessingService.Infrastructure", "OrderProcessingService.Infrastructure\OrderProcessingService.Infrastructure.csproj", "{04113FEE-4867-4EB0-A6D8-03FBDD387DC3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderProcessingService.Infrastructure", "OrderProcessingService\OrderProcessingService.Infrastructure\OrderProcessingService.Infrastructure.csproj", "{04113FEE-4867-4EB0-A6D8-03FBDD387DC3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderProcessingService.Tests", "OrderProcessingService.Tests\OrderProcessingService.Tests.csproj", "{9FF71F8F-B040-459E-A728-F797150B9BD7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderProcessingService.Tests", "OrderProcessingService\OrderProcessingService.Tests\OrderProcessingService.Tests.csproj", "{9FF71F8F-B040-459E-A728-F797150B9BD7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderNotificationService.Api", "OrderNotificationService.Api\OrderNotificationService.Api.csproj", "{20FB100E-70B5-41A5-B708-B292E29378B4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderNotificationService.Api", "OrderNotificationService\OrderNotificationService.Api\OrderNotificationService.Api.csproj", "{20FB100E-70B5-41A5-B708-B292E29378B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderNotificationService.Application", "OrderNotificationService.Application\OrderNotificationService.Application.csproj", "{353929B0-0C0A-403F-9D99-FCC53C55077D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderNotificationService.Application", "OrderNotificationService\OrderNotificationService.Application\OrderNotificationService.Application.csproj", "{353929B0-0C0A-403F-9D99-FCC53C55077D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderNotificationService.Domain", "OrderNotificationService.Domain\OrderNotificationService.Domain.csproj", "{C2FD6933-3B70-4AB0-A77F-6B8712E6FD21}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderNotificationService.Domain", "OrderNotificationService\OrderNotificationService.Domain\OrderNotificationService.Domain.csproj", "{C2FD6933-3B70-4AB0-A77F-6B8712E6FD21}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderNotificationService.Infrastructure", "OrderNotificationService.Infrastructure\OrderNotificationService.Infrastructure.csproj", "{B53E974E-4DA1-496E-9E53-CBC1B1BEE87B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderNotificationService.Infrastructure", "OrderNotificationService\OrderNotificationService.Infrastructure\OrderNotificationService.Infrastructure.csproj", "{B53E974E-4DA1-496E-9E53-CBC1B1BEE87B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderNotificationService.Tests", "OrderNotificationService.Tests\OrderNotificationService.Tests.csproj", "{C0BF59A2-E2CB-4FF1-9DD5-99CEC6D8DE9A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderNotificationService.Tests", "OrderNotificationService\OrderNotificationService.Tests\OrderNotificationService.Tests.csproj", "{C0BF59A2-E2CB-4FF1-9DD5-99CEC6D8DE9A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderManagementSystem.Gateway", "OrderManagementSystem.Gateway\OrderManagementSystem.Gateway.csproj", "{AB2F3BB2-875F-4D1A-97D3-3B2A45C54F46}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthService.Api", "AuthService\AuthService.Api\AuthService.Api.csproj", "{06257007-A3F2-4EB1-A689-86A053E9BCD8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthService.Application", "AuthService\AuthService.Application\AuthService.Application.csproj", "{0B58DC68-1AE1-46E2-B293-807DB5163D6E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthService.Domain", "AuthService\AuthService.Domain\AuthService.Domain.csproj", "{3B5894D9-D553-4F42-AFE6-36A6D80E785A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthService.Infrastructure", "AuthService\AuthService.Infrastructure\AuthService.Infrastructure.csproj", "{22C0E04D-8D13-4677-AA58-6EF65C36D63D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AuthService", "AuthService", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CatalogService", "CatalogService", "{0384E925-A587-41E5-9BD0-051E75796E86}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OrderNotificationService", "OrderNotificationService", "{9C4DEB51-4064-4966-A8B5-29847E161368}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OrderProcessingService", "OrderProcessingService", "{35930827-E1CB-4EAF-84E0-0D6154C0B71C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OrderService", "OrderService", "{B6463761-59AB-400A-B261-4DC4BC7E3E16}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -147,9 +166,51 @@ Global
 		{AB2F3BB2-875F-4D1A-97D3-3B2A45C54F46}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AB2F3BB2-875F-4D1A-97D3-3B2A45C54F46}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AB2F3BB2-875F-4D1A-97D3-3B2A45C54F46}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06257007-A3F2-4EB1-A689-86A053E9BCD8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06257007-A3F2-4EB1-A689-86A053E9BCD8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06257007-A3F2-4EB1-A689-86A053E9BCD8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06257007-A3F2-4EB1-A689-86A053E9BCD8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B58DC68-1AE1-46E2-B293-807DB5163D6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B58DC68-1AE1-46E2-B293-807DB5163D6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B58DC68-1AE1-46E2-B293-807DB5163D6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B58DC68-1AE1-46E2-B293-807DB5163D6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B5894D9-D553-4F42-AFE6-36A6D80E785A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B5894D9-D553-4F42-AFE6-36A6D80E785A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B5894D9-D553-4F42-AFE6-36A6D80E785A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B5894D9-D553-4F42-AFE6-36A6D80E785A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22C0E04D-8D13-4677-AA58-6EF65C36D63D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22C0E04D-8D13-4677-AA58-6EF65C36D63D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22C0E04D-8D13-4677-AA58-6EF65C36D63D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22C0E04D-8D13-4677-AA58-6EF65C36D63D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0914C4A0-29E7-4E63-8C78-32EC1DA51951} = {0384E925-A587-41E5-9BD0-051E75796E86}
+		{E375F78A-E2D6-41CE-835F-3C33D8B9797D} = {0384E925-A587-41E5-9BD0-051E75796E86}
+		{399C2F99-B99A-4E12-BADA-AD4E290B2B3D} = {0384E925-A587-41E5-9BD0-051E75796E86}
+		{180704AC-A32F-4F5E-91A8-A6220B508693} = {0384E925-A587-41E5-9BD0-051E75796E86}
+		{50B6D574-92EF-432D-ACA2-AED00845EF7E} = {0384E925-A587-41E5-9BD0-051E75796E86}
+		{6A16EF14-8F74-4BC4-A77F-953E6FB91386} = {B6463761-59AB-400A-B261-4DC4BC7E3E16}
+		{1A8C93F3-38B7-4161-AD11-FA2DDD1E68C0} = {B6463761-59AB-400A-B261-4DC4BC7E3E16}
+		{C34BE7CE-0344-4F7B-9DBD-78A6D2AB2199} = {B6463761-59AB-400A-B261-4DC4BC7E3E16}
+		{1E18CCFF-33F1-4CF4-9CA3-68900A2D5628} = {B6463761-59AB-400A-B261-4DC4BC7E3E16}
+		{408B23D6-8787-4F4D-ADB8-96EAAAF4EB98} = {B6463761-59AB-400A-B261-4DC4BC7E3E16}
+		{D21A40C6-6A63-4875-9091-500D516C3847} = {35930827-E1CB-4EAF-84E0-0D6154C0B71C}
+		{38D98787-88C9-4A5A-ADE1-2D242EA3A0DC} = {35930827-E1CB-4EAF-84E0-0D6154C0B71C}
+		{76AF435C-7AFB-4D59-81BE-8B3C7AB57665} = {35930827-E1CB-4EAF-84E0-0D6154C0B71C}
+		{04113FEE-4867-4EB0-A6D8-03FBDD387DC3} = {35930827-E1CB-4EAF-84E0-0D6154C0B71C}
+		{9FF71F8F-B040-459E-A728-F797150B9BD7} = {35930827-E1CB-4EAF-84E0-0D6154C0B71C}
+		{20FB100E-70B5-41A5-B708-B292E29378B4} = {9C4DEB51-4064-4966-A8B5-29847E161368}
+		{353929B0-0C0A-403F-9D99-FCC53C55077D} = {9C4DEB51-4064-4966-A8B5-29847E161368}
+		{C2FD6933-3B70-4AB0-A77F-6B8712E6FD21} = {9C4DEB51-4064-4966-A8B5-29847E161368}
+		{B53E974E-4DA1-496E-9E53-CBC1B1BEE87B} = {9C4DEB51-4064-4966-A8B5-29847E161368}
+		{C0BF59A2-E2CB-4FF1-9DD5-99CEC6D8DE9A} = {9C4DEB51-4064-4966-A8B5-29847E161368}
+		{06257007-A3F2-4EB1-A689-86A053E9BCD8} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{0B58DC68-1AE1-46E2-B293-807DB5163D6E} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{3B5894D9-D553-4F42-AFE6-36A6D80E785A} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{22C0E04D-8D13-4677-AA58-6EF65C36D63D} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {27263B05-1EC3-4125-91FA-3936CB1D6601}

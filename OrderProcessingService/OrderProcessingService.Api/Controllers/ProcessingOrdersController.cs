@@ -1,0 +1,56 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using OrderManagementSystem.Shared.Authorization;
+using OrderManagementSystem.Shared.DataAccess.Pagination;
+using OrderProcessingService.Application.Contracts;
+using OrderProcessingService.Application.DTO;
+
+namespace OrderProcessingService.Api.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ProcessingOrdersController(
+        IOrderProcessor orderProcessor,
+        IProcessingOrderQueryService queryService
+        ): ControllerBase
+    {
+        [HttpGet("{id:Guid}")]
+        [Authorize(Policy = Permissions.OrderProcessing.Read)]
+        public async Task<ActionResult<ProcessingOrderViewModel>> GetProcessingOrder(Guid id, CancellationToken cancellationToken)
+        {
+            var result = await queryService.GetProcesingOrderById(id, cancellationToken);
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Authorize(Policy = Permissions.OrderProcessing.Read)]
+        public async Task<ActionResult<PaginatedResult<ProcessingOrderViewModel>>> GetProcessingOrders(
+            [FromQuery] GetPaginatedProcessingOrdersRequest query,
+            CancellationToken cancellationToken)
+        {
+            var result = await queryService.GetPaginatedProcessingOrdersAsync(query, cancellationToken);
+            return Ok(result);
+        }
+
+        [HttpPatch("{id:Guid}/begin-assembly")]
+        [Authorize(Policy = Permissions.OrderProcessing.BeginAssembly)]
+        public async Task<ActionResult> BeginAssembly(Guid id, CancellationToken cancellationToken)
+        {
+            await orderProcessor.BeginAssembly(id, cancellationToken);
+            return Accepted();
+        }
+
+        [HttpPatch("begin-delivery")]
+        [Authorize(Policy = Permissions.OrderProcessing.BeginDelivery)]
+        public async Task<ActionResult> BeginDelivery([FromBody] DeliveryRequest request, CancellationToken cancellationToken)
+        {
+            if (!request.Ids.Any()) 
+            {
+                return BadRequest(new { Message = "Delivery request is empty" });
+            }
+            await orderProcessor.BeginDelivery(request.Ids, cancellationToken);
+            return Accepted();
+        }
+    }
+}
