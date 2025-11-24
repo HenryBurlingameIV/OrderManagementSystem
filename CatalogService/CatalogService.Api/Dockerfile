@@ -1,0 +1,30 @@
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG BUILD_CONFIGURATION=Release
+WORKDIR /app
+
+COPY ["./OrderManagementSystem.Shared/OrderManagementSystem.Shared.csproj", "OrderManagementSystem.Shared/"]
+COPY ["./CatalogService/CatalogService.Api/CatalogService.Api.csproj", "CatalogService/CatalogService.Api/"]
+COPY ["./CatalogService/CatalogService.Application/CatalogService.Application.csproj", "CatalogService/CatalogService.Application/"]
+COPY ["./CatalogService/CatalogService.Domain/CatalogService.Domain.csproj", "CatalogService/CatalogService.Domain/"]
+COPY ["./CatalogService/CatalogService.Infrastructure/CatalogService.Infrastructure.csproj", "CatalogService/CatalogService.Infrastructure/"]
+RUN dotnet restore "CatalogService/CatalogService.Api/CatalogService.Api.csproj"
+
+
+COPY . .
+WORKDIR "/app/CatalogService/CatalogService.Api"
+RUN dotnet build "CatalogService.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish
+
+
+FROM build AS publish
+RUN dotnet publish "CatalogService.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish
+
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+WORKDIR /app
+EXPOSE 8080
+
+COPY --from=publish /app/publish .
+COPY --from=build /app/CatalogService/CatalogService.Infrastructure/Migrations ./Migrations/
+
+ENTRYPOINT ["dotnet", "CatalogService.Api.dll"]
